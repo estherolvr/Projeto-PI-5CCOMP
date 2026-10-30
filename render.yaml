@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: alvaro-ai-backend
+    env: node
+    plan: free
+    buildCommand: cd "src/Entrega 1/Backend" && npm install --include=dev && npm run db:push && npm run db:generate
+    startCommand: cd "src/Entrega 1/Backend" && npx tsx src/index.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        value: alvaro-ai-super-secret-jwt-key-2026-fecap
+      - key: GEMINI_API_KEY
+        sync: false

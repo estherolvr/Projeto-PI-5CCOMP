@@ -1,0 +1,25 @@
+{
+  "name": "projeto5-fecap",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Álvaro AI — Projeto Interdisciplinar FECAP",
+  "scripts": {
+    "build": "cd \"src/Entrega 1/Frontend\" && npm install && npm run build && cd ../../.. && node -e \"const fs=require('fs'); fs.cpSync('src/Entrega 1/Frontend/dist', 'dist', {recursive: true});\"",
+    "install:backend": "cd \"src/Entrega 1/Backend\" && npm install",
+    "install:frontend": "cd \"src/Entrega 1/Frontend\" && npm install",
+    "install:all": "npm run install:backend && npm run install:frontend",
+    "dev:backend": "cd \"src/Entrega 1/Backend\" && npm run dev",
+    "dev:frontend": "cd \"src/Entrega 1/Frontend\" && npm run dev",
+    "dev": "concurrently -n \"frontend,backend\" -c \"cyan,magenta\" \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "build:frontend": "cd \"src/Entrega 1/Frontend\" && npm run build",
+    "build:backend": "cd \"src/Entrega 1/Backend\" && npm run build",
+    "start": "cd \"src/Entrega 1/Backend\" && npx tsx src/index.ts",
+    "start:backend": "cd \"src/Entrega 1/Backend\" && npm start",
+    "seed": "cd \"src/Entrega 1/Backend\" && npm run seed",
+    "render:build": "cd \"src/Entrega 1/Backend\" && npm install --include=dev && npm run db:push && npm run db:generate",
+    "render:start": "cd \"src/Entrega 1/Backend\" && npx tsx src/index.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}

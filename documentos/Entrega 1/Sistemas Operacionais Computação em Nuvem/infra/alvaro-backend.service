@@ -1,0 +1,26 @@
+﻿[Unit]
+Description=Alvaro AI Backend Service (FECAP Projeto 5)
+Documentation=https://github.com/2026-2-NCC5/Projeto5
+After=network.target
+
+[Service]
+Type=simple
+User=alvaro-app
+Group=devs
+WorkingDirectory=/opt/alvaro-ai/backend
+EnvironmentFile=/opt/alvaro-ai/config/.env
+ExecStart=/usr/bin/node /opt/alvaro-ai/backend/dist/index.js
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=alvaro-backend
+
+# Security Hardening
+ProtectSystem=full
+ProtectHome=true
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

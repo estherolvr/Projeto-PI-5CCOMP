@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Fundo claro — levemente acinzentado, não branco puro */
+    --bg: 248 249 250;
+    --bg-secondary: 241 243 246;
+    --border: 226 230 235;
+    --text-primary: 17 24 39;
+    --text-secondary: 100 114 128;
+    --text-tertiary: 150 160 175;
+
+    /* Brand FECAP verde profundo */
+    --brand: 0 122 77;
+    --brand-light: 238 250 245;
+  }
+
+  .dark {
+    /* Charcoal profundo inspirado no banner ASA */
+    --bg: 17 20 25;
+    --bg-secondary: 26 31 38;
+    --border: 45 53 64;
+    --text-primary: 240 244 248;
+    --text-secondary: 140 155 170;
+    --text-tertiary: 90 105 120;
+
+    --brand: 30 158 106;
+    --brand-light: 0 61 38;
+  }
+
+  * {
+    @apply border-gray-200 dark:border-slate-700;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: rgb(248 249 250);
+    color: rgb(17 24 39);
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  .dark body {
+    background-color: rgb(17 20 25);
+    color: rgb(240 244 248);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* ── Scrollbar ───────────────────────────────── */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.gray.300') transparent;
+  }
+  .dark .scrollbar-thin {
+    scrollbar-color: theme('colors.slate.600') transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme('colors.gray.300');
+    border-radius: 2px;
+  }
+
+  /* ── Skeleton shimmer ───────────────────────── */
+  .skeleton {
+    @apply relative overflow-hidden bg-gray-100 dark:bg-slate-800;
+  }
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.6) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+  .dark .skeleton::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.06) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* ── Status dots ────────────────────────────── */
+  .status-dot            { @apply inline-block w-2 h-2 rounded-full; }
+  .status-dot-operational { @apply bg-brand-500; }
+  .status-dot-warning    { @apply bg-amber-500; }
+  .status-dot-critical   { @apply bg-red-500; }
+  .status-dot-offline    { @apply bg-gray-400; }
+
+  /* ── Card base ─────────────────────────────── */
+  .card {
+    @apply bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-card;
+  }
+
+  /* Card com destaque FECAP */
+  .card-brand {
+    @apply bg-white dark:bg-slate-800 rounded-xl border border-brand-100 dark:border-brand-900/40 shadow-card;
+  }
+
+  /* ── Focus ring ────────────────────────────── */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900;
+  }
+
+  /* ── Sidebar item ───────────────────────────── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150
+           text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-100
+           hover:bg-gray-100 dark:hover:bg-slate-700/50 cursor-pointer;
+  }
+  .sidebar-item.active {
+    @apply bg-brand-50 dark:bg-brand-900/25 text-brand-700 dark:text-brand-400;
+  }
+  .sidebar-item.active svg {
+    @apply text-brand-600 dark:text-brand-400;
+  }
+
+  /* ── Logo ASAIA (gradiente ASA) ─────────────── */
+  .logo-gradient {
+    background: linear-gradient(135deg, #007A4D 0%, #00A878 100%);
+  }
+
+  /* ── ASA accent strip (roxo + amarelo) ────── */
+  .asa-accent-bar {
+    background: linear-gradient(90deg, #7B3FBE 0%, #F5C000 50%, #007A4D 100%);
+  }
+
+  /* ── Login hero gradient (igual ao banner ASA) */
+  .login-hero {
+    background: linear-gradient(155deg, #002618 0%, #004432 40%, #007A4D 100%);
+  }
+}
+
+@layer utilities {
+  .text-balance     { text-wrap: balance; }
+  .transition-base  { @apply transition-all duration-150 ease-out; }
+  .transition-smooth { @apply transition-all duration-250 ease-out; }
+}

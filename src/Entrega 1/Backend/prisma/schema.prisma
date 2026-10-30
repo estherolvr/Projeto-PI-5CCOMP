@@ -1,0 +1,288 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String         @id @default(uuid())
+  name        String
+  email       String         @unique
+  password    String         @default("123456")
+  role        String         // 'aluno' | 'asa' | 'admin'
+  avatar      String?
+  department  String?
+  status      String         @default("ativo") // 'ativo' | 'inativo'
+  lastAccess  DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  assignedTickets Ticket[]   @relation("AssignedTickets")
+  assignedAppointments Appointment[] @relation("AttendantAppointments")
+}
+
+model Student {
+  id          String         @id @default(uuid())
+  name        String
+  ra          String         @unique
+  email       String         @unique
+  course      String
+  semester    Int
+  period      String         // 'manha' | 'tarde' | 'noite'
+  status      String         @default("regular") // 'regular' | 'irregular' | 'trancado'
+  phone       String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tickets       Ticket[]
+  conversations Conversation[]
+  appointments  Appointment[]
+  feedbacks     AIFeedback[]
+}
+
+model Ticket {
+  id          String         @id @default(uuid())
+  number      Int            @unique
+  title       String
+  description String
+  status      String         @default("aberto") // 'aberto' | 'em_atendimento' | 'aguardando_aluno' | 'resolvido' | 'fechado'
+  priority    String         @default("media") // 'baixa' | 'media' | 'alta' | 'critica'
+  category    String         // 'matricula' | 'financeiro' | 'academico' | 'documentos' | 'outros' | 'infraestrutura' | 'cancelamento'
+  studentId   String
+  assignedTo  String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  slaDeadline DateTime
+  slaStatus   String         @default("ok") // 'ok' | 'risk' | 'breached'
+  tags        String         @default("[]") // JSON string array
+  conversationId String?
+
+  student     Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attendant   User?          @relation("AssignedTickets", fields: [assignedTo], references: [id])
+  conversation Conversation? @relation(fields: [conversationId], references: [id])
+  aiSuggestion AIAnalysis?
+  messages    TicketMessage[]
+}
+
+model AIAnalysis {
+  id             String   @id @default(uuid())
+  ticketId       String   @unique
+  intent         String
+  category       String
+  priority       String
+  summary        String
+  confidence     Float    @default(0.85)
+  recommendation String
+  sentiment      String   @default("neutro") // 'positivo' | 'neutro' | 'negativo'
+  createdAt      DateTime @default(now())
+
+  ticket         Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+model TicketMessage {
+  id          String       @id @default(uuid())
+  ticketId    String
+  senderId    String
+  senderName  String
+  senderRole  String       // 'aluno' | 'asa' | 'admin' | 'sistema'
+  content     String
+  isInternal  Boolean      @default(false)
+  createdAt   DateTime     @default(now())
+
+  ticket      Ticket       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  attachments Attachment[]
+}
+
+model Attachment {
+  id        String        @id @default(uuid())
+  messageId String
+  name      String
+  size      String
+  type      String
+  url       String
+  createdAt DateTime      @default(now())
+
+  message   TicketMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id          String        @id @default(uuid())
+  studentId   String
+  title       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  student     Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  messages    ChatMessage[]
+  tickets     Ticket[]
+}
+
+model ChatMessage {
+  id             String       @id @default(uuid())
+  conversationId String
+  role           String       // 'user' | 'assistant' | 'system'
+  content        String
+  actions        String?      // JSON string of ChatAction[]
+  timestamp      DateTime     @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model KBDocument {
+  id           String   @id @default(uuid())
+  title        String
+  category     String
+  content      String
+  version      String   @default("1.0")
+  status       String   @default("ativo") // 'ativo' | 'rascunho' | 'arquivado'
+  author       String   @default("Equipe ASA")
+  tags         String   @default("[]") // JSON string array
+  views        Int      @default(0)
+  indexed      Boolean  @default(true)
+  source       String   @default("manual") // 'manual' | 'upload'
+  filename     String?
+  fileSize     Int?
+  chunkCount   Int?     @default(1)
+  r2Key        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model SLARule {
+  id                   String   @id @default(uuid())
+  name                 String
+  priority             String
+  category             String?
+  firstResponseMinutes Int
+  resolutionHours      Int
+  active               Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model AutomationRule {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  trigger     String   // JSON string
+  conditions  String   // JSON string
+  actions     String   // JSON string
+  active      Boolean  @default(true)
+  runs        Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditEvent {
+  id         String   @id @default(uuid())
+  userId     String?
+  userName   String
+  userRole   String
+  action     String
+  resource   String
+  resourceId String
+  details    String?  // JSON or text string
+  ip         String   @default("127.0.0.1")
+  severity   String   @default("info") // 'info' | 'warning' | 'critical'
+  createdAt  DateTime @default(now())
+}
+
+model AIPrompt {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  content     String
+  version     String   @default("v1.0")
+  status      String   @default("ativo") // 'ativo' | 'inativo' | 'teste'
+  author      String   @default("Equipe ASA")
+  uses        Int      @default(0)
+  successRate Float    @default(0.9)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Integration {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  type        String
+  status      String   @default("operacional") // 'operacional' | 'degradado' | 'offline' | 'nao_configurado'
+  icon        String   @default("plug")
+  config      String   @default("{}") // JSON string
+  lastSync    DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      String   // 'ticket_updated' | 'new_ticket' | 'sla_risk' | 'ai_recommendation' | 'system' | 'resolved'
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  priority  String   @default("medium") // 'low' | 'medium' | 'high'
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model Appointment {
+  id                 String   @id @default(uuid())
+  protocol           String   @unique
+  studentId          String
+  studentName        String
+  studentRa          String
+  studentEmail       String
+  studentCourse      String?
+  subject            String
+  date               String   // Formato YYYY-MM-DD
+  time               String   // Formato HH:mm
+  durationMinutes    Int      @default(30)
+  location           String   @default("Campus Liberdade · Bloco B · Térreo (Central ASA)")
+  desk               String?  @default("Guichê Presencial")
+  notes              String?
+  status             String   @default("confirmado") // 'confirmado' | 'em_atendimento' | 'concluido' | 'cancelado' | 'ausente'
+  attendantId        String?
+  attendantName      String?
+  resolutionNotes    String?
+  googleCalendarLink String?
+  documentName       String?
+  documentType       String?
+  documentSize       String?
+  documentData       String?
+  r2Key              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  student            Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  attendant          User?    @relation("AttendantAppointments", fields: [attendantId], references: [id])
+}
+
+model AdminAIReport {
+  id              String   @id @default(uuid())
+  summary         String
+  healthScore     Int      @default(85)
+  diagnostics     String
+  recommendations String
+  metricsSnapshot String
+  authorId        String?
+  createdAt       DateTime @default(now())
+}
+
+
+model AIFeedback {
+  id             String   @id @default(uuid())
+  studentId      String?
+  studentName    String   @default("Aluno")
+  conversationId String?
+  messageId      String?
+  type           String   // 'positive' | 'negative'
+  snippet        String
+  comment        String?
+  rating         Int?     @default(5)
+  createdAt      DateTime @default(now())
+
+  student        Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+}
