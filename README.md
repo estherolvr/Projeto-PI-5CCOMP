@@ -12,7 +12,7 @@
 
 ## 📌 Sobre o Projeto
 
-O **Álvaro AI** é uma plataforma full-stack de atendimento universitário integrada para o **ASA (Área do Sucesso Alvarista)** da FECAP. A solução combina um assistente conversacional inteligente potencializado por **Inteligência Artificial Generativa (Google Gemini 3.6 Flash)** e **RAG (*Retrieval-Augmented Generation*)** com um sistema completo de gestão de chamados acadêmicos e atendimento humano (*Human-in-the-Loop*).
+O **Álvaro AI** é uma plataforma full-stack de atendimento universitário integrada para o **ASA (Área do Sucesso Alvarista)** da FECAP. A solução combina um assistente conversacional inteligente potencializado por **Inteligência Artificial Generativa (Google Gemini (modelo configurado))** e **RAG (*Retrieval-Augmented Generation*)** com um sistema completo de gestão de chamados acadêmicos e atendimento humano (*Human-in-the-Loop*).
 
 ---
 
@@ -57,7 +57,7 @@ Projeto5/
 ### 1. 🎓 Portal do Aluno
 * **Chatbot Álvaro AI 24/7:** Responde a dúvidas sobre regulamentos acadêmicos, prazos, bolsas, TCC, trancamento e financeiro com formatação rica em Markdown e citação nominal dos documentos institucionais.
 * **Abertura de Chamados com Contexto (*Human-in-the-Loop*):** Ao solicitar a abertura de chamado pelo chat, todo o histórico de mensagens trocadas com a IA é automaticamente vinculado ao ticket.
-* **Documentos Digitais:** Emissão instantânea de atestados de matrícula e declarações acadêmicas com validação digital.
+* **Documentos:** Consulta de arquivos reais dos atendimentos e solicitação de documentos oficiais ao ASA.
 * **Histórico de Chamados:** Acompanhamento do status (`Aberto`, `Em atendimento`, `Resolvido`), mensagens do atendente e previsão de SLA.
 
 ### 2. 🏛️ Painel do Atendente ASA
@@ -87,7 +87,7 @@ Projeto5/
 * **Prisma ORM** + **SQLite** para persistência relacional
 * **JWT (JSON Web Tokens)** + **Bcrypt** para autenticação e perfis (`aluno`, `asa`, `admin`)
 * **Multer** para upload de arquivos
-* **Google Gemini 3.6 Flash** (`@google/generative-ai`) para RAG e respostas inteligentes
+* **Google Gemini (modelo configurado)** (`@google/generative-ai`) para RAG e respostas inteligentes
 * **pdf-parse** para extração de texto em PDFs institucionais
 
 ---
@@ -138,15 +138,11 @@ npm run dev
 
 ---
 
-## 🔑 Credenciais de Demonstração
+## Acesso ao sistema
 
-| Perfil | E-mail Institucional | Senha Global | Acesso |
-| :--- | :--- | :--- | :--- |
-| **Aluna** | `esther.rodrigues@aluno.fecap.br` | `@#$273baratA` | Portal do Aluno & Chatbot |
-| **Atendente ASA** | `fernanda.costa@fecap.br` | `@#$273baratA` | Fila ASA & Base de Conhecimento |
-| **Administrador** | `ricardo.mendes@fecap.br` | `@#$273baratA` | Central de Controle & Governança |
+O login usa contas reais do Supabase Auth vinculadas aos cadastros institucionais Aluno, ASA ou Administrador. Não há credenciais padrão nem acesso de demonstração. As senhas são definidas no provedor de autenticação.
 
----
+A publicação atual usa Cloudflare Workers, Hyperdrive e R2. Consulte [DEPLOY-CLOUDFLARE.md](DEPLOY-CLOUDFLARE.md). Telas vazias mostram ausência de registros; falhas de conexão são apresentadas com opção de nova tentativa.
 
 ## 📄 Licença
 

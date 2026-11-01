@@ -1,0 +1,74 @@
+[
+  {
+    "test": "Verificar documento conhecido 6c918cdb-e5c5-4c62-b23b-e84072d6eb71",
+    "pass": true,
+    "http": 200,
+    "seconds": 1.83
+  },
+  {
+    "test": "Excluir documento de teste 6c918cdb-e5c5-4c62-b23b-e84072d6eb71",
+    "pass": true,
+    "http": 200,
+    "seconds": 0.87
+  },
+  {
+    "test": "Verificar documento conhecido 53c2e8bc-be18-4420-b38c-e81642387171",
+    "pass": true,
+    "http": 200,
+    "seconds": 0.82
+  },
+  {
+    "test": "Excluir documento de teste 53c2e8bc-be18-4420-b38c-e81642387171",
+    "pass": true,
+    "http": 200,
+    "seconds": 0.82
+  },
+  {
+    "test": "Verificar documento conhecido aae929f6-4352-40f4-af3b-5f19d67640e3",
+    "pass": true,
+    "http": 200,
+    "seconds": 0.82
+  },
+  {
+    "test": "Excluir documento de teste aae929f6-4352-40f4-af3b-5f19d67640e3",
+    "pass": true,
+    "http": 200,
+    "seconds": 1.48
+  },
+  {
+    "test": "Verificar documento conhecido 24608651-9dc8-4edc-a1a6-a219e1e8fa9e",
+    "pass": true,
+    "http": 200,
+    "seconds": 1.42
+  },
+  {
+    "test": "Excluir documento de teste 24608651-9dc8-4edc-a1a6-a219e1e8fa9e",
+    "pass": true,
+    "http": 200,
+    "seconds": 0.84
+  },
+  {
+    "test": "Verificar documento conhecido 9ca5f091-5363-4c7f-93bf-0e0b03d4f963",
+    "pass": true,
+    "http": 200,
+    "seconds": 0.82
+  },
+  {
+    "test": "Excluir documento de teste 9ca5f091-5363-4c7f-93bf-0e0b03d4f963",
+    "pass": true,
+    "http": 200,
+    "seconds": 1.36
+  },
+  {
+    "test": "Verificar documento conhecido d5703cf2-2c2b-45a2-9945-70f9f2a3a160",
+    "pass": true,
+    "http": 200,
+    "seconds": 1.69
+  },
+  {
+    "test": "Excluir documento de teste d5703cf2-2c2b-45a2-9945-70f9f2a3a160",
+    "pass": true,
+    "http": 200,
+    "seconds": 1.76
+  }
+]

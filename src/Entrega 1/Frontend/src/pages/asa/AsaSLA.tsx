@@ -1,11 +1,4 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-
-export default function AsaSLA() {
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 max-w-7xl mx-auto space-y-6 flex flex-col items-center justify-center min-h-[60vh]">
-      <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100 mb-2">Monitoramento de SLA</h1>
-      <p className="text-gray-500 dark:text-slate-400">Esta página está em construção. Em breve você poderá monitorar os SLAs de todos os chamados aqui.</p>
-    </motion.div>
-  );
-}
+import { api } from '@/lib/api'
+import { useApiQuery } from '@/lib/use-api-query'
+import { DataState } from '@/components/common/DataState'
+export default function AsaSLA(){const q=useApiQuery(api.admin.getSLARules);return <div className="p-4 md:p-6 space-y-5"><h1 className="text-2xl font-bold dark:text-white">Regras de SLA</h1><DataState loading={q.loading} error={q.error} onRetry={q.refresh} empty={!q.data?.length}>{q.data?.map((r:any)=><article key={r.id} className="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-5"><h2 className="font-semibold dark:text-white">{r.name}</h2><p className="text-sm text-gray-500">{r.priority} · {r.category||'Todas as categorias'} · Primeira resposta: {r.firstResponseMinutes} min · Resolução: {r.resolutionHours} h · {r.active?'Ativa':'Inativa'}</p></article>)}</DataState></div>}

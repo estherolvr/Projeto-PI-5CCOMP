@@ -1,30 +1,30 @@
+import { useEffect, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useAppStore } from '../../store/app-store'
-import type { UserRole } from '../../lib/mock-data'
+import { useAppStore, type CurrentUser } from '../../store/app-store'
+import type { UserRole } from '../../lib/types'
+import { api } from '../../lib/api'
 
-interface ProtectedRouteProps {
-  allowedRoles?: UserRole[]
-}
-
-/**
- * Componente de proteção de rotas privadas (Guarda de Rotas).
- * Exige que o usuário possua um token JWT válido e sessão ativa.
- * Redireciona para /login caso a sessão não exista ou tenha sido encerrada.
- */
-export default function ProtectedRoute({ allowedRoles }: ProtectedRouteProps) {
-  const { currentUser } = useAppStore()
-  const token = typeof window !== 'undefined' ? localStorage.getItem('asaia_auth_token') : null
+export default function ProtectedRoute({ allowedRoles }: { allowedRoles?: UserRole[] }) {
+  const { currentUser, setCurrentUser } = useAppStore()
+  const token = localStorage.getItem('asaia_auth_token')
   const location = useLocation()
-
-  // Se não houver token ou usuário na store, bloqueia o acesso e vai para login
-  if (!token || !currentUser) {
-    return <Navigate to="/login" state={{ from: location }} replace />
-  }
-
-  // Se a rota exige papéis específicos e o perfil atual não tiver autorização
-  if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to={`/${currentUser.role}`} replace />
-  }
-
-  return <Outlet />
+  const [verified, setVerified] = useState<CurrentUser | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState(0)
+  useEffect(() => {
+    let active=true
+    setLoading(true);setError(null);setVerified(null)
+    if(!token){setLoading(false);return}
+    api.auth.me().then(({user})=>{if(active){setVerified(user);setCurrentUser(user)}})
+      .catch(e=>{if(active)setError(e instanceof Error?e.message:'Não foi possível validar sua sessão.')})
+      .finally(()=>{if(active)setLoading(false)})
+    return ()=>{active=false}
+  },[token,attempt,setCurrentUser])
+  if(!token || !currentUser)return <Navigate to="/login" state={{from:location}} replace/>
+  if(loading)return <p role="status" className="p-8 text-center text-gray-500">Validando sessão…</p>
+  if(error)return <div role="alert" className="p-8 text-red-600"><p>{error}</p><button onClick={()=>setAttempt(n=>n+1)} className="underline mt-3">Tentar novamente</button></div>
+  if(!verified)return <Navigate to="/login" replace/>
+  if(allowedRoles && !allowedRoles.includes(verified.role))return <Navigate to={`/${verified.role}`} replace/>
+  return <Outlet/>
 }

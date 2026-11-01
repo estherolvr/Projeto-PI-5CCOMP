@@ -1,0 +1,28 @@
+{
+  "port": 5432,
+  "transport": {
+    "stage": "tls_connected",
+    "startupResponse": "closed"
+  },
+  "postgres": {
+    "stage": "tls_authentication",
+    "error": {
+      "code": null,
+      "message": "Connection terminated unexpectedly",
+      "terminated": true,
+      "certificate": false,
+      "timeout": false,
+      "authentication": false
+    }
+  },
+  "alternativeDriver": {
+    "error": {
+      "code": null,
+      "message": "Query timeout",
+      "terminated": false,
+      "certificate": false,
+      "timeout": true,
+      "authentication": false
+    }
+  }
+}

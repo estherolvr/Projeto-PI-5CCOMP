@@ -1,0 +1,771 @@
+{
+  "total": 127,
+  "passed": 120,
+  "failed": 7,
+  "results": [
+    {
+      "test": "Admin /health",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.19
+    },
+    {
+      "test": "Sessão admin",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.26
+    },
+    {
+      "test": "Sessão aluno",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.33
+    },
+    {
+      "test": "Sessão asa",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.36
+    },
+    {
+      "test": "Admin /users",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.91
+    },
+    {
+      "test": "Admin /audit-logs",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.81
+    },
+    {
+      "test": "Admin /students?limit=10",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.14
+    },
+    {
+      "test": "Admin /dashboard-stats",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.38
+    },
+    {
+      "test": "Admin /automations",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.5
+    },
+    {
+      "test": "Admin /prompts",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.43
+    },
+    {
+      "test": "Admin /sla-rules",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.07
+    },
+    {
+      "test": "Admin /integrations",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.88
+    },
+    {
+      "test": "Admin /ai-analysis/history",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.1
+    },
+    {
+      "test": "ASA /students",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.67
+    },
+    {
+      "test": "Admin /feedback",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.64
+    },
+    {
+      "test": "Admin /notifications",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.44
+    },
+    {
+      "test": "ASA /tickets",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.3
+    },
+    {
+      "test": "ASA /appointments",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.86
+    },
+    {
+      "test": "ASA /appointments/metrics",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.02
+    },
+    {
+      "test": "ASA /admin/health",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.64
+    },
+    {
+      "test": "ASA /metrics/overview?days=7",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.0
+    },
+    {
+      "test": "ASA /metrics/queue",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.26
+    },
+    {
+      "test": "Aluno /tickets",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.41
+    },
+    {
+      "test": "Aluno /appointments/my",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.84
+    },
+    {
+      "test": "Aluno /chat/conversations",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.21
+    },
+    {
+      "test": "Aluno /knowledge-base",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.84
+    },
+    {
+      "test": "Bloqueio aluno /admin/users",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.67
+    },
+    {
+      "test": "Bloqueio aluno /admin/students",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.02
+    },
+    {
+      "test": "Bloqueio aluno /metrics/overview",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.1
+    },
+    {
+      "test": "Bloqueio aluno /students",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.67
+    },
+    {
+      "test": "Bloqueio aluno /appointments",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.99
+    },
+    {
+      "test": "Bloqueio ASA /admin/prompts",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.89
+    },
+    {
+      "test": "Bloqueio ASA /admin/integrations",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.47
+    },
+    {
+      "test": "Cadastro próprio aluno",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.63
+    },
+    {
+      "test": "Cadastro alheio bloqueado",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.08
+    },
+    {
+      "test": "Criar documento de teste",
+      "pass": true,
+      "http": 201,
+      "seconds": 0.71
+    },
+    {
+      "test": "Aluno não deve editar base institucional",
+      "pass": false,
+      "http": 200,
+      "seconds": 1.42,
+      "error": "Unexpected response"
+    },
+    {
+      "test": "Busca RAG encontra documento criado",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.87
+    },
+    {
+      "test": "Aluno cria conversa real",
+      "pass": true,
+      "http": 201,
+      "seconds": 2.45
+    },
+    {
+      "test": "Chat responde e persiste mensagens",
+      "pass": true,
+      "http": 201,
+      "seconds": 2.72
+    },
+    {
+      "test": "Feedback da resposta IA",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.06
+    },
+    {
+      "test": "Conversa preservada após nova consulta",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.4
+    },
+    {
+      "test": "Aluno abre chamado com conversa",
+      "pass": true,
+      "http": 201,
+      "seconds": 4.9
+    },
+    {
+      "test": "ASA visualiza chamado e contexto",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.54
+    },
+    {
+      "test": "Aluno não pode atribuir chamado",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.68
+    },
+    {
+      "test": "ASA assume chamado",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.75
+    },
+    {
+      "test": "ASA registra nota interna",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.98
+    },
+    {
+      "test": "ASA envia resposta pública",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.56
+    },
+    {
+      "test": "Aluno recebe resposta sem nota interna",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.59
+    },
+    {
+      "test": "ASA resolve chamado",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.54
+    },
+    {
+      "test": "Admin confirma resolução",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.41
+    },
+    {
+      "test": "Métricas após resolução",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.03
+    },
+    {
+      "test": "ASA fecha registro de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.54
+    },
+    {
+      "test": "Upload TXT e persistência R2",
+      "pass": false,
+      "http": 201,
+      "seconds": 1.91,
+      "error": "Documento processado e indexado na Base de Conhecimento com sucesso!"
+    },
+    {
+      "test": "Download documento de teste",
+      "pass": false,
+      "http": 404,
+      "seconds": 0.66,
+      "error": "Arquivo binário original não localizado no Cloudflare R2."
+    },
+    {
+      "test": "Arquivar upload de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.2
+    },
+    {
+      "test": "Consultar horários disponíveis",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.18
+    },
+    {
+      "test": "Aluno cria agendamento de teste",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.96
+    },
+    {
+      "test": "ASA consulta agendamento",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.83
+    },
+    {
+      "test": "Exportar calendário ICS",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.02
+    },
+    {
+      "test": "Aluno não pode concluir agendamento",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.04
+    },
+    {
+      "test": "Aluno cancela próprio agendamento de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.01
+    },
+    {
+      "test": "Admin vê feedback de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.24
+    },
+    {
+      "test": "Admin vê auditoria das operações",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.12
+    },
+    {
+      "test": "Arquivar documento RAG de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.85
+    },
+    {
+      "test": "Sem sessão não acessa conta",
+      "pass": true,
+      "http": 401,
+      "seconds": 0.06
+    },
+    {
+      "test": "Sem sessão não acessa chat",
+      "pass": true,
+      "http": 401,
+      "seconds": 0.13
+    },
+    {
+      "test": "Login vazio recusado",
+      "pass": true,
+      "http": 400,
+      "seconds": 0.04
+    },
+    {
+      "test": "Demonstração API desativada",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.1
+    },
+    {
+      "test": "Token inválido recusado",
+      "pass": true,
+      "http": 401,
+      "seconds": 0.79
+    },
+    {
+      "test": "Aluno não cria equipe",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.66
+    },
+    {
+      "test": "ASA não cria administrador",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.82
+    },
+    {
+      "test": "Snapshot de conversa disponível no R2",
+      "pass": false,
+      "http": 404,
+      "seconds": 1.65,
+      "error": "Snapshot R2 ainda não disponível ou Cloudflare R2 aguardando credenciais."
+    },
+    {
+      "test": "Agendamento de teste permanece cancelado",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.12
+    },
+    {
+      "test": "Calendário preserva horário de São Paulo",
+      "pass": false,
+      "http": 200,
+      "seconds": 1.04
+    },
+    {
+      "test": "PDF comprimido tem texto extraído corretamente",
+      "pass": false,
+      "http": 201,
+      "seconds": 2.13,
+      "error": "Documento processado e indexado na Base de Conhecimento com sucesso!"
+    },
+    {
+      "test": "Arquivar PDF de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.91
+    },
+    {
+      "test": "Browser login asa",
+      "pass": true
+    },
+    {
+      "test": "Browser login aluno",
+      "pass": true
+    },
+    {
+      "test": "Browser login admin",
+      "pass": true
+    },
+    {
+      "test": "Browser asa/",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno/",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/agendamentos",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/chamados",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno/chamados",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/chamados",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/fila",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno/chamados/novo",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/conversas",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/agendamentos",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno/documentos",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/alunos",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/sla",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno/agendamento",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/agente-ia",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/categorias",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno/perfil",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/base-conhecimento",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/automacoes",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno bloqueado no admin",
+      "pass": true
+    },
+    {
+      "test": "Browser asa/sla",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser aluno mobile sem overflow",
+      "pass": true
+    },
+    {
+      "test": "Browser admin/agente-ia",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/metricas",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/prompts",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/relatorios",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/base-conhecimento",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/notificacoes",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/rag",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser asa/auditoria",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/feedback",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser ASA bloqueado no admin",
+      "pass": true
+    },
+    {
+      "test": "Browser admin/usuarios",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/alunos",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/asa",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/permissoes",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/integracoes",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/metricas",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/relatorios",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/auditoria",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/logs",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/seguranca",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/configuracoes",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Browser admin/saude",
+      "pass": true,
+      "pageErrors": [],
+      "apiFailures": []
+    },
+    {
+      "test": "Chat real no navegador: enviar e renderizar resposta",
+      "pass": true,
+      "http": 201,
+      "answerMatchesFallback": true
+    },
+    {
+      "test": "Gemini gera resposta externa sem fallback",
+      "pass": false
+    }
+  ],
+  "fixtures": {
+    "documentId": "6c918cdb-e5c5-4c62-b23b-e84072d6eb71",
+    "conversationId": "5be92351-81af-4b4a-a55c-bfd4fa73a4e7",
+    "aiMessageId": "39525183-48ed-4dcc-a1ac-5adcec662ce1",
+    "ticketId": "e8bb81c7-72c3-48d7-91b3-9d9538b7e564",
+    "ticketNumber": 1051,
+    "uploadDocumentId": "53c2e8bc-be18-4420-b38c-e81642387171",
+    "uploadHasR2": false,
+    "appointmentId": "0b286d83-987a-4616-aa44-75ce5bdb5e21",
+    "pdfDocumentId": "aae929f6-4352-40f4-af3b-5f19d67640e3"
+  }
+}

@@ -13,7 +13,7 @@ import Modal from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/Toast'
 import { api } from '../../lib/api'
 import { useAppStore } from '../../store/app-store'
-import type { Appointment, AppointmentStatus } from '../../lib/mock-data'
+import type { Appointment, AppointmentStatus } from '../../lib/types'
 
 type ViewMode = 'calendar' | 'timeline' | 'table'
 
@@ -23,6 +23,7 @@ export default function AsaAgendamentos() {
 
   // State
   const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [calendarError,setCalendarError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('calendar')
   const [searchTerm, setSearchTerm] = useState('')
@@ -107,17 +108,16 @@ export default function AsaAgendamentos() {
   // Fetch appointments and metrics
   const loadData = async () => {
     setLoading(true)
+    setCalendarError(null)
     try {
       const [listData, metricsData] = await Promise.all([
         api.appointments.list(),
-        api.appointments.metrics().catch(() => ({
-          total: 0, todayCount: 0, inProgressCount: 0, completedCount: 0, cancelledCount: 0, attendanceRate: 100
-        }))
+        api.appointments.metrics()
       ])
       setAppointments(listData)
       setMetrics(metricsData)
     } catch (err: any) {
-      console.error('Erro ao carregar agendamentos:', err)
+      setCalendarError(err.message || 'Não foi possível carregar os agendamentos.')
       show('Erro ao carregar dados do calendário de agendamentos.', 'error')
     } finally {
       setLoading(false)
@@ -303,6 +303,7 @@ export default function AsaAgendamentos() {
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+      {calendarError && <div role="alert" className="p-4 text-red-600"><p>{calendarError}</p><button onClick={()=>window.location.reload()} className="underline">Tentar novamente</button></div>}
       {/* Top Banner & Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

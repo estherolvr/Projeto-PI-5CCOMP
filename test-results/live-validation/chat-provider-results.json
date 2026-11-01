@@ -1,0 +1,26 @@
+{
+  "browser": {
+    "test": "Chat real no navegador: enviar e renderizar resposta",
+    "pass": true,
+    "http": 201,
+    "answerMatchesFallback": true
+  },
+  "providerLogs": [
+    {
+      "level": "log",
+      "message": "🤖 [Álvaro AI] GEMINI_API_KEY detectada. Conectando ao Google Gemini..."
+    },
+    {
+      "level": "log",
+      "message": "🤖 [Álvaro AI] Solicitando inferência ao modelo: gemini-3.8-flash..."
+    },
+    {
+      "level": "warn",
+      "message": "⚠️ [Álvaro AI] Tentativa com modelo gemini-3.8-flash falhou: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash"
+    },
+    {
+      "level": "warn",
+      "message": "⚠️ [Álvaro AI] Todos os modelos Gemini falharam. Alternando para o sintetizador semântico local."
+    }
+  ]
+}

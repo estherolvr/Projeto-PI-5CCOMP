@@ -65,7 +65,7 @@ export class AppointmentService {
       const [hour, minute] = data.time.split(':').map(Number)
       const duration = data.durationMinutes || 30
 
-      const startDate = new Date(Date.UTC(year, month - 1, day, hour, minute))
+      const startDate = new Date(`${data.date}T${data.time}:00-03:00`)
       const endDate = new Date(startDate.getTime() + duration * 60000)
 
       const formatIsoTime = (d: Date) =>
@@ -108,7 +108,7 @@ export class AppointmentService {
     const [hour, minute] = app.time.split(':').map(Number)
     const duration = app.durationMinutes || 30
 
-    const startDate = new Date(Date.UTC(year, month - 1, day, hour, minute))
+    const startDate = new Date(`${app.date}T${app.time}:00-03:00`)
     const endDate = new Date(startDate.getTime() + duration * 60000)
 
     const formatICSDate = (d: Date) =>
@@ -133,7 +133,7 @@ export class AppointmentService {
       `SUMMARY:Atendimento Presencial ASA FECAP - ${app.subject}`,
       `DESCRIPTION:Protocolo: ${app.protocol}\\nEstudante: ${app.studentName} (RA: ${app.studentRa})\\nAssunto: ${app.subject}\\nLocal: ${app.location}\\nObservações: ${app.notes || 'Nenhuma'}`,
       `LOCATION:${app.location}`,
-      'STATUS:CONFIRMED',
+      app.status === 'cancelado' ? 'STATUS:CANCELLED' : 'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR',
     ].join('\r\n')
@@ -279,14 +279,11 @@ export class AppointmentService {
       where: { id: data.studentId },
     })
 
-    if (!student && authorUser?.role === 'aluno') {
-      student = await prisma.student.findFirst()
-    }
-
-    const studentName = data.studentName || student?.name || authorUser?.name || 'Estudante FECAP'
-    const studentRa = data.studentRa || student?.ra || '24001523'
-    const studentEmail = data.studentEmail || student?.email || authorUser?.email || 'aluno@fecap.br'
-    const studentCourse = data.studentCourse || student?.course || 'Administração'
+    if (!student) throw new Error('Selecione um aluno cadastrado para agendar o atendimento.')
+    const studentName = student.name
+    const studentRa = student.ra
+    const studentEmail = student.email
+    const studentCourse = student.course
 
     // 1.1 Regra de Negócio: Um aluno só pode marcar 1 horário presencial por dia
     const existingStudentAppOnDate = await prisma.appointment.findFirst({

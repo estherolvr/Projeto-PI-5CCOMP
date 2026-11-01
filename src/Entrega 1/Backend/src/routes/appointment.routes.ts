@@ -224,17 +224,12 @@ appointmentRouter.get('/:id/download', authenticateToken, async (req: Authentica
     }
 
     if (appointment.r2Key && r2Service.isConfigured()) {
-      const presignedUrl = await r2Service.getPresignedUrl(appointment.r2Key, 3600)
-      if (presignedUrl) {
-        return res.redirect(presignedUrl)
-      }
+      const file=await r2Service.getFile(appointment.r2Key)
+      if(file){res.setHeader('Content-Type',file.contentType);res.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(appointment.documentName||'anexo')}`);return res.send(file.buffer)}
     }
-
     if (appointment.documentData) {
-      return res.json({
-        name: appointment.documentName || 'anexo',
-        dataUrl: appointment.documentData,
-      })
+      const match=appointment.documentData.match(/^data:([^;]+);base64,([\s\S]+)$/)
+      if(match){res.setHeader('Content-Type',match[1]);res.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(appointment.documentName||'anexo')}`);return res.send(Buffer.from(match[2],'base64'))}
     }
 
     return res.status(404).json({ error: 'Nenhum documento físico localizado no Cloudflare R2.' })

@@ -41,3 +41,9 @@ prisma/dev.db
 *.sw?
 .vercel
 .env*
+
+.wrangler/
+.dev.vars*
+**/generated/
+
+diagnostics/native-worker.mjs

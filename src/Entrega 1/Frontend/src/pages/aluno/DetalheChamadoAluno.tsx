@@ -60,7 +60,7 @@ export default function DetalheChamadoAluno() {
       const updatedTicket = await api.tickets.get(ticket.id);
       setTicket(updatedTicket);
     } catch (err) {
-      console.error('Erro ao enviar resposta:', err);
+      setError(err instanceof Error ? err.message : 'Não foi possível enviar a resposta.');
     } finally {
       setIsSending(false);
     }

@@ -1,0 +1,26 @@
+[
+  {
+    "case": "port=5432",
+    "result": {
+      "passwordSent": false,
+      "response": "R",
+      "authenticationMethod": 10
+    }
+  },
+  {
+    "case": "port=6543",
+    "result": {
+      "passwordSent": false,
+      "response": "R",
+      "authenticationMethod": 10
+    }
+  },
+  {
+    "case": "port=5432&endpoint=direct",
+    "result": {
+      "passwordSent": false,
+      "response": "R",
+      "authenticationMethod": 10
+    }
+  }
+]

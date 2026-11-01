@@ -1,0 +1,21 @@
+{
+  "name": "alvaro-ai-profile-setup",
+  "account_id": "d3fe73ef2dc4bb997c2636cc2a2fa362",
+  "main": "profile-setup-worker.ts",
+  "compatibility_date": "2026-10-31",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "minify": true,
+  "vars": {
+    "EXPIRES_AT": "1793497076823"
+  },
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "c2acdb6fc88c4bab8d94dea057d2c164"
+    }
+  ]
+}

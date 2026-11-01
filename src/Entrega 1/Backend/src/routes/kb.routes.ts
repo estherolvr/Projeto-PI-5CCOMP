@@ -1,47 +1,13 @@
 import { Router } from 'express'
 import multer from 'multer'
-import { createRequire } from 'module'
 import { prisma } from '../db'
-import { AuthenticatedRequest, authenticateToken } from '../middleware/auth'
+import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 import { aiService } from '../services/ai.service'
 import { r2Service } from '../services/r2.service'
 
-const require = createRequire(import.meta.url)
-const pdfParseModule = require('pdf-parse')
 
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  try {
-    // 1. pdf-parse v2 (PDFParse class)
-    if (pdfParseModule?.PDFParse) {
-      const parser = new pdfParseModule.PDFParse({ data: buffer })
-      const res = await parser.getText()
-      if (res?.text) return res.text
-    }
-
-    // 2. pdf-parse v1 (function)
-    if (typeof pdfParseModule === 'function') {
-      const res = await pdfParseModule(buffer)
-      if (res?.text) return res.text
-    }
-
-    if (typeof pdfParseModule?.default === 'function') {
-      const res = await pdfParseModule.default(buffer)
-      if (res?.text) return res.text
-    }
-
-    // 3. Fallback: extração de streams de texto
-    const raw = buffer.toString('latin1')
-    const matches = raw.match(/\(([^()]+)\)\s*Tj/g) || []
-    if (matches.length > 0) {
-      return matches.map(m => m.replace(/[()]/g, '').replace(/\s*Tj$/, '')).join(' ')
-    }
-
-    return buffer.toString('utf-8')
-  } catch (err) {
-    console.error('Erro ao extrair texto do PDF:', err)
-    return buffer.toString('utf-8')
-  }
-}
+import { extractPdfText } from '@alvaro/pdf-extractor'
+export { extractPdfText } from '@alvaro/pdf-extractor'
 
 export const kbRouter = Router()
 
@@ -55,13 +21,13 @@ kbRouter.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { category, search, status } = req.query
 
-    const where: any = {}
+    const where: any = req.user?.role === 'aluno' ? { status: 'ativo' } : {}
 
     if (category && category !== 'todas') {
       where.category = String(category)
     }
 
-    if (status && status !== 'todos') {
+    if (req.user?.role !== 'aluno' && status && status !== 'todos') {
       where.status = String(status)
     }
 
@@ -94,12 +60,13 @@ kbRouter.get('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
 })
 
 // Upload de Documentos Institucionais (PDF, TXT, MD) com extração RAG
-kbRouter.post('/upload', authenticateToken, upload.single('file'), async (req: AuthenticatedRequest, res) => {
+kbRouter.post('/upload', authenticateToken, requireRole(['asa', 'admin']), upload.single('file'), async (req: AuthenticatedRequest, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhum arquivo enviado.' })
     }
 
+    if (!/\.(pdf|txt|md)$/i.test(req.file.originalname)) return res.status(400).json({ error: 'Envie um arquivo PDF, TXT ou Markdown.' })
     const { title, category } = req.body
     const originalName = req.file.originalname
     const mimeType = req.file.mimetype
@@ -133,7 +100,7 @@ kbRouter.post('/upload', authenticateToken, upload.single('file'), async (req: A
       ...(originalName.toLowerCase().includes('bolsa') ? ['bolsa', 'prouni', 'fies'] : []),
     ]
 
-    const document = await prisma.kBDocument.create({
+    let document = await prisma.kBDocument.create({
       data: {
         title: docTitle,
         category: docCategory,
@@ -157,12 +124,13 @@ kbRouter.post('/upload', authenticateToken, upload.single('file'), async (req: A
         const sanitized = originalName.replace(/[^a-zA-Z0-9._-]/g, '_')
         r2Key = `kb/${document.id}/${sanitized}`
         await r2Service.uploadBuffer(r2Key, req.file.buffer, req.file.mimetype || 'application/pdf')
-        await prisma.kBDocument.update({
+        document = await prisma.kBDocument.update({
           where: { id: document.id },
           data: { r2Key },
         })
         console.log(`☁️ Arquivo da Base de Conhecimento enviado ao Cloudflare R2: ${r2Key}`)
       } catch (r2Err: any) {
+        r2Key = null
         console.warn('Falha no upload do arquivo KB para o R2:', r2Err.message)
       }
     }
@@ -182,7 +150,9 @@ kbRouter.post('/upload', authenticateToken, upload.single('file'), async (req: A
     })
 
     return res.status(201).json({
-      message: 'Documento processado e indexado na Base de Conhecimento com sucesso!',
+      message: r2Key ? 'Texto registrado e arquivo original armazenado.' : 'Texto registrado; o arquivo original não foi armazenado.',
+      storage: r2Key ? 'stored' : 'unavailable',
+      warning: r2Key ? null : 'Download indisponível: não foi possível salvar o arquivo original.',
       document: {
         ...document,
         tags,
@@ -190,7 +160,7 @@ kbRouter.post('/upload', authenticateToken, upload.single('file'), async (req: A
     })
   } catch (error: any) {
     console.error('Erro ao fazer upload de documento:', error)
-    res.status(500).json({ error: error.message || 'Erro ao processar e indexar documento' })
+    res.status(String(error.message).includes('extrair texto') ? 422 : 500).json({ error: error.message || 'Erro ao processar e indexar documento' })
   }
 })
 
@@ -219,7 +189,7 @@ kbRouter.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) =
       where: { id },
     })
 
-    if (!doc) {
+    if (!doc || (req.user?.role === 'aluno' && doc.status !== 'ativo')) {
       return res.status(404).json({ error: 'Artigo não encontrado' })
     }
 
@@ -239,7 +209,7 @@ kbRouter.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) =
 })
 
 // Create article manually
-kbRouter.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
+kbRouter.post('/', authenticateToken, requireRole(['asa', 'admin']), async (req: AuthenticatedRequest, res) => {
   try {
     const { title, category, content, tags, status, version } = req.body
 
@@ -275,7 +245,7 @@ kbRouter.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => 
 })
 
 // Update article
-kbRouter.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+kbRouter.put('/:id', authenticateToken, requireRole(['asa', 'admin']), async (req: AuthenticatedRequest, res) => {
   try {
     const id = String(req.params.id)
     const { title, category, content, tags, status, version } = req.body
@@ -310,10 +280,13 @@ kbRouter.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) =
 })
 
 // Delete article
-kbRouter.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+kbRouter.delete('/:id', authenticateToken, requireRole(['asa', 'admin']), async (req: AuthenticatedRequest, res) => {
   try {
     const id = String(req.params.id)
 
+    const existing=await prisma.kBDocument.findUnique({where:{id}})
+    if(!existing)return res.status(404).json({error:'Documento não encontrado.'})
+    if(existing.r2Key && !await r2Service.deleteObject(existing.r2Key))return res.status(503).json({error:'Não foi possível remover o arquivo original. O documento foi preservado.'})
     await prisma.kBDocument.delete({
       where: { id },
     })
@@ -334,14 +307,16 @@ kbRouter.get('/:id/download', authenticateToken, async (req: AuthenticatedReques
   try {
     const id = String(req.params.id)
     const doc = await prisma.kBDocument.findUnique({ where: { id } })
-    if (!doc) {
+    if (!doc || (req.user?.role === 'aluno' && doc.status !== 'ativo')) {
       return res.status(404).json({ error: 'Documento não encontrado' })
     }
 
     if (doc.r2Key && r2Service.isConfigured()) {
-      const presignedUrl = await r2Service.getPresignedUrl(doc.r2Key, 3600)
-      if (presignedUrl) {
-        return res.redirect(presignedUrl)
+      const file = await r2Service.getFile(doc.r2Key)
+      if (file) {
+        res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(doc.filename || 'documento')}`)
+        res.setHeader('Content-Type', file.contentType)
+        return res.send(file.buffer)
       }
     }
 

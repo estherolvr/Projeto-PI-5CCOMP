@@ -15,6 +15,7 @@ export default function AsaDetalheChamado() {
   const navigate = useNavigate();
   const currentUser = useAppStore(state => state.currentUser);
 
+  const [apiError, setApiError] = useState<string | null>(null);
   const [ticket, setTicket] = useState<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [replyText, setReplyText] = useState('');
@@ -28,12 +29,12 @@ export default function AsaDetalheChamado() {
   const fetchTicket = async () => {
     if (!id) return;
     try {
-      setIsLoading(true);
+      setIsLoading(true); setApiError(null);
       const data = await api.tickets.get(id);
       setTicket(data);
       setMessages((data as any).messages || []);
     } catch (err) {
-      console.error('Erro ao carregar chamado:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +62,7 @@ export default function AsaDetalheChamado() {
       const updated = await api.tickets.get(ticket.id);
       setTicket(updated);
     } catch (err) {
-      console.error('Erro ao enviar resposta:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     } finally {
       setIsSending(false);
     }
@@ -74,7 +75,7 @@ export default function AsaDetalheChamado() {
       setTicket(updated);
       setStatusDropdownOpen(false);
     } catch (err) {
-      console.error('Erro ao atualizar status:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     }
   };
 
@@ -85,7 +86,7 @@ export default function AsaDetalheChamado() {
       setTicket(updated);
       setPriorityDropdownOpen(false);
     } catch (err) {
-      console.error('Erro ao atualizar prioridade:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     }
   };
 
@@ -93,12 +94,12 @@ export default function AsaDetalheChamado() {
     if (!ticket) return;
     try {
       const updated = await api.tickets.update(ticket.id, {
-        assignedTo: currentUser?.id || 'asa-01',
+        assignedTo: currentUser?.id,
         status: ticket.status === 'aberto' ? 'em_atendimento' : ticket.status,
       });
       setTicket(updated);
     } catch (err) {
-      console.error('Erro ao assumir chamado:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     }
   };
 
@@ -110,6 +111,7 @@ export default function AsaDetalheChamado() {
     );
   }
 
+  if (apiError && !ticket) return <div role="alert" className="p-8 text-red-600"><p>{apiError}</p><button onClick={()=>void fetchTicket()} className="underline mt-3">Tentar novamente</button></div>;
   if (!ticket) {
     return (
       <div className="p-8 text-center">
@@ -127,6 +129,7 @@ export default function AsaDetalheChamado() {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-[calc(100vh-64px)] flex flex-col md:flex-row overflow-hidden bg-gray-50 dark:bg-slate-900">
       
+      {apiError && <div role="alert" className="p-4 text-red-600"><p>{apiError}</p><button onClick={()=>window.location.reload()} className="underline">Tentar novamente</button></div>}
       {/* LEFT COLUMN: Ticket & Student Info */}
       <div className="w-full md:w-[300px] flex-shrink-0 border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-y-auto p-4 flex flex-col gap-6">
         <div>

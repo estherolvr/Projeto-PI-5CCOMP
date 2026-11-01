@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Paperclip, Plus, ArrowLeft, Bot, Book, Sparkles, MessageSquare, Loader2, Ticket as TicketIcon, Cloud, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { formatRelative, cn } from '../../lib/utils';
@@ -7,7 +7,9 @@ import { api } from '../../lib/api';
 import MarkdownRenderer from '../../components/ui/MarkdownRenderer';
 
 export default function AlunoChat() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { id: routeConversationId } = useParams();
+  const [loadError, setLoadError] = useState<string | null>(null);
   const navigate = useNavigate();
   const initialQuery = searchParams.get('q');
   
@@ -32,109 +34,30 @@ export default function AlunoChat() {
         comment: type === 'positive' ? 'Aluno avaliou resposta como útil.' : 'Aluno avaliou que a resposta precisa de ajustes.',
       });
     } catch (e) {
-      console.error('Erro ao enviar feedback:', e);
+      setEvaluatedMessages(prev => {const next={...prev};delete next[msg.id];return next});
+      setLoadError(e instanceof Error ? e.message : 'Não foi possível registrar a avaliação.');
     }
   };
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const LOCAL_CONVERSATIONS_KEY = 'asaia_student_conversations';
-  const LOCAL_MESSAGES_KEY_PREFIX = 'asaia_chat_messages_';
-
-  const getLocalConversations = (): any[] => {
-    try {
-      const raw = localStorage.getItem(LOCAL_CONVERSATIONS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  };
-
-  const saveLocalConversations = (convList: any[]) => {
-    try {
-      localStorage.setItem(LOCAL_CONVERSATIONS_KEY, JSON.stringify(convList));
-    } catch (e) {}
-  };
-
-  const getLocalMessages = (convId: string): any[] => {
-    try {
-      const raw = localStorage.getItem(`${LOCAL_MESSAGES_KEY_PREFIX}${convId}`);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  };
-
-  const saveLocalMessages = (convId: string, msgs: any[]) => {
-    try {
-      localStorage.setItem(`${LOCAL_MESSAGES_KEY_PREFIX}${convId}`, JSON.stringify(msgs));
-    } catch (e) {}
-  };
-
   const loadConversation = async (convId: string) => {
-    // Carrega instantaneamente do cache local se existir
-    const cached = getLocalMessages(convId);
-    if (cached && cached.length > 0) {
-      setActiveConvId(convId);
-      setMessages(cached);
-    }
-
-    try {
-      setIsLoadingConv(!cached || cached.length === 0);
-      const conv = await api.chat.getConversation(convId);
-      if (conv) {
-        setActiveConvId(conv.id);
-        const serverMsgs = conv.messages || [];
-        setMessages(serverMsgs);
-        saveLocalMessages(conv.id, serverMsgs);
-      }
-    } catch (err) {
-      console.error('Erro ao carregar mensagens da conversa:', err);
-    } finally {
-      setIsLoadingConv(false);
-    }
+    setIsLoadingConv(true); setLoadError(null); setActiveConvId(''); setMessages([]);
+    try { const conv = await api.chat.getConversation(convId); setActiveConvId(conv.id); setMessages(conv.messages || []); }
+    catch (error) { setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar a conversa.'); }
+    finally { setIsLoadingConv(false); }
   };
-
   const fetchConversations = async () => {
+    setIsLoadingConv(true); setLoadError(null);
     try {
-      let list = await api.chat.getConversations().catch(() => []);
-      const localConvs = getLocalConversations();
-
-      if (list && list.length > 0) {
-        setConversations(list);
-        saveLocalConversations(list);
-        if (!activeConvId) {
-          await loadConversation(list[0].id);
-        }
-      } else if (localConvs && localConvs.length > 0) {
-        setConversations(localConvs);
-        if (!activeConvId) {
-          await loadConversation(localConvs[0].id);
-        }
-      } else {
-        const newConv = await api.chat.createConversation('Atendimento Álvaro AI');
-        const initialList = [newConv];
-        setConversations(initialList);
-        saveLocalConversations(initialList);
-        setActiveConvId(newConv.id);
-        setMessages(newConv.messages || []);
-        saveLocalMessages(newConv.id, newConv.messages || []);
-        setIsLoadingConv(false);
-      }
-    } catch (err) {
-      console.error('Erro ao listar conversas:', err);
-      const fallback = getLocalConversations();
-      if (fallback.length) {
-        setConversations(fallback);
-        if (!activeConvId) loadConversation(fallback[0].id);
-      }
-      setIsLoadingConv(false);
-    }
+      const list = await api.chat.getConversations(); setConversations(list);
+      const selected = routeConversationId || list[0]?.id;
+      if (selected) await loadConversation(selected);
+      else { setMessages([]); setActiveConvId(''); }
+    } catch (error) { setConversations([]); setMessages([]); setActiveConvId(''); setLoadError(error instanceof Error ? error.message : 'Não foi possível listar as conversas.'); }
+    finally { setIsLoadingConv(false); }
   };
-
-  useEffect(() => {
-    fetchConversations();
-  }, []);
+  useEffect(() => { void fetchConversations(); }, [routeConversationId]);
 
   const activeConv = conversations.find(c => c.id === activeConvId);
 
@@ -148,6 +71,7 @@ export default function AlunoChat() {
 
   useEffect(() => {
     if (initialQuery && activeConvId && !isLoadingConv) {
+      setSearchParams({}, { replace: true });
       handleSend(initialQuery);
     }
   }, [initialQuery, activeConvId, isLoadingConv]);
@@ -158,10 +82,10 @@ export default function AlunoChat() {
       const newConv = await api.chat.createConversation('Nova Conversa com Álvaro AI');
       const updatedList = [newConv, ...conversations];
       setConversations(updatedList);
-      saveLocalConversations(updatedList);
+
       setActiveConvId(newConv.id);
       setMessages(newConv.messages || []);
-      saveLocalMessages(newConv.id, newConv.messages || []);
+
       setShowSidebar(false);
     } catch (err) {
       console.error('Erro ao criar conversa:', err);
@@ -176,7 +100,9 @@ export default function AlunoChat() {
   };
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || !activeConvId || isTyping) return;
+    if (!text.trim() || isTyping) return;
+    if (!activeConvId) { setLoadError('Inicie uma conversa antes de enviar sua mensagem.'); return; }
+    setLoadError(null);
 
     const tempUserMsg = {
       id: `temp-${Date.now()}`,
@@ -187,7 +113,7 @@ export default function AlunoChat() {
 
     const updatedWithUser = [...(messages || []), tempUserMsg];
     setMessages(updatedWithUser);
-    saveLocalMessages(activeConvId, updatedWithUser);
+
     setInputValue('');
     setIsTyping(true);
 
@@ -196,26 +122,20 @@ export default function AlunoChat() {
       if (response?.aiMessage) {
         const updatedWithAi = [...updatedWithUser, response.aiMessage];
         setMessages(updatedWithAi);
-        saveLocalMessages(activeConvId, updatedWithAi);
+
         // Refresh conversation list preview
         api.chat.getConversations().then(res => {
           if (res?.length) {
             setConversations(res);
-            saveLocalConversations(res);
+
           }
         }).catch(() => {});
       }
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
-      const errMessage = {
-        id: `err-${Date.now()}`,
-        role: 'assistant',
-        content: 'Desculpe, ocorreu uma instabilidade momentânea ao processar sua dúvida. Por favor, tente novamente.',
-        timestamp: new Date().toISOString(),
-      };
-      const updatedWithErr = [...updatedWithUser, errMessage];
-      setMessages(updatedWithErr);
-      saveLocalMessages(activeConvId, updatedWithErr);
+      setMessages(updatedWithUser.filter(m => m.id !== tempUserMsg.id));
+      setInputValue(text);
+      setLoadError(err instanceof Error ? err.message : 'Não foi possível enviar a mensagem. Tente novamente.');
     } finally {
       setIsTyping(false);
     }
@@ -228,7 +148,7 @@ export default function AlunoChat() {
       title: activeConv?.title || 'Conversa Álvaro AI',
       conversationId: activeConvId,
       exportedAt: new Date().toISOString(),
-      storage: 'Cloudflare R2 Object Storage',
+      source: 'Histórico consultado na API',
       messages: messages.map(m => ({
         role: m.role,
         content: m.content,
@@ -325,7 +245,7 @@ export default function AlunoChat() {
               <h2 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white truncate max-w-xs sm:max-w-md">
                 {activeConv?.title || 'Álvaro AI · Atendimento Inteligente'}
               </h2>
-              <p className="text-[11px] text-gray-400">Suporte 24/7 fundamentado na base institucional FECAP</p>
+              <p className="text-[11px] text-gray-400">Orientações com base nos documentos disponíveis</p>
             </div>
           </div>
           
@@ -342,14 +262,10 @@ export default function AlunoChat() {
               <Bot size={14} />
               RAG Ativo
             </span>
-            <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800" title="Conversas sincronizadas no Cloudflare R2">
-              <Cloud size={13} />
-              R2 Sincronizado
-            </span>
             <button
               onClick={handleExportConversation}
               className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer"
-              title="Exportar histórico da conversa sincronizado no Cloudflare R2"
+              title="Exportar histórico carregado da conversa"
             >
               <Download size={13} />
               Exportar
@@ -357,6 +273,8 @@ export default function AlunoChat() {
           </div>
         </div>
 
+        {loadError && <div role="alert" className="p-3 text-sm bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300"><p>{loadError}</p><button onClick={()=>void fetchConversations()} className="underline mt-2">Tentar novamente</button></div>}
+        {!isLoadingConv && !loadError && !activeConvId && <div className="p-6 text-center text-gray-500"><p>Nenhuma conversa registrada.</p><button onClick={()=>void handleCreateNewConversation()} className="mt-3 text-brand-600 underline">Iniciar conversa</button></div>}
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
           {isLoadingConv ? (
@@ -441,6 +359,7 @@ export default function AlunoChat() {
               </button>
               
               <textarea
+                disabled={!activeConvId || isLoadingConv}
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={(e) => {

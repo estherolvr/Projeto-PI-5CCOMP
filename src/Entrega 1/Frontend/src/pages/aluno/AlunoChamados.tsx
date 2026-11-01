@@ -4,7 +4,7 @@ import {
   Plus, ChevronRight, Ticket as TicketIcon, Search,
   Clock, CheckCircle2, AlertTriangle, Filter, Sparkles, ArrowUpRight
 } from 'lucide-react'
-import { mockTickets, Ticket, TicketStatus } from '../../lib/mock-data'
+import type { Ticket, TicketStatus } from '../../lib/types'
 import { formatRelative, cn } from '../../lib/utils'
 import { motion } from 'framer-motion'
 import Button from '../../components/ui/Button'
@@ -21,17 +21,17 @@ export default function AlunoChamados() {
   const [filter, setFilter] = useState<Filter>('todos')
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string>('todas')
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets.filter(t => t.studentId === 'aluno-01'))
+  const [tickets, setTickets] = useState<Ticket[]>([])
 
-  useEffect(() => {
-    api.tickets.list({ studentId: 'aluno-01' })
-      .then(res => {
-        if (res && res.length > 0) {
-          setTickets(res)
-        }
-      })
-      .catch(err => console.error('Erro ao buscar chamados:', err))
-  }, [])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const fetchTickets = async () => {
+    setLoading(true); setError(null)
+    try { setTickets(await api.tickets.list()) }
+    catch (e) { setTickets([]); setError(e instanceof Error ? e.message : 'Não foi possível carregar os chamados.') }
+    finally { setLoading(false) }
+  }
+  useEffect(() => { void fetchTickets() }, [])
 
   const allTickets = tickets
 
@@ -93,12 +93,14 @@ export default function AlunoChamados() {
         </div>
       </div>
 
+      {loading && <p role="status" className="text-gray-500">Carregando chamados…</p>}
+      {error && <div role="alert" className="text-red-600"><p>{error}</p><button className="underline" onClick={()=>void fetchTickets()}>Tentar novamente</button></div>}
       {/* ── Metric Summary Cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 shadow-card">
           <span className="text-2xs font-semibold text-gray-400 uppercase tracking-wider">Total de Chamados</span>
           <div className="flex items-baseline justify-between mt-2">
-            <span className="text-2xl font-black text-gray-900 dark:text-white">{totalCount}</span>
+            <span className="text-2xl font-black text-gray-900 dark:text-white">{loading || error ? '—' : totalCount}</span>
             <TicketIcon size={20} className="text-brand-600" />
           </div>
         </div>
@@ -106,7 +108,7 @@ export default function AlunoChamados() {
         <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 shadow-card">
           <span className="text-2xs font-semibold text-gray-400 uppercase tracking-wider">Em Andamento</span>
           <div className="flex items-baseline justify-between mt-2">
-            <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{emAtendimentoCount}</span>
+            <span className="text-2xl font-black text-amber-600 dark:text-amber-400">{loading || error ? '—' : emAtendimentoCount}</span>
             <Clock size={20} className="text-amber-500" />
           </div>
         </div>
@@ -114,7 +116,7 @@ export default function AlunoChamados() {
         <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 shadow-card">
           <span className="text-2xs font-semibold text-gray-400 uppercase tracking-wider">Resolvidos</span>
           <div className="flex items-baseline justify-between mt-2">
-            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{resolvidosCount}</span>
+            <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{loading || error ? '—' : resolvidosCount}</span>
             <CheckCircle2 size={20} className="text-emerald-500" />
           </div>
         </div>
@@ -122,7 +124,7 @@ export default function AlunoChamados() {
         <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 shadow-card">
           <span className="text-2xs font-semibold text-gray-400 uppercase tracking-wider">Atenção / Risco SLA</span>
           <div className="flex items-baseline justify-between mt-2">
-            <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{riskCount}</span>
+            <span className="text-2xl font-black text-rose-600 dark:text-rose-400">{loading || error ? '—' : riskCount}</span>
             <AlertTriangle size={20} className="text-rose-500" />
           </div>
         </div>

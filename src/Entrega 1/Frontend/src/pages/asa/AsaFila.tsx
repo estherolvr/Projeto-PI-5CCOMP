@@ -10,6 +10,7 @@ export default function AsaFila() {
   const navigate = useNavigate();
   const currentUser = useAppStore(state => state.currentUser);
 
+  const [apiError, setApiError] = useState<string | null>(null);
   const [tickets, setTickets] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
@@ -17,11 +18,11 @@ export default function AsaFila() {
 
   const fetchQueue = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true); setApiError(null);
       const data = await api.metrics.queue();
       setTickets(data);
     } catch (err) {
-      console.error('Erro ao carregar fila:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     } finally {
       setIsLoading(false);
     }
@@ -35,12 +36,12 @@ export default function AsaFila() {
     e.stopPropagation();
     try {
       await api.tickets.update(ticketId, {
-        assignedTo: currentUser?.id || 'asa-01',
+        assignedTo: currentUser?.id,
         status: 'em_atendimento',
       });
       fetchQueue();
     } catch (err) {
-      console.error('Erro ao assumir chamado:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     }
   };
 
@@ -83,6 +84,7 @@ export default function AsaFila() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 max-w-[1600px] mx-auto space-y-6">
+      {apiError && <div role="alert" className="p-4 text-red-600"><p>{apiError}</p><button onClick={()=>window.location.reload()} className="underline">Tentar novamente</button></div>}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

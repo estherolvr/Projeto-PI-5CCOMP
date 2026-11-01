@@ -1,78 +1,16 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, MessageSquare, Clock } from 'lucide-react';
-import { mockConversations, mockStudents } from '@/lib/mock-data';
-
+import { useState } from 'react'
+import { api } from '@/lib/api'
+import { useApiQuery } from '@/lib/use-api-query'
+import { DataState } from '@/components/common/DataState'
+import MarkdownRenderer from '@/components/ui/MarkdownRenderer'
 export default function AsaConversas() {
-  const [activeConv, setActiveConv] = React.useState(mockConversations[0]);
-
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="h-[calc(100vh-64px)] flex overflow-hidden">
-      {/* List */}
-      <div className="w-[350px] border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex flex-col">
-        <div className="p-4 border-b border-gray-200 dark:border-slate-700">
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100 mb-4">Conversas Bot</h1>
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Buscar conversa..." 
-              className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          {mockConversations.map(conv => {
-            const student = mockStudents.find(s => s.id === conv.studentId);
-            return (
-              <div 
-                key={conv.id} 
-                onClick={() => setActiveConv(conv)}
-                className={`p-4 border-b border-gray-100 dark:border-slate-700 cursor-pointer transition-colors ${activeConv.id === conv.id ? 'bg-brand-50 dark:bg-brand-900/20' : 'hover:bg-gray-50 dark:hover:bg-slate-700/50'}`}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <h3 className="font-medium text-gray-900 dark:text-slate-100 text-sm truncate pr-2">{student?.name || 'Aluno'}</h3>
-                  <span className="text-xs text-gray-500 whitespace-nowrap">{new Date(conv.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                </div>
-                <p className="text-xs font-medium text-brand-600 dark:text-brand-400 mb-1 truncate">{conv.title}</p>
-                <p className="text-xs text-gray-500 dark:text-slate-400 truncate">{conv.lastMessage}</p>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-      
-      {/* View */}
-      <div className="flex-1 bg-gray-50 dark:bg-slate-900 flex flex-col">
-        <div className="p-4 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
-          <div>
-            <h2 className="font-semibold text-gray-900 dark:text-slate-100">{activeConv.title}</h2>
-            <p className="text-sm text-gray-500">Histórico de interação com o Agente Virtual</p>
-          </div>
-          <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700">
-            Assumir atendimento
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {activeConv.messages.map(msg => (
-            <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className="text-xs text-gray-500 mb-1">{msg.role === 'user' ? 'Aluno' : 'Álvaro AI'} • {new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-              <div className={`max-w-[70%] p-4 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-gray-800 text-white rounded-tr-none dark:bg-slate-700' : 'bg-white border border-gray-200 text-gray-800 rounded-tl-none dark:bg-slate-800 dark:border-slate-600 dark:text-slate-200'}`}>
-                <div className="whitespace-pre-wrap">{msg.content}</div>
-                {msg.actions && (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {msg.actions.map(action => (
-                      <span key={action.label} className="px-3 py-1.5 bg-gray-100 dark:bg-slate-900 text-brand-600 dark:text-brand-400 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-medium cursor-pointer hover:bg-gray-200 dark:hover:bg-slate-800 transition-colors">
-                        {action.label}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </motion.div>
-  );
+  const [search,setSearch] = useState('')
+  const [selected,setSelected] = useState<string | null>(null)
+  const list = useApiQuery(api.chat.getConversations)
+  const detail = useApiQuery(() => selected ? api.chat.getConversation(selected) : Promise.resolve(null), [selected])
+  const rows = (list.data ?? []).filter(c => [c.title,c.student?.name,c.lastMessage].join(' ').toLowerCase().includes(search.toLowerCase()))
+  return <div className="p-4 md:p-6 space-y-5"><h1 className="text-2xl font-bold dark:text-white">Conversas com o assistente</h1><p className="text-sm text-gray-500">Últimas 100 conversas registradas. Selecione uma para consultar o histórico.</p><input aria-label="Buscar conversa" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por aluno ou assunto" className="w-full md:max-w-md p-3 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white"/>
+    <div className="grid md:grid-cols-[320px_1fr] gap-5"><section className="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-4"><DataState loading={list.loading} error={list.error} onRetry={list.refresh} empty={!rows.length}>{rows.map(c=><button key={c.id} onClick={()=>setSelected(c.id)} aria-pressed={selected===c.id} className="text-left w-full border-b dark:border-slate-700 p-3 hover:bg-gray-50 dark:hover:bg-slate-700"><strong className="block text-sm dark:text-white">{c.student?.name ?? 'Aluno não identificado'}</strong><span className="block text-sm text-gray-500">{c.title}</span><time className="text-xs text-gray-400">{new Date(c.lastMessageTime).toLocaleString('pt-BR')}</time></button>)}</DataState></section>
+    <section className="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-5">{!selected ? <p className="text-gray-500">Selecione uma conversa.</p> : <DataState loading={detail.loading} error={detail.error} onRetry={detail.refresh} empty={!detail.data?.messages?.length}>{detail.data?.messages?.map((m:any)=><article key={m.id} className="border-b dark:border-slate-700 py-4"><p className="text-xs text-gray-500 mb-2">{m.role==='user'?'Aluno':'Assistente'} · {new Date(m.timestamp).toLocaleString('pt-BR')}</p><div className="text-sm dark:text-slate-200"><MarkdownRenderer content={m.content}/></div></article>)}</DataState>}</section></div>
+  </div>
 }

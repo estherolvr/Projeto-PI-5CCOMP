@@ -5,6 +5,7 @@ import {
   Sun, Moon, LogOut, Search, Menu, X, Calendar
 } from 'lucide-react'
 import { useState } from 'react'
+import AdminNotifications from '../admin/AdminNotifications'
 import { useAppStore } from '../../store/app-store'
 import Avatar from '../ui/Avatar'
 import FecapLogo, { FecapLogoDark } from '../ui/FecapLogo'
@@ -20,7 +21,7 @@ const navSections: NavSection[] = [
   {
     items: [
       { icon: LayoutDashboard, label: 'Dashboard', to: '/asa' },
-      { icon: FileText, label: 'Chamados', to: '/asa/chamados', badge: 7 },
+      { icon: FileText, label: 'Chamados', to: '/asa/chamados' },
     ],
   },
   {
@@ -229,12 +230,9 @@ export default function AsaLayout() {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <button className="relative p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
-            </button>
+            <AdminNotifications />
             <div className="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-slate-700">
-              <Avatar name={currentUser?.name || 'Atendente ASA'} size="sm" status="online" />
+              <Avatar name={currentUser?.name || 'Atendente ASA'} size="sm" />
               <div className="hidden md:block">
                 <p className="text-xs font-medium text-gray-900 dark:text-white leading-none">
                   {currentUser?.name || 'Atendente ASA'}

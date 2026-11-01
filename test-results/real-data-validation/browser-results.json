@@ -1,0 +1,221 @@
+[
+  {
+    "test": "admin/",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/chamados",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/fila",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/agendamentos",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/sla",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/categorias",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/automacoes",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/agente-ia",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/prompts",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/base-conhecimento",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/rag",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/feedback",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/usuarios",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/alunos",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/asa",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/permissoes",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/integracoes",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/metricas",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/relatorios",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/auditoria",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/logs",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/seguranca",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/configuracoes",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "admin/saude",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/agendamentos",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/chamados",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/conversas",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/alunos",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/agente-ia",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/base-conhecimento",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/sla",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/metricas",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/relatorios",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/notificacoes",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "asa/auditoria",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/chamados",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/chamados/novo",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/documentos",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/agendamento",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/perfil",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "aluno/chat",
+    "pass": true,
+    "pageErrors": []
+  },
+  {
+    "test": "Falha da API exibida com opção de tentar novamente",
+    "pass": true
+  }
+]

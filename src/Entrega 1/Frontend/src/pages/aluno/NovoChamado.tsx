@@ -10,6 +10,7 @@ export default function NovoChamado() {
   const [searchParams] = useSearchParams();
   const conversationId = searchParams.get('conversationId');
 
+  const [error,setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [createdTicket, setCreatedTicket] = useState<any>(null);
@@ -42,7 +43,7 @@ export default function NovoChamado() {
             }
           }
         }
-      }).catch(err => console.error('Erro ao buscar conversa vinculada:', err));
+      }).catch(err => setError(err instanceof Error ? err.message : 'Não foi possível carregar a conversa vinculada.'));
     }
   }, [conversationId]);
 
@@ -53,7 +54,7 @@ export default function NovoChamado() {
   };
 
   const handleSubmit = async () => {
-    setIsLoading(true);
+    setIsLoading(true); setError(null);
     try {
       const ticket = await api.tickets.create({
         title,
@@ -64,7 +65,7 @@ export default function NovoChamado() {
       setCreatedTicket(ticket);
       setStep(3);
     } catch (err) {
-      console.error('Erro ao criar chamado:', err);
+      setError(err instanceof Error ? err.message : 'Não foi possível abrir o chamado.');
     } finally {
       setIsLoading(false);
     }
@@ -72,6 +73,7 @@ export default function NovoChamado() {
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+      {error && <p role="alert" className="p-3 text-red-600">{error}</p>}
       {/* Header */}
       {step < 3 && (
         <div className="flex items-center gap-4">

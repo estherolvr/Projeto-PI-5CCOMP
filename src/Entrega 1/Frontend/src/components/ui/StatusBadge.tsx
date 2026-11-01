@@ -1,5 +1,5 @@
 import Badge from './Badge'
-import type { TicketStatus } from '../../lib/mock-data'
+import type { TicketStatus } from '../../lib/types'
 
 interface StatusBadgeProps {
   status: TicketStatus

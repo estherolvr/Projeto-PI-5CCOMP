@@ -32,75 +32,12 @@ export default function AsaBaseConhecimento() {
 
   const categories = ['todas', 'Matrícula', 'Financeiro', 'Acadêmico', 'Bolsas & Financiamento', 'Secretaria', 'Geral'];
 
-  const LOCAL_CUSTOM_DOCS_KEY = 'asaia_custom_kb_documents';
-
-  const getLocalCustomDocs = (): any[] => {
-    try {
-      const raw = localStorage.getItem(LOCAL_CUSTOM_DOCS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) {
-      return [];
-    }
-  };
-
-  const saveLocalCustomDoc = (doc: any) => {
-    try {
-      const existing = getLocalCustomDocs();
-      const updated = [doc, ...existing.filter((d: any) => d.id !== doc.id && d.title !== doc.title)];
-      localStorage.setItem(LOCAL_CUSTOM_DOCS_KEY, JSON.stringify(updated));
-    } catch (e) {
-      console.error('Erro ao salvar documento em cache local:', e);
-    }
-  };
-
-  const removeLocalCustomDoc = (id: string) => {
-    try {
-      const existing = getLocalCustomDocs();
-      localStorage.setItem(LOCAL_CUSTOM_DOCS_KEY, JSON.stringify(existing.filter((d: any) => d.id !== id)));
-    } catch (e) {}
-  };
-
+  const [loadError, setLoadError] = useState<string | null>(null);
   const fetchDocuments = async () => {
-    try {
-      setIsLoading(true);
-      let list = await api.kb.list({
-        category: selectedCategory !== 'todas' ? selectedCategory : undefined,
-        search: search.trim() || undefined,
-      }).catch(() => []);
-
-      const localCustomDocs = getLocalCustomDocs();
-
-      // Sincronização inteligente: se o Render reiniciou o SQLite para o seed padrão,
-      // re-injeta automaticamente os documentos customizados salvos pelo atendente
-      if (list && list.length > 0) {
-        for (const localDoc of localCustomDocs) {
-          const existsOnBackend = list.some((d: any) => d.title.trim().toLowerCase() === localDoc.title.trim().toLowerCase());
-          if (!existsOnBackend) {
-            try {
-              const recreated = await api.kb.create({
-                title: localDoc.title,
-                category: localDoc.category,
-                content: localDoc.content,
-                tags: localDoc.tags,
-              });
-              list = [recreated, ...list];
-            } catch (syncErr) {
-              list = [localDoc, ...list];
-            }
-          }
-        }
-      } else if (localCustomDocs.length > 0) {
-        list = [...localCustomDocs];
-      }
-
-      setDocuments(list);
-    } catch (err) {
-      console.error('Erro ao buscar base de conhecimento:', err);
-      const fallback = getLocalCustomDocs();
-      if (fallback.length) setDocuments(fallback);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true); setLoadError(null);
+    try { setDocuments(await api.kb.list({ category: selectedCategory !== 'todas' ? selectedCategory : undefined, search: search.trim() || undefined })); }
+    catch (error) { setDocuments([]); setLoadError(error instanceof Error ? error.message : 'Não foi possível consultar a base.'); }
+    finally { setIsLoading(false); }
   };
 
   useEffect(() => {
@@ -137,20 +74,8 @@ export default function AsaBaseConhecimento() {
       }
 
       const res = await api.kb.upload(formData);
-      saveLocalCustomDoc({
-        id: res?.document?.id || `upload-${Date.now()}`,
-        title: chosenTitle,
-        category: docCategory,
-        content: textContent,
-        author: 'Equipe ASA',
-        source: 'upload',
-        filename: uploadFile.name,
-        indexed: true,
-        tags: [docCategory.toLowerCase(), 'institucional', 'upload'],
-        createdAt: new Date().toISOString(),
-      });
-
-      setUploadSuccessMsg(res.message || 'Documento indexado com sucesso no RAG!');
+      if (res.document?.r2Key) setUploadSuccessMsg('Documento registrado e arquivo armazenado.');
+      else setUploadErrorMsg('Texto registrado, mas o arquivo original não foi armazenado. O download não está disponível.');
       setUploadFile(null);
       setDocTitle('');
       setTimeout(() => {
@@ -185,18 +110,6 @@ export default function AsaBaseConhecimento() {
         tags: tagsArray,
       });
 
-      saveLocalCustomDoc(newDoc || {
-        id: `manual-${Date.now()}`,
-        title: docTitle.trim(),
-        category: docCategory,
-        content: docContent.trim(),
-        tags: tagsArray,
-        author: 'Equipe ASA',
-        source: 'manual',
-        indexed: true,
-        createdAt: new Date().toISOString(),
-      });
-
       setDocTitle('');
       setDocContent('');
       setDocTags('');
@@ -214,12 +127,12 @@ export default function AsaBaseConhecimento() {
     e.stopPropagation();
     if (!confirm('Deseja realmente remover este documento da Base de Conhecimento do Álvaro AI?')) return;
     try {
-      removeLocalCustomDoc(id);
+
       await api.kb.delete(id);
       fetchDocuments();
     } catch (err) {
       console.error('Erro ao deletar documento:', err);
-      removeLocalCustomDoc(id);
+
       fetchDocuments();
     }
   };
@@ -230,6 +143,7 @@ export default function AsaBaseConhecimento() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      {loadError && <div role="alert" className="p-4 rounded-lg bg-red-50 text-red-700"><p>{loadError}</p><button className="underline mt-2" onClick={()=>void fetchDocuments()}>Tentar novamente</button></div>}
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -275,7 +189,7 @@ export default function AsaBaseConhecimento() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Indexados no RAG</p>
             <p className="text-2xl font-bold text-brand-600 dark:text-brand-400 mt-1">{totalIndexed}</p>
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">100% prontos para consulta</p>
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">Textos registrados para consulta</p>
           </div>
           <FileText className="w-8 h-8 text-brand-500 opacity-80" />
         </div>

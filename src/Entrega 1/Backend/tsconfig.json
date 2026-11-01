@@ -7,7 +7,14 @@
     "skipLibCheck": true,
     "strict": false,
     "rootDir": "./src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@alvaro/pdf-extractor": [
+        "./src/services/pdf.service.ts"
+      ]
+    }
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*"
+  ]
 }

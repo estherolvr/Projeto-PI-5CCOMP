@@ -1,0 +1,15 @@
+{
+  "name": "alvaro-ai-db-diagnostic",
+  "account_id": "d3fe73ef2dc4bb997c2636cc2a2fa362",
+  "main": "native-worker.mjs",
+  "compatibility_date": "2026-10-31",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    "EXPIRES_AT": "1793495413336"
+  },
+  "no_bundle": true
+}

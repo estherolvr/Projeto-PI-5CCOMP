@@ -1,4 +1,4 @@
-import type { Ticket, TicketCategory, TicketPriority, TicketStatus, UserRole } from './mock-data'
+import type { Ticket, TicketCategory, TicketPriority, TicketStatus, UserRole } from './types'
 
 function getBaseUrl(): string {
   const raw = ((import.meta as any).env?.VITE_API_URL || '').trim().replace(/\/+$/, '')
@@ -64,11 +64,6 @@ export const api = {
       request<{ token: string; user: any }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
-      }),
-    demoLogin: (role: UserRole) =>
-      request<{ token: string; user: any }>('/auth/demo-login', {
-        method: 'POST',
-        body: JSON.stringify({ role }),
       }),
     me: () => request<{ user: any }>('/auth/me'),
   },
@@ -163,6 +158,8 @@ export const api = {
   },
 
   students: {
+    documents: (id: string) => request<any[]>(`/students/${id}/documents`),
+    updateContact: (id: string, phone: string | null) => request<{id:string;phone:string|null}>(`/students/${id}/contact`, {method:'PATCH',body:JSON.stringify({phone})}),
     list: (params?: { search?: string; course?: string; status?: string }) => {
       const query = new URLSearchParams()
       if (params?.search) query.set('search', params.search)

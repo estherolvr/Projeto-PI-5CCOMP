@@ -4,17 +4,18 @@ import { Search, User, Mail, BookOpen, Clock, Users } from 'lucide-react';
 import { api } from '../../lib/api';
 
 export default function AsaAlunos() {
+  const [apiError, setApiError] = useState<string | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchStudents = async () => {
     try {
-      setIsLoading(true);
+      setIsLoading(true); setApiError(null);
       const list = await api.students.list({ search });
       setStudents(list);
     } catch (err) {
-      console.error('Erro ao buscar alunos:', err);
+      setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     } finally {
       setIsLoading(false);
     }
@@ -29,11 +30,12 @@ export default function AsaAlunos() {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+      {apiError && <div role="alert" className="p-4 text-red-600"><p>{apiError}</p><button onClick={()=>window.location.reload()} className="underline">Tentar novamente</button></div>}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100">Base de Alunos</h1>
           <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
-            Total de alunos cadastrados: <strong className="text-gray-900 dark:text-white">{students.length}</strong>
+            Total de alunos cadastrados: <strong className="text-gray-900 dark:text-white">{isLoading || apiError ? '—' : students.length}</strong>
           </p>
         </div>
         <div className="relative w-full sm:w-80">

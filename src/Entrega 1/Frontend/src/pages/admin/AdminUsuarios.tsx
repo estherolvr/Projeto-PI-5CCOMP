@@ -30,7 +30,6 @@ export default function AdminUsuarios() {
   // Form states
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('123456')
   const [role, setRole] = useState<'asa' | 'admin'>('asa')
   const [department, setDepartment] = useState('Central de Atendimento ao Aluno')
   const [formError, setFormError] = useState<string | null>(null)
@@ -68,14 +67,13 @@ export default function AdminUsuarios() {
       await api.admin.createUser({
         name: name.trim(),
         email: email.trim(),
-        password,
         role,
         department: department.trim(),
       })
       setIsModalOpen(false)
       setName('')
       setEmail('')
-      setPassword('123456')
+
       await loadUsers()
     } catch (err: any) {
       setFormError(err.message || 'Erro ao registrar usuário.')
@@ -348,17 +346,7 @@ export default function AdminUsuarios() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block font-medium text-gray-700 dark:text-slate-300 mb-1">
-                    Senha Provisória
-                  </label>
-                  <input
-                    type="text"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none font-mono text-xs"
-                  />
-                </div>
+                <p className="text-sm text-gray-500">Este cadastro define o perfil institucional. O acesso requer uma conta no Supabase Auth com o mesmo e-mail.</p>
               </div>
 
               <div>

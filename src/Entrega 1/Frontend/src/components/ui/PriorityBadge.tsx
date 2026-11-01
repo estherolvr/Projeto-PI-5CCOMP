@@ -1,6 +1,6 @@
 import { AlertTriangle, ArrowUp, Minus, ArrowDown } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import type { TicketPriority } from '../../lib/mock-data'
+import type { TicketPriority } from '../../lib/types'
 
 interface PriorityBadgeProps {
   priority: TicketPriority

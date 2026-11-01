@@ -5,7 +5,6 @@ import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FecapLogo from '../../components/ui/FecapLogo';
 import { api } from '../../lib/api';
-import { mockUsers } from '../../lib/mock-data';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,57 +34,7 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error('Erro ao fazer login:', err);
-      // Fallback local se o backend estiver acordando (cold start) ou instável
-      const matchDemo = mockUsers.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
-      if (matchDemo && password === '@#$273baratA') {
-        const role = matchDemo.role || 'aluno';
-        localStorage.setItem('asaia_auth_token', 'demo-token-' + role);
-        setCurrentUser(matchDemo);
-        setActiveRole(role);
-        navigate(`/${role}`, { replace: true });
-        return;
-      }
       setErrorMessage(err.message || 'E-mail institucional ou senha incorretos.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async (role: 'aluno' | 'asa' | 'admin', demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setIsLoading(true);
-    setErrorMessage('');
-    try {
-      let res: any;
-      try {
-        res = await api.auth.login(demoEmail, demoPass);
-      } catch {
-        try {
-          res = await api.auth.demoLogin(role);
-        } catch {
-          // Fallback offline/cold-start instantâneo para demonstração sem travamento
-          const fallbackUser = mockUsers.find(u => u.role === role) || {
-            id: role === 'aluno' ? 'aluno-01' : role === 'asa' ? 'asa-01' : 'admin-01',
-            name: role === 'aluno' ? 'Esther Rodrigues' : role === 'asa' ? 'Fernanda Costa' : 'Ricardo Mendes',
-            email: demoEmail,
-            role,
-          };
-          res = { token: 'demo-token-' + role, user: fallbackUser };
-        }
-      }
-      if (res?.token) {
-        localStorage.setItem('asaia_auth_token', res.token);
-      }
-      if (res?.user) {
-        setCurrentUser(res.user);
-        const targetRole = res.user.role || role;
-        setActiveRole(targetRole);
-        navigate(`/${targetRole}`, { replace: true });
-      }
-    } catch (err: any) {
-      console.error('Erro no login rápido:', err);
-      setErrorMessage(err.message || 'Erro ao realizar login institucional.');
     } finally {
       setIsLoading(false);
     }
@@ -301,44 +250,10 @@ export default function LoginPage() {
               </button>
 
               <div className="text-center">
-                <a href="#" className="text-sm text-gray-400 hover:text-brand-600 dark:text-slate-500 dark:hover:text-brand-400 transition-colors">
-                  Esqueci minha senha
-                </a>
+                <p className="text-sm text-gray-500">Para recuperar seu acesso, procure a administração.</p>
               </div>
             </form>
 
-            {/* Quick Demo Access Buttons */}
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-slate-800">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500 text-center mb-3">
-                Acesso Rápido de Demonstração
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => handleQuickDemoLogin('aluno', 'esther.rodrigues@aluno.fecap.br', '@#$273baratA')}
-                  className="px-2 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-medium text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer text-center disabled:opacity-50"
-                >
-                  🎓 Aluna
-                </button>
-                <button
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => handleQuickDemoLogin('asa', 'fernanda.costa@fecap.br', '@#$273baratA')}
-                  className="px-2 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-medium text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer text-center disabled:opacity-50"
-                >
-                  🏛️ ASA
-                </button>
-                <button
-                  type="button"
-                  disabled={isLoading}
-                  onClick={() => handleQuickDemoLogin('admin', 'ricardo.mendes@fecap.br', '@#$273baratA')}
-                  className="px-2 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs font-medium text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 transition-colors cursor-pointer text-center disabled:opacity-50"
-                >
-                  ⚙️ Admin
-                </button>
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>

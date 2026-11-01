@@ -1,0 +1,49 @@
+{
+  "name": "alvaro-ai",
+  "account_id": "d3fe73ef2dc4bb997c2636cc2a2fa362",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-31",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": true,
+  "assets": {
+    "directory": "./src/Entrega 1/Frontend/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
+  },
+  "alias": {
+    "@prisma/client": "./src/Entrega 1/Backend/generated/postgresql/wasm.js",
+    "mime-db": "./src/Entrega 1/Backend/node_modules/mime-db/db.json",
+    "@alvaro/pdf-extractor": "./src/Entrega 1/Backend/src/services/pdf.worker-client.ts"
+  },
+  "vars": {
+    "NODE_ENV": "production",
+    "APP_AUTH_PROVIDER": "supabase"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "minify": true,
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "c2acdb6fc88c4bab8d94dea057d2c164"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "STORAGE",
+      "bucket_name": "alvaro-ai-storage"
+    }
+  ],
+  "services": [
+    {
+      "binding": "PDF_EXTRACTOR",
+      "service": "alvaro-ai-pdf"
+    }
+  ]
+}

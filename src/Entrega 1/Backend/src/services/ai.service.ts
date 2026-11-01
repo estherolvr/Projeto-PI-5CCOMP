@@ -300,6 +300,7 @@ export class AIService {
     sources: { title: string; filename?: string; category: string }[]
     actions: { label: string; action: string; primary?: boolean }[]
     confidence: number
+    provider: 'gemini' | 'local'
   }> {
     // 1. Busca trechos granulares na base institucional
     const matches = await this.searchKnowledgeBase(userMessage, 3)
@@ -315,12 +316,7 @@ export class AIService {
     // 2. Se a chave do Gemini estiver configurada, gera resposta via LLM oficial
     if (genAI) {
       console.log('🤖 [Álvaro AI] GEMINI_API_KEY detectada. Conectando ao Google Gemini...')
-      const validModels = [
-        'gemini-3.5-flash-lite',
-        'gemini-flash-lite-latest',
-        'gemini-3.5-flash',
-        'gemini-3.6-flash',
-      ]
+      const validModels = [(process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim()]
       for (const modelName of validModels) {
         try {
           console.log(`🤖 [Álvaro AI] Solicitando inferência ao modelo: ${modelName}...`)
@@ -370,6 +366,7 @@ DIRETRIZES DE RESPOSTA OBRIGATÓRIAS:
             console.log(`✅ [Álvaro AI] Resposta gerada com sucesso pelo Google Gemini (${modelName})!`)
             const actions = this.deriveActions(userMessage, matches)
             return {
+              provider: 'gemini',
               content: responseText.trim(),
               sources,
               actions,
@@ -499,6 +496,7 @@ Responda APENAS em formato JSON com as chaves:
 
     if (!matches.length) {
       return {
+        provider: 'local' as const,
         content: `Olá, ${name}! Não encontrei uma regra específica para essa dúvida nos documentos institucionais cadastrados.\n\nPara que possamos te orientar com segurança, você pode **abrir um chamado** para a equipe da Central de Atendimento (ASA) ou agendar um horário presencial no campus.`,
         sources: [],
         actions: [
@@ -526,6 +524,7 @@ Responda APENAS em formato JSON com as chaves:
     const actions = this.deriveActions(query, matches)
 
     return {
+      provider: 'local' as const,
       content: response,
       sources: matches.map(m => ({ title: m.docTitle, filename: m.filename, category: m.category })),
       actions,

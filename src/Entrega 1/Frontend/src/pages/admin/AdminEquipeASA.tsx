@@ -27,7 +27,6 @@ export default function AdminEquipeASA() {
   // Form State
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('123456')
   const [department, setDepartment] = useState('Atendimento ao Aluno (ASA)')
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -47,14 +46,13 @@ export default function AdminEquipeASA() {
       await api.admin.createUser({
         name: name.trim(),
         email: email.trim(),
-        password,
         role: 'asa',
         department: department.trim()
       })
       setIsModalOpen(false)
       setName('')
       setEmail('')
-      setPassword('123456')
+
       await loadTeam()
     } catch (err: any) {
       console.error('Erro ao criar membro:', err)
@@ -282,17 +280,7 @@ export default function AdminEquipeASA() {
                 />
               </div>
 
-              <div>
-                <label className="block font-medium text-gray-700 dark:text-slate-300 mb-1">
-                  Senha Provisória
-                </label>
-                <input
-                  type="text"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none font-mono text-xs"
-                />
-              </div>
+              <p className="text-sm text-gray-500">Este cadastro define o perfil institucional. O acesso requer uma conta no Supabase Auth com o mesmo e-mail.</p>
 
               <div className="pt-2 flex justify-end gap-3">
                 <button

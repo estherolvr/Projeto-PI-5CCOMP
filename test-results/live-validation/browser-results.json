@@ -1,0 +1,278 @@
+[
+  {
+    "test": "Browser login asa",
+    "pass": true
+  },
+  {
+    "test": "Browser login aluno",
+    "pass": true
+  },
+  {
+    "test": "Browser login admin",
+    "pass": true
+  },
+  {
+    "test": "Browser asa/",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno/",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/agendamentos",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/chamados",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno/chamados",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/chamados",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/fila",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno/chamados/novo",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/conversas",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/agendamentos",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno/documentos",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/alunos",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/sla",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno/agendamento",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/agente-ia",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/categorias",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno/perfil",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/base-conhecimento",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/automacoes",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno bloqueado no admin",
+    "pass": true
+  },
+  {
+    "test": "Browser asa/sla",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser aluno mobile sem overflow",
+    "pass": true
+  },
+  {
+    "test": "Browser admin/agente-ia",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/metricas",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/prompts",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/relatorios",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/base-conhecimento",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/notificacoes",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/rag",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser asa/auditoria",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/feedback",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser ASA bloqueado no admin",
+    "pass": true
+  },
+  {
+    "test": "Browser admin/usuarios",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/alunos",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/asa",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/permissoes",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/integracoes",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/metricas",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/relatorios",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/auditoria",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/logs",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/seguranca",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/configuracoes",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  },
+  {
+    "test": "Browser admin/saude",
+    "pass": true,
+    "pageErrors": [],
+    "apiFailures": []
+  }
+]

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { UserRole } from '../lib/mock-data'
+import type { UserRole } from '../lib/types'
 
 export type Theme = 'light' | 'dark'
 
@@ -84,10 +84,11 @@ export const useAppStore = create<AppState>()(
       },
       logout: () => {
         localStorage.removeItem('asaia_auth_token')
+        for (const key of Object.keys(localStorage)) if (key === 'asaia_student_conversations' || key === 'asaia_custom_kb_documents' || key.startsWith('asaia_chat_messages_')) localStorage.removeItem(key)
         set({ currentUser: null, activeRole: 'aluno' })
       },
 
-      notificationCount: 3,
+      notificationCount: 0,
       setNotificationCount: (n) => set({ notificationCount: n }),
 
       mobileMenuOpen: false,
@@ -102,6 +103,7 @@ export const useAppStore = create<AppState>()(
         currentUser: state.currentUser,
       }),
       onRehydrateStorage: () => (state) => {
+        for (const key of Object.keys(localStorage)) if (key === 'asaia_student_conversations' || key === 'asaia_custom_kb_documents' || key.startsWith('asaia_chat_messages_')) localStorage.removeItem(key)
         if (state?.theme === 'dark') {
           document.documentElement.classList.add('dark')
         } else {

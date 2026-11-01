@@ -12,7 +12,7 @@ import Modal from '../../components/ui/Modal'
 import { useToast } from '../../components/ui/Toast'
 import { api } from '../../lib/api'
 import { useAppStore } from '../../store/app-store'
-import type { Appointment } from '../../lib/mock-data'
+import type { Appointment } from '../../lib/types'
 
 export default function AlunoAgendamento() {
   const { show } = useToast()
@@ -35,6 +35,9 @@ export default function AlunoAgendamento() {
   } | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [slotsError, setSlotsError] = useState<string | null>(null)
+  const [listError, setListError] = useState<string | null>(null)
 
   // Slots state from backend
   const [availableSlots, setAvailableSlots] = useState<{ time: string; available: boolean; bookedCount: number }[]>([])
@@ -101,6 +104,7 @@ export default function AlunoAgendamento() {
   const fetchSlots = async (date: string) => {
     if (!date) return
     setLoadingSlots(true)
+    setSlotsError(null)
     try {
       const res = await api.appointments.slots(date)
       const slots = res.slots || []
@@ -111,15 +115,8 @@ export default function AlunoAgendamento() {
         const firstOpen = slots.find(s => s.available)
         setSelectedTime(firstOpen ? firstOpen.time : '')
       }
-    } catch {
-      // Fallback slots if offline/mock
-      const mockSlots = [
-        '08:30', '09:15', '10:00', '10:45', '11:30',
-        '13:30', '14:15', '15:00', '15:45', '16:30',
-        '17:15', '18:00', '18:45', '19:30'
-      ].map(time => ({ time, available: true, bookedCount: 0 }))
-      setAvailableSlots(mockSlots)
-      if (!selectedTime) setSelectedTime('14:15')
+    } catch (error) {
+      setAvailableSlots([]); setSelectedTime(''); setSlotsError(error instanceof Error ? error.message : 'Não foi possível consultar horários disponíveis.')
     } finally {
       setLoadingSlots(false)
     }
@@ -134,12 +131,13 @@ export default function AlunoAgendamento() {
 
   // Load student's existing appointments
   const fetchMyAppointments = async () => {
+    setListError(null)
     setLoadingList(true)
     try {
       const data = await api.appointments.my()
       setMyAppointments(data)
     } catch (err) {
-      console.error('Erro ao buscar meus agendamentos:', err)
+      setMyAppointments([]); setListError(err instanceof Error ? err.message : 'Não foi possível consultar seus agendamentos.')
     } finally {
       setLoadingList(false)
     }
@@ -425,6 +423,7 @@ export default function AlunoAgendamento() {
                 <span className="text-xs font-semibold text-gray-700 dark:text-slate-300">
                   Horários Presenciais Disponíveis:
                 </span>
+                {slotsError && <div role="alert" className="text-red-600 text-sm"><p>{slotsError}</p><button onClick={()=>void fetchSlots(selectedDate)} className="underline">Tentar novamente</button></div>}
                 {loadingSlots && (
                   <span className="text-2xs text-gray-400 animate-pulse">Atualizando vagas...</span>
                 )}
@@ -641,6 +640,7 @@ export default function AlunoAgendamento() {
               Histórico de horários reservados e comprovantes para o Campus Liberdade.
             </p>
           </div>
+          {listError && <p role="alert" className="text-red-600">{listError}</p>}
           <Button variant="ghost" size="sm" onClick={fetchMyAppointments} loading={loadingList}>
             Atualizar
           </Button>

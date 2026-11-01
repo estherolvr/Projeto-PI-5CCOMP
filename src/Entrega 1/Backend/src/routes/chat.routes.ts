@@ -1,25 +1,21 @@
 import { Router } from 'express'
 import { prisma } from '../db'
-import { AuthenticatedRequest, authenticateToken } from '../middleware/auth'
+import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 import { aiService } from '../services/ai.service'
 import { r2Service } from '../services/r2.service'
+import { scheduleBackground } from '../services/runtime-context'
 
 export const chatRouter = Router()
 
 // List conversations for authenticated student
 chatRouter.get('/conversations', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
-    let studentId = req.user?.id || 'aluno-01'
-    const studentExists = await prisma.student.findUnique({ where: { id: studentId } })
-    if (!studentExists) {
-      const firstStudent = await prisma.student.findFirst()
-      if (firstStudent) studentId = firstStudent.id
-    }
-
     const conversations = await prisma.conversation.findMany({
-      where: { studentId },
+      where: req.user?.role === 'aluno' ? { studentId: req.user.id } : {},
+      take: 100,
       orderBy: { updatedAt: 'desc' },
       include: {
+        student: { select: { id: true, name: true, ra: true } },
         messages: {
           orderBy: { timestamp: 'desc' },
           take: 1,
@@ -31,6 +27,7 @@ chatRouter.get('/conversations', authenticateToken, async (req: AuthenticatedReq
       id: c.id,
       title: c.title,
       studentId: c.studentId,
+      student: c.student,
       status: 'ativo',
       lastMessage: c.messages[0]?.content || 'Nova conversa',
       lastMessageTime: c.messages[0]?.timestamp || c.createdAt,
@@ -46,14 +43,10 @@ chatRouter.get('/conversations', authenticateToken, async (req: AuthenticatedReq
 })
 
 // Create new conversation
-chatRouter.post('/conversations', authenticateToken, async (req: AuthenticatedRequest, res) => {
+chatRouter.post('/conversations', authenticateToken, requireRole(['aluno']), async (req: AuthenticatedRequest, res) => {
   try {
-    let studentId = req.user?.id || 'aluno-01'
-    const studentExists = await prisma.student.findUnique({ where: { id: studentId } })
-    if (!studentExists) {
-      const firstStudent = await prisma.student.findFirst()
-      if (firstStudent) studentId = firstStudent.id
-    }
+    const studentId = req.user!.id
+    if (!await prisma.student.findUnique({ where: { id: studentId } })) return res.status(404).json({ error: 'Cadastro de aluno não encontrado.' })
 
     const { title } = req.body
 
@@ -110,6 +103,8 @@ chatRouter.get('/conversations/:id', authenticateToken, async (req: Authenticate
       return res.status(404).json({ error: 'Conversa não encontrada' })
     }
 
+    if (req.user?.role === 'aluno' && conversation.studentId !== req.user.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
+
     res.json({
       ...conversation,
       messages: conversation.messages.map(m => ({
@@ -124,7 +119,7 @@ chatRouter.get('/conversations/:id', authenticateToken, async (req: Authenticate
 })
 
 // Send message in conversation & receive AI response (with RAG knowledge retrieval)
-chatRouter.post('/conversations/:id/messages', authenticateToken, async (req: AuthenticatedRequest, res) => {
+chatRouter.post('/conversations/:id/messages', authenticateToken, requireRole(['aluno']), async (req: AuthenticatedRequest, res) => {
   try {
     const id = String(req.params.id)
     const { content } = req.body
@@ -146,6 +141,8 @@ chatRouter.post('/conversations/:id/messages', authenticateToken, async (req: Au
     if (!conversation) {
       return res.status(404).json({ error: 'Conversa não encontrada' })
     }
+
+    if (conversation.studentId !== req.user?.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
 
     // 1. Fetch student context
     const student = await prisma.student.findUnique({
@@ -183,7 +180,9 @@ chatRouter.post('/conversations/:id/messages', authenticateToken, async (req: Au
     )
 
     // Append source citations if available
-    let finalContent = ragResult.content
+    let finalContent = ragResult.provider === 'local'
+      ? '**IA generativa indisponível.** A orientação abaixo usa somente os trechos disponíveis na base de conhecimento.\n\n' + ragResult.content
+      : ragResult.content
     if (ragResult.sources.length > 0) {
       const sourceList = ragResult.sources
         .map(s => `• 📄 **${s.title}** (${s.category})`)
@@ -220,7 +219,7 @@ chatRouter.post('/conversations/:id/messages', authenticateToken, async (req: Au
 
     // 7. Persistência e Snapshot no Cloudflare R2 (assíncrono para alta performance)
     if (r2Service.isConfigured()) {
-      prisma.chatMessage.findMany({
+      const synchronization = prisma.chatMessage.findMany({
         where: { conversationId: id },
         orderBy: { timestamp: 'asc' },
       }).then(allMessages => {
@@ -244,6 +243,7 @@ chatRouter.post('/conversations/:id/messages', authenticateToken, async (req: Au
       }).catch(err => {
         console.warn('Sincronização R2 em segundo plano:', err.message)
       })
+      scheduleBackground(synchronization)
     }
 
     res.status(201).json({
@@ -275,6 +275,7 @@ chatRouter.get('/conversations/:id/r2-snapshot', authenticateToken, async (req: 
       return res.status(404).json({ error: 'Conversa não encontrada' })
     }
 
+    if (req.user?.role === 'aluno' && conversation.studentId !== req.user.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
     const studentId = conversation.studentId
     const snapshot = await r2Service.getConversationSnapshot(id, studentId)
 
@@ -306,6 +307,8 @@ chatRouter.post('/feedback', authenticateToken, async (req: AuthenticatedRequest
 
     let studentId = req.user?.id || null
     let studentName = req.user?.name || 'Aluno FECAP'
+
+    if (conversationId && !await prisma.conversation.findFirst({ where: { id: conversationId, ...(req.user?.role === 'aluno' ? { studentId: req.user.id } : {}) } })) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
 
     if (studentId) {
       const student = await prisma.student.findUnique({ where: { id: studentId } })

@@ -436,7 +436,7 @@ adminRouter.post('/users', authenticateToken, requireRole(['admin']), async (req
       data: {
         name: name.trim(),
         email: email.trim().toLowerCase(),
-        password: password || '123456',
+        password: '!supabase-auth-only!' + crypto.randomUUID(),
         role: role || 'asa',
         department: department || 'Atendimento ASA',
         status: 'ativo',

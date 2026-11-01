@@ -1,0 +1,504 @@
+{
+  "run": "TESTE-20261101-020733",
+  "results": [
+    {
+      "test": "Admin /health",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.29
+    },
+    {
+      "test": "Sessão asa",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.32
+    },
+    {
+      "test": "Sessão admin",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.45
+    },
+    {
+      "test": "Sessão aluno",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.55
+    },
+    {
+      "test": "Admin /users",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.44
+    },
+    {
+      "test": "Admin /audit-logs",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.5
+    },
+    {
+      "test": "Admin /students?limit=10",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.62
+    },
+    {
+      "test": "Admin /sla-rules",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.06
+    },
+    {
+      "test": "Admin /dashboard-stats",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.81
+    },
+    {
+      "test": "Admin /automations",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.43
+    },
+    {
+      "test": "Admin /prompts",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.41
+    },
+    {
+      "test": "Admin /integrations",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.02
+    },
+    {
+      "test": "Admin /ai-analysis/history",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.09
+    },
+    {
+      "test": "Admin /notifications",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.8
+    },
+    {
+      "test": "ASA /tickets",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.59
+    },
+    {
+      "test": "ASA /students",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.27
+    },
+    {
+      "test": "Admin /feedback",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.49
+    },
+    {
+      "test": "ASA /appointments",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.3
+    },
+    {
+      "test": "ASA /metrics/queue",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.46
+    },
+    {
+      "test": "ASA /metrics/overview?days=7",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.61
+    },
+    {
+      "test": "ASA /appointments/metrics",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.46
+    },
+    {
+      "test": "ASA /admin/health",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.69
+    },
+    {
+      "test": "Aluno /chat/conversations",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.06
+    },
+    {
+      "test": "Aluno /knowledge-base",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.83
+    },
+    {
+      "test": "Aluno /tickets",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.46
+    },
+    {
+      "test": "Aluno /appointments/my",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.24
+    },
+    {
+      "test": "Bloqueio aluno /admin/users",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.67
+    },
+    {
+      "test": "Bloqueio aluno /admin/students",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.91
+    },
+    {
+      "test": "Bloqueio aluno /metrics/overview",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.67
+    },
+    {
+      "test": "Bloqueio aluno /students",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.69
+    },
+    {
+      "test": "Bloqueio aluno /appointments",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.66
+    },
+    {
+      "test": "Bloqueio ASA /admin/prompts",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.85
+    },
+    {
+      "test": "Bloqueio ASA /admin/integrations",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.92
+    },
+    {
+      "test": "Cadastro próprio aluno",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.22
+    },
+    {
+      "test": "Cadastro alheio bloqueado",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.29
+    },
+    {
+      "test": "Criar documento de teste",
+      "pass": true,
+      "http": 201,
+      "seconds": 0.67
+    },
+    {
+      "test": "Aluno não deve editar base institucional",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.63
+    },
+    {
+      "test": "Busca RAG encontra documento criado",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.84
+    },
+    {
+      "test": "Aluno cria conversa real",
+      "pass": true,
+      "http": 201,
+      "seconds": 2.55
+    },
+    {
+      "test": "Chat responde e persiste mensagens",
+      "pass": true,
+      "http": 201,
+      "seconds": 7.96
+    },
+    {
+      "test": "Feedback da resposta IA",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.4
+    },
+    {
+      "test": "Conversa preservada após nova consulta",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.03
+    },
+    {
+      "test": "Aluno abre chamado com conversa",
+      "pass": true,
+      "http": 201,
+      "seconds": 5.1
+    },
+    {
+      "test": "ASA visualiza chamado e contexto",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.71
+    },
+    {
+      "test": "Aluno não pode atribuir chamado",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.68
+    },
+    {
+      "test": "ASA assume chamado",
+      "pass": true,
+      "http": 200,
+      "seconds": 3.08
+    },
+    {
+      "test": "ASA registra nota interna",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.78
+    },
+    {
+      "test": "ASA envia resposta pública",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.56
+    },
+    {
+      "test": "Aluno recebe resposta sem nota interna",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.62
+    },
+    {
+      "test": "ASA resolve chamado",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.49
+    },
+    {
+      "test": "Admin confirma resolução",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.5
+    },
+    {
+      "test": "Métricas após resolução",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.59
+    },
+    {
+      "test": "ASA fecha registro de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 2.59
+    },
+    {
+      "test": "Upload TXT e persistência R2",
+      "pass": false,
+      "http": 201,
+      "seconds": 2.18,
+      "error": "Texto registrado e arquivo original armazenado."
+    },
+    {
+      "test": "Download documento de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.35
+    },
+    {
+      "test": "Arquivar upload de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.91
+    },
+    {
+      "test": "Consultar horários disponíveis",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.82
+    },
+    {
+      "test": "Aluno cria agendamento de teste",
+      "pass": true,
+      "http": 201,
+      "seconds": 1.69
+    },
+    {
+      "test": "ASA consulta agendamento",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.85
+    },
+    {
+      "test": "Exportar calendário ICS",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.05
+    },
+    {
+      "test": "Aluno não pode concluir agendamento",
+      "pass": true,
+      "http": 403,
+      "seconds": 1.06
+    },
+    {
+      "test": "Aluno cancela próprio agendamento de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.63
+    },
+    {
+      "test": "Admin vê feedback de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.23
+    },
+    {
+      "test": "Admin vê auditoria das operações",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.06
+    },
+    {
+      "test": "Arquivar documento RAG de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.08
+    },
+    {
+      "test": "Sem sessão não acessa conta",
+      "pass": true,
+      "http": 401,
+      "seconds": 0.07
+    },
+    {
+      "test": "Sem sessão não acessa chat",
+      "pass": true,
+      "http": 401,
+      "seconds": 0.04
+    },
+    {
+      "test": "Login vazio recusado",
+      "pass": true,
+      "http": 400,
+      "seconds": 0.11
+    },
+    {
+      "test": "Demonstração API desativada",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.05
+    },
+    {
+      "test": "Token inválido recusado",
+      "pass": true,
+      "http": 401,
+      "seconds": 0.26
+    },
+    {
+      "test": "Aluno não cria equipe",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.72
+    },
+    {
+      "test": "ASA não cria administrador",
+      "pass": true,
+      "http": 403,
+      "seconds": 0.82
+    },
+    {
+      "test": "Snapshot de conversa disponível no R2",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.33
+    },
+    {
+      "test": "Agendamento de teste permanece cancelado",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.06
+    },
+    {
+      "test": "Calendário preserva horário de São Paulo",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.23
+    },
+    {
+      "test": "PDF comprimido tem texto extraído corretamente",
+      "pass": true,
+      "http": 201,
+      "seconds": 3.12
+    },
+    {
+      "test": "Arquivar PDF de teste",
+      "pass": true,
+      "http": 200,
+      "seconds": 0.83
+    },
+    {
+      "test": "Reteste: resposta de upload contém chave R2 persistida",
+      "pass": true,
+      "http": 201,
+      "seconds": 2.61
+    },
+    {
+      "test": "Reteste: download contém bytes originais",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.07
+    },
+    {
+      "test": "Reteste: exclusão remove documento e arquivo",
+      "pass": true,
+      "http": 200,
+      "seconds": 1.34
+    },
+    {
+      "test": "Reteste: documento excluído não existe",
+      "pass": true,
+      "http": 404,
+      "seconds": 0.85
+    }
+  ],
+  "fixtures": {
+    "documentId": "24608651-9dc8-4edc-a1a6-a219e1e8fa9e",
+    "conversationId": "790f9158-2b14-44e9-bf0b-348fdd513dc1",
+    "aiMessageId": "7eb20d29-94df-422b-8785-d574438a2496",
+    "chatResponse": "**IA generativa indisponível.** A orientação abaixo usa somente os trechos disponíveis na base de conhecimento.\n\nOlá, Higor! Consultei os documentos institucionais da FECAP e localizei as seguintes orientações no documento **\"TESTE-20261101-020733 documento de validação\"** (Teste técnico):\n\nDocumento temporário de teste automatizado. O código de verificação técnica é ALVARO-TESTE-7429. Não contém regras acadêmicas reais.\n\nSe precisar de orientações adicionais ou quiser formalizar uma solicitação, você também pode abrir um chamado direto para a equipe ASA.\n\n---\n**Fontes Consultadas:**\n• 📄 **TESTE-20261101-020733 documento de validação** (Teste técnico)",
+    "ticketId": "88ab29ab-11c9-4ef0-b6a4-102719de6a94",
+    "ticketNumber": 1052,
+    "uploadDocumentId": "9ca5f091-5363-4c7f-93bf-0e0b03d4f963",
+    "uploadHasR2": false,
+    "appointmentId": "7150e6e1-4071-4aba-8984-b68b75917341",
+    "pdfDocumentId": "d5703cf2-2c2b-45a2-9945-70f9f2a3a160"
+  }
+}

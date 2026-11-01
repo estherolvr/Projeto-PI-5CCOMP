@@ -192,7 +192,7 @@ ticketRouter.post('/', authenticateToken, async (req: AuthenticatedRequest, res)
         messages: {
           create: {
             senderId: effectiveStudentId,
-            senderName: req.user?.name || 'Esther Rodrigues',
+            senderName: req.user!.name,
             senderRole: req.user?.role || 'aluno',
             content: description,
             isInternal: false,
@@ -322,7 +322,7 @@ ticketRouter.post('/:id/messages', authenticateToken, async (req: AuthenticatedR
     if (senderRole === 'aluno' && ticket.studentId !== req.user?.id) {
       return res.status(403).json({ error: 'Você não tem acesso a este chamado' })
     }
-    const senderId = req.user?.id || (senderRole === 'aluno' ? ticket.studentId : 'asa-01')
+    const senderId = req.user!.id
     const senderName = req.user?.name || (senderRole === 'aluno' ? 'Aluno' : 'Atendente ASA')
 
     const message = await prisma.ticketMessage.create({
