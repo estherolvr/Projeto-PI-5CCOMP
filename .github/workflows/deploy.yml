@@ -1,0 +1,67 @@
+name: Validate and deploy
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix "src/Entrega 1/Backend"
+      - run: npm ci --prefix "src/Entrega 1/Frontend"
+      - run: npm run test --prefix "src/Entrega 1/Backend"
+      - run: npm run build:backend
+      - run: npm run build:cloudflare
+
+  deploy:
+    name: Deploy Cloudflare and Supabase migrations
+    needs: validate
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix "src/Entrega 1/Backend"
+      - run: npm ci --prefix "src/Entrega 1/Frontend"
+      - run: npm run build:cloudflare
+
+      # Apply only reviewed, version-controlled SQL migrations. No implicit schema push.
+      - name: Apply Supabase migrations when present
+        if: ${{ hashFiles('supabase/migrations/*.sql') != '' }}
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Push Supabase migrations
+        if: ${{ hashFiles('supabase/migrations/*.sql') != '' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          test -n "$SUPABASE_DB_URL" || { echo "Missing SUPABASE_DB_URL secret"; exit 1; }
+          supabase db push --db-url "$SUPABASE_DB_URL"
+
+      - name: Deploy Cloudflare Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler deploy

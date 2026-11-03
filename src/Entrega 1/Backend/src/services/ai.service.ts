@@ -257,16 +257,8 @@ export class AIService {
       return matched
     }
 
-    // Se nenhuma busca pontuou, retorna os documentos institucionais mais recentes como contexto
-    return docs.slice(0, Math.min(limit, 2)).map(doc => ({
-      docId: doc.id,
-      docTitle: doc.title,
-      category: doc.category,
-      content: doc.content.slice(0, 1000),
-      score: 1,
-      source: doc.source,
-      filename: doc.filename || undefined,
-    }))
+    // Sem correspondência real, não envie documentos arbitrários como fontes.
+    return []
   }
 
   public cleanAndFormatText(text: string): string {

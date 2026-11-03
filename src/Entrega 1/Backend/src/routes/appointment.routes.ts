@@ -129,8 +129,31 @@ appointmentRouter.post('/', authenticateToken, async (req: AuthenticatedRequest,
       return res.status(400).json({ error: 'Assunto, data e horário são campos obrigatórios para o agendamento presencial.' })
     }
 
-    // Se o solicitante for aluno, vincula seu ID diretamente
-    const targetStudentId = req.user?.role === 'aluno' ? req.user.id : (studentId || req.user?.id)
+    // Funcionários devem selecionar um aluno já cadastrado; dados de perfil
+    // enviados pelo navegador não são suficientes para criar um agendamento.
+    let targetStudentId = req.user?.role === 'aluno' ? req.user.id : studentId
+    if (req.user?.role === 'asa' || req.user?.role === 'admin') {
+      if (!targetStudentId && typeof studentRa === 'string' && studentRa.trim()) {
+        const student = await prisma.student.findUnique({ where: { ra: studentRa.trim() }, select: { id: true } })
+        targetStudentId = student?.id
+      }
+      if (!targetStudentId) return res.status(400).json({ error: 'Selecione um aluno cadastrado antes de criar o agendamento.' })
+    }
+    if (!targetStudentId) return res.status(401).json({ error: 'Não foi possível identificar o aluno do agendamento.' })
+
+    const dateMatch = typeof date === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
+    const parsedDate = dateMatch ? new Date(`${date}T00:00:00.000Z`) : null
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+    if (!dateMatch || !parsedDate || parsedDate.toISOString().slice(0, 10) !== date || date < today) {
+      return res.status(400).json({ error: 'Informe uma data válida a partir de hoje.' })
+    }
+    if (!appointmentService.DEFAULT_SLOTS.includes(time) || !/^\d{2}:\d{2}$/.test(time)) {
+      return res.status(400).json({ error: 'Selecione um horário disponível na grade de atendimento.' })
+    }
+    const weekday = new Date(`${date}T12:00:00-03:00`).getUTCDay()
+    if (weekday === 0 || weekday === 6) {
+      return res.status(400).json({ error: 'Os atendimentos presenciais acontecem de segunda a sexta-feira.' })
+    }
 
     const appointment = await appointmentService.createAppointment({
       studentId: targetStudentId,

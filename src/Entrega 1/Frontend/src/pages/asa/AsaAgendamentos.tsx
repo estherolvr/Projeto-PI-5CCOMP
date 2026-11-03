@@ -96,6 +96,7 @@ export default function AsaAgendamentos() {
   const [newFormData, setNewFormData] = useState({
     studentName: '',
     studentRa: '',
+    studentId: '',
     studentEmail: '',
     studentCourse: 'Administração',
     subject: 'Orientação de Matrícula e Grade Horária',
@@ -104,6 +105,7 @@ export default function AsaAgendamentos() {
     notes: '',
   })
   const [submittingNew, setSubmittingNew] = useState(false)
+  const [studentLookupMessage, setStudentLookupMessage] = useState('Informe o RA e saia do campo para localizar o aluno cadastrado.')
 
   // Fetch appointments and metrics
   const loadData = async () => {
@@ -222,8 +224,8 @@ export default function AsaAgendamentos() {
   // Create new appointment via attendant modal
   const handleCreateNew = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newFormData.studentName || !newFormData.studentRa) {
-      show('Nome e RA do estudante são obrigatórios.', 'warning')
+    if (!newFormData.studentId) {
+      show('Localize um aluno cadastrado pelo RA antes de criar o agendamento.', 'warning')
       return
     }
 
@@ -232,6 +234,7 @@ export default function AsaAgendamentos() {
       await api.appointments.create({
         studentName: newFormData.studentName,
         studentRa: newFormData.studentRa,
+        studentId: newFormData.studentId,
         studentEmail: newFormData.studentEmail || `${newFormData.studentRa}@aluno.fecap.br`,
         studentCourse: newFormData.studentCourse,
         subject: newFormData.subject,
@@ -245,6 +248,7 @@ export default function AsaAgendamentos() {
       setNewFormData({
         studentName: '',
         studentRa: '',
+        studentId: '',
         studentEmail: '',
         studentCourse: 'Administração',
         subject: 'Orientação de Matrícula e Grade Horária',
@@ -252,6 +256,7 @@ export default function AsaAgendamentos() {
         time: '14:15',
         notes: '',
       })
+      setStudentLookupMessage('Informe o RA e saia do campo para localizar o aluno cadastrado.')
     } catch (err: any) {
       show(err.message || 'Erro ao registrar agendamento.', 'error')
     } finally {
@@ -1141,7 +1146,27 @@ export default function AsaAgendamentos() {
                 type="text"
                 required
                 value={newFormData.studentRa}
-                onChange={(e) => setNewFormData({ ...newFormData, studentRa: e.target.value })}
+              onChange={(e) => {
+                setNewFormData({ ...newFormData, studentRa: e.target.value, studentId: '', studentName: '' })
+                setStudentLookupMessage('Localize o aluno cadastrado pelo RA antes de salvar.')
+              }}
+              onBlur={async () => {
+                const ra = newFormData.studentRa.trim()
+                if (!ra) return
+                setStudentLookupMessage('Buscando aluno cadastrado…')
+                try {
+                  const matches = await api.students.list({ search: ra })
+                  const student = matches.find((candidate: any) => candidate.ra.toLowerCase() === ra.toLowerCase())
+                  if (!student) {
+                    setStudentLookupMessage('RA não encontrado. Confira o número ou cadastre o aluno primeiro.')
+                    return
+                  }
+                  setNewFormData(previous => ({ ...previous, studentId: student.id, studentName: student.name, studentRa: student.ra, studentEmail: student.email, studentCourse: student.course }))
+                  setStudentLookupMessage(`Aluno localizado: ${student.name}`)
+                } catch (error) {
+                  setStudentLookupMessage(error instanceof Error ? error.message : 'Não foi possível consultar o cadastro do aluno.')
+                }
+              }}
                 placeholder="Ex: 24001523"
                 className="w-full p-2.5 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 outline-none"
               />
@@ -1226,6 +1251,7 @@ export default function AsaAgendamentos() {
               rows={2}
               className="w-full p-2.5 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-900 outline-none"
             />
+            <p role="status" className="mt-1 text-[11px] text-gray-500 dark:text-slate-400">{studentLookupMessage}</p>
           </div>
         </form>
       </Modal>
