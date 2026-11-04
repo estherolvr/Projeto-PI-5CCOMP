@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import dotenv from 'dotenv'
 import { prisma } from '../db'
+import { geminiFailureDiagnostic } from './gemini-diagnostics'
 
 dotenv.config()
 
@@ -363,7 +364,7 @@ DIRETRIZES DE RESPOSTA OBRIGATÓRIAS:
             }
           }
         } catch (err: any) {
-          console.warn(`⚠️ [Álvaro AI] Tentativa com modelo ${modelName} falhou:`, err.message?.slice(0, 120))
+          console.warn('[Gemini] Requisição de chat falhou:', JSON.stringify(geminiFailureDiagnostic('chat_response', modelName, err)))
         }
       }
       console.warn('⚠️ [Álvaro AI] Todos os modelos Gemini falharam. Alternando para o sintetizador semântico local.')
@@ -437,7 +438,7 @@ Responda APENAS em formato JSON com as chaves:
             sources: matches.map(m => ({ title: m.docTitle, filename: m.filename })),
           }
         } catch (err: any) {
-          console.warn(`Erro na análise do chamado com ${modelName}:`, err.message?.slice(0, 100))
+          console.warn('[Gemini] Análise de chamado falhou:', JSON.stringify(geminiFailureDiagnostic('ticket_analysis', modelName, err)))
         }
       }
     }
@@ -627,7 +628,7 @@ Responda APENAS em formato JSON no formato abaixo, sem markdown adicional:
             recommendations: Array.isArray(parsed.recommendations) && parsed.recommendations.length > 0 ? parsed.recommendations : []
           }
         } catch (err) {
-          console.warn('[Admin AI Analysis] Tentando próximo modelo ou fallback...');
+          console.warn('[Gemini] Relatório operacional falhou:', JSON.stringify(geminiFailureDiagnostic('admin_report', modelName, err)))
         }
       }
     }
