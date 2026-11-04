@@ -27,6 +27,7 @@ export default function AdminEquipeASA() {
   // Form State
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [department, setDepartment] = useState('Atendimento ao Aluno (ASA)')
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -47,11 +48,13 @@ export default function AdminEquipeASA() {
         name: name.trim(),
         email: email.trim(),
         role: 'asa',
-        department: department.trim()
+        department: department.trim(),
+        password,
       })
       setIsModalOpen(false)
       setName('')
       setEmail('')
+      setPassword('')
 
       await loadTeam()
     } catch (err: any) {
@@ -280,7 +283,14 @@ export default function AdminEquipeASA() {
                 />
               </div>
 
-              <p className="text-sm text-gray-500">Este cadastro define o perfil institucional. O acesso requer uma conta no Supabase Auth com o mesmo e-mail.</p>
+              <div>
+                <label className="block font-medium text-gray-700 dark:text-slate-300 mb-1">Senha temporária *</label>
+                <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none" />
+                <p className="mt-1 text-xs text-gray-500">Mínimo de 8 caracteres. Entregue-a ao atendente por um canal seguro.</p>
+              </div>
+
+              <p className="text-sm text-gray-500">O perfil institucional e o login no Supabase serão criados juntos.</p>
 
               <div className="pt-2 flex justify-end gap-3">
                 <button

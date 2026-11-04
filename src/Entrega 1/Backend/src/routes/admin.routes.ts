@@ -6,6 +6,7 @@ import { operationalHealth, probeGeminiGeneration, probeGeminiModel, publicInteg
 import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 import { assignedSlaPolicies, evaluateTicketSla, validateSlaRule } from '../services/ticket-sla'
+import { createInstitutionalUser, removeProvisionedUser, requiresSupabaseProvisioning, SupabaseProvisioningError } from '../services/supabase-admin'
 
 export const adminRouter = Router()
 adminRouter.use(authenticateToken, requireRole(['admin', 'asa']))
@@ -376,8 +377,9 @@ adminRouter.get('/students', authenticateToken, requireRole(['admin', 'asa']), a
 
 // Create Student
 adminRouter.post('/students', authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+  let provisionedUserId: string | null = null
   try {
-    const { name, ra, email, course, semester, period, phone, status } = req.body
+    const { name, ra, email, course, semester, period, phone, status, password } = req.body
     if (![name, ra, email, course].every(value => typeof value === 'string' && value.trim())) {
       return res.status(400).json({ error: 'Nome, RA, e-mail e curso são obrigatórios' })
     }
@@ -386,35 +388,46 @@ adminRouter.post('/students', authenticateToken, requireRole(['admin']), async (
       || (semester !== undefined && (!Number.isInteger(Number(semester)) || Number(semester) < 1))) {
       return res.status(400).json({ error: 'Período, situação ou semestre inválido.' })
     }
+    if (requiresSupabaseProvisioning() && (typeof password !== 'string' || password.length < 8)) {
+      return res.status(400).json({ error: 'Informe uma senha temporária com pelo menos 8 caracteres.' })
+    }
 
-    const student = await prisma.student.create({
-      data: {
+    const normalizedEmail = email.trim().toLowerCase()
+    const duplicate = await prisma.student.findFirst({ where: { OR: [{ email: normalizedEmail }, { ra: ra.trim() }] }, select: { id: true } })
+    if (duplicate) return res.status(409).json({ error: 'RA ou e-mail já cadastrado.' })
+
+    if (requiresSupabaseProvisioning()) {
+      provisionedUserId = await createInstitutionalUser(normalizedEmail, password, { name: name.trim(), role: 'aluno', ra: ra.trim() })
+    }
+
+    const student = await prisma.$transaction(async tx => {
+      const created = await tx.student.create({ data: {
         name: name.trim(),
         ra: ra.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         course: course.trim(),
         semester: Number(semester) || 1,
         period: period || 'manha',
         phone: phone || null,
         status: status || 'regular',
-      },
-    })
-
-    await prisma.auditEvent.create({
-      data: {
+      } })
+      await tx.auditEvent.create({ data: {
         userId: req.user?.id || null,
         userName: req.user?.name || 'Administrador',
         userRole: req.user?.role || 'admin',
         action: 'CRIOU_ALUNO',
         resource: 'Student',
-        resourceId: student.id,
-        details: JSON.stringify({ name: student.name, ra: student.ra, course: student.course }),
+        resourceId: created.id,
+        details: JSON.stringify({ name: created.name, ra: created.ra, course: created.course, authProvisioning: provisionedUserId ? 'invited' : 'local-test' }),
         severity: 'info',
-      },
+      } })
+      return created
     })
 
-    res.status(201).json(student)
+    res.status(201).json({ ...student, authProvisioning: provisionedUserId ? 'invited' : 'not_required' })
   } catch (error: any) {
+    if (provisionedUserId) await removeProvisionedUser(provisionedUserId)
+    if (error instanceof SupabaseProvisioningError) return res.status(error.statusCode).json({ error: error.message })
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return res.status(409).json({ error: 'RA ou e-mail já cadastrado.' })
     }
@@ -457,40 +470,51 @@ adminRouter.patch('/students/:id/status', authenticateToken, requireRole(['admin
 
 // Create Staff User (ASA or Admin)
 adminRouter.post('/users', authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+  let provisionedUserId: string | null = null
   try {
     const { name, email, password, role, department } = req.body
     if (![name, email].every(value => typeof value === 'string' && value.trim())) {
       return res.status(400).json({ error: 'Nome e e-mail são obrigatórios' })
     }
     if (role && !['admin', 'asa'].includes(role)) return res.status(400).json({ error: 'Perfil de equipe inválido.' })
+    if (requiresSupabaseProvisioning() && (typeof password !== 'string' || password.length < 8)) {
+      return res.status(400).json({ error: 'Informe uma senha temporária com pelo menos 8 caracteres.' })
+    }
 
-    const user = await prisma.user.create({
-      data: {
+    const normalizedEmail = email.trim().toLowerCase()
+    if (await prisma.user.findUnique({ where: { email: normalizedEmail }, select: { id: true } })) {
+      return res.status(409).json({ error: 'E-mail já cadastrado.' })
+    }
+    if (requiresSupabaseProvisioning()) {
+      provisionedUserId = await createInstitutionalUser(normalizedEmail, password, { name: name.trim(), role: role || 'asa' })
+    }
+
+    const user = await prisma.$transaction(async tx => {
+      const created = await tx.user.create({ data: {
         name: name.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password: '!supabase-auth-only!' + crypto.randomUUID(),
         role: role || 'asa',
         department: department || 'Atendimento ASA',
         status: 'ativo',
-      },
-      select: publicUserSelect,
-    })
-
-    await prisma.auditEvent.create({
-      data: {
+      }, select: publicUserSelect })
+      await tx.auditEvent.create({ data: {
         userId: req.user?.id || null,
         userName: req.user?.name || 'Administrador',
         userRole: req.user?.role || 'admin',
         action: 'CRIOU_USUARIO_SISTEMA',
         resource: 'User',
-        resourceId: user.id,
-        details: JSON.stringify({ name: user.name, email: user.email, role: user.role }),
+        resourceId: created.id,
+        details: JSON.stringify({ name: created.name, email: created.email, role: created.role, authProvisioning: provisionedUserId ? 'created' : 'local-test' }),
         severity: 'info',
-      },
+      } })
+      return created
     })
 
-    res.status(201).json(user)
+    res.status(201).json({ ...user, authProvisioning: provisionedUserId ? 'created' : 'not_required' })
   } catch (error: any) {
+    if (provisionedUserId) await removeProvisionedUser(provisionedUserId)
+    if (error instanceof SupabaseProvisioningError) return res.status(error.statusCode).json({ error: error.message })
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return res.status(409).json({ error: 'E-mail já cadastrado.' })
     }

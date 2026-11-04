@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Filter, Download, User, RefreshCw, X, ChevronLeft, ChevronRight, Ticket, Calendar, MessageSquare } from 'lucide-react'
+import { Search, Filter, Download, User, RefreshCw, X, ChevronLeft, ChevronRight, Ticket, Calendar, MessageSquare, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
 import { useAdminQuery } from '@/lib/use-admin-query'
@@ -35,6 +35,11 @@ export default function AdminAlunos() {
   // Details Modal
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [statusChanging, setStatusChanging] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null)
+  const [newStudent, setNewStudent] = useState({ name: '', ra: '', email: '', course: '', semester: '1', period: 'manha', phone: '', password: '' })
 
   const { data, loading, error, refresh } = useAdminQuery(() => api.admin.getStudents({
     search: submittedSearch || undefined,
@@ -84,6 +89,22 @@ export default function AdminAlunos() {
       students.map(s => [s.name, s.ra, s.email, s.course, s.semester, s.period, s.status, s._count?.tickets || 0]))
   }
 
+  const handleCreateStudent = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setCreating(true); setCreateError(null)
+    try {
+      await api.admin.createStudent({ ...newStudent, semester: Number(newStudent.semester) })
+      setCreateOpen(false)
+      setCreateSuccess(`Aluno e login cadastrados para ${newStudent.email.trim()}. Entregue a senha temporária ao aluno por um canal seguro.`)
+      setNewStudent({ name: '', ra: '', email: '', course: '', semester: '1', period: 'manha', phone: '', password: '' })
+      setPage(1); await refresh()
+    } catch (error: any) {
+      setCreateError(error.message || 'Não foi possível cadastrar o aluno.')
+    } finally {
+      setCreating(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Header */}
@@ -102,6 +123,12 @@ export default function AdminAlunos() {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => { setCreateError(null); setCreateOpen(true) }}
+            className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
+          >
+            <Plus className="w-4 h-4" /> Cadastrar aluno
+          </button>
+          <button
             onClick={() => loadStudents(page)}
             disabled={loading}
             className="p-2 text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg transition-colors"
@@ -118,6 +145,12 @@ export default function AdminAlunos() {
           </button>
         </div>
       </div>
+
+      {createSuccess && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 flex justify-between gap-3">
+          <span>{createSuccess}</span><button onClick={() => setCreateSuccess(null)} aria-label="Fechar aviso"><X className="w-4 h-4" /></button>
+        </div>
+      )}
 
       {/* Filter and Search Bar */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col">
@@ -279,6 +312,41 @@ export default function AdminAlunos() {
           </div>
         </div>
       </div>
+
+      {createOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <form onSubmit={handleCreateStudent} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 w-full max-w-2xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-5">
+              <div><h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Cadastrar aluno</h3><p className="text-xs text-gray-500">O cadastro acadêmico e o login serão criados juntos.</p></div>
+              <button type="button" onClick={() => setCreateOpen(false)} aria-label="Fechar"><X className="w-5 h-5 text-gray-400" /></button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {([
+                ['name', 'Nome completo', 'text'], ['ra', 'RA', 'text'], ['email', 'E-mail', 'email'],
+                ['course', 'Curso', 'text'], ['semester', 'Semestre', 'number'], ['phone', 'Telefone (opcional)', 'tel'],
+                ['password', 'Senha temporária (mínimo 8 caracteres)', 'password'],
+              ] as const).map(([key, label, type]) => (
+                <label key={key} className="text-xs font-medium text-gray-700 dark:text-slate-300">{label}
+                  <input required={key !== 'phone'} type={type} min={type === 'number' ? 1 : undefined} minLength={key === 'password' ? 8 : undefined} value={newStudent[key]}
+                    onChange={event => setNewStudent(current => ({ ...current, [key]: event.target.value }))}
+                    className="mt-1 w-full rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-500/30" />
+                </label>
+              ))}
+              <label className="text-xs font-medium text-gray-700 dark:text-slate-300">Turno
+                <select value={newStudent.period} onChange={event => setNewStudent(current => ({ ...current, period: event.target.value }))}
+                  className="mt-1 w-full rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm">
+                  <option value="manha">Manhã</option><option value="tarde">Tarde</option><option value="noite">Noite</option>
+                </select>
+              </label>
+            </div>
+            {createError && <p className="mt-4 text-sm text-red-600" role="alert">{createError}</p>}
+            <div className="mt-6 flex justify-end gap-3">
+              <button type="button" onClick={() => setCreateOpen(false)} className="px-4 py-2 rounded-lg border text-sm">Cancelar</button>
+              <button disabled={creating} className="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium disabled:opacity-50">{creating ? 'Cadastrando...' : 'Cadastrar aluno e login'}</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* Student Details Modal */}
       {selectedStudent && (
