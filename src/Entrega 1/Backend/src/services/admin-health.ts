@@ -1,3 +1,5 @@
+import { geminiFailureDiagnostic } from './gemini-diagnostics'
+
 export async function operationalHealth(checkDatabase: () => Promise<unknown>, env = process.env) {
   const checkedAt = new Date().toISOString()
   const checks = [{
@@ -19,6 +21,50 @@ export async function operationalHealth(checkDatabase: () => Promise<unknown>, e
     { id: 'r2', label: 'Cloudflare R2', status: r2Configured ? 'configurado' : 'nao_configurado', detail: r2Configured ? 'Credenciais configuradas. Disponibilidade externa não verificada.' : 'Credenciais de armazenamento incompletas.', checkedAt, latencyMs: null },
   )
   return { checkedAt, checks }
+}
+
+/** Read-only Google API probe. It validates access to model metadata without generating content. */
+export async function probeGeminiModel(env = process.env, timeoutMs = 10_000) {
+  const apiKey = (env.GEMINI_API_KEY || '').trim()
+  const model = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+  const configured = Boolean(apiKey && apiKey !== 'sua_chave_gemini_aqui' && apiKey.length > 10)
+
+  if (!configured) {
+    return { provider: 'google-gemini', model, configured: false, available: false, category: 'missing_api_key' as const }
+  }
+
+  const startedAt = Date.now()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}`, {
+      method: 'GET',
+      headers: { 'x-goog-api-key': apiKey },
+      signal: controller.signal,
+    })
+    const latencyMs = Date.now() - startedAt
+    if (response.ok) {
+      return { provider: 'google-gemini', model, configured: true, available: true, httpStatus: response.status, latencyMs }
+    }
+
+    const diagnostic = geminiFailureDiagnostic('health_probe', model, {
+      name: 'GoogleGeminiHealthProbeError', status: response.status, statusText: response.statusText,
+    })
+    return {
+      provider: 'google-gemini', model, configured: true, available: false,
+      httpStatus: response.status, category: diagnostic.category, latencyMs,
+    }
+  } catch (error) {
+    const diagnostic = geminiFailureDiagnostic('health_probe', model, error)
+    return {
+      provider: 'google-gemini', model, configured: true, available: false,
+      category: diagnostic.category, errorName: diagnostic.errorName, code: diagnostic.code,
+      latencyMs: Date.now() - startedAt,
+    }
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 /** Integration configuration can include API keys; administration lists only non-secret metadata. */

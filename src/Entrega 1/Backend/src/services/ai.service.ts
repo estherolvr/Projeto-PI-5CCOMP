@@ -6,7 +6,7 @@ import { geminiFailureDiagnostic } from './gemini-diagnostics'
 dotenv.config()
 
 const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
-const GEMINI_REQUEST_TIMEOUT_MS = 60_000
+const GEMINI_REQUEST_TIMEOUT_MS = 25_000
 
 export interface KBChunkMatch {
   docId: string

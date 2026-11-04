@@ -2,7 +2,7 @@ import { aiService } from '../services/ai.service'
 import { Router } from 'express'
 import { Prisma } from '@prisma/client'
 import { ACTIVE_TICKET_STATUSES, COMPLETED_TICKET_STATUSES, liveSlaStatus, metricTicketSelect, reportPeriod, statusAuditQuery, ticketAnalytics } from '../services/admin-metrics'
-import { operationalHealth, publicIntegrationConfig } from '../services/admin-health'
+import { operationalHealth, probeGeminiModel, publicIntegrationConfig } from '../services/admin-health'
 import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 
@@ -21,6 +21,11 @@ const publicStudentSelect = {
 
 adminRouter.get('/health', async (_req, res) => {
   res.json(await operationalHealth(() => prisma.$queryRaw`SELECT 1`))
+})
+
+adminRouter.get('/health/gemini', async (_req, res) => {
+  const result = await probeGeminiModel()
+  res.status(result.available ? 200 : 502).json(result)
 })
 
 // SLA Rules

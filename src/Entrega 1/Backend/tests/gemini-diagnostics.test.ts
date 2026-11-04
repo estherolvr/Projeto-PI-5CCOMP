@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { geminiFailureDiagnostic } from '../src/services/gemini-diagnostics'
+import { probeGeminiModel } from '../src/services/admin-health'
 
 test('Gemini HTTP failures expose safe status categories', () => {
   assert.deepEqual(
@@ -31,4 +32,11 @@ test('Gemini diagnostics never retain the message, prompt, or key from an error 
   assert.equal(serialized.includes('private prompt'), false)
   assert.equal(serialized.includes('AIzaSecretKeyValue'), false)
   assert.equal(diagnostic.category, 'network_or_runtime_fetch_failure')
+})
+
+test('Gemini model probe reports missing credentials without contacting Google', async () => {
+  assert.deepEqual(await probeGeminiModel({ GEMINI_MODEL: 'gemini-3.8-flash' }), {
+    provider: 'google-gemini', model: 'gemini-3.8-flash', configured: false,
+    available: false, category: 'missing_api_key',
+  })
 })
