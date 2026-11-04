@@ -722,14 +722,17 @@ export default function AsaAgendamentos() {
                             <ExternalLink size={14} />
                           </a>
                         )}
-                        <a
-                          href={api.appointments.getIcsUrl(apt.id)}
-                          download
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try { await api.appointments.downloadIcs(apt.id) }
+                            catch (error) { show(error instanceof Error ? error.message : 'Não foi possível exportar o calendário.', 'error') }
+                          }}
                           className="p-1 rounded text-gray-400 hover:text-gray-700"
                           title="Baixar .ics"
                         >
                           <Download size={14} />
-                        </a>
+                        </button>
                       </div>
 
                       <div className="flex items-center gap-1.5">

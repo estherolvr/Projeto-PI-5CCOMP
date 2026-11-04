@@ -1,4 +1,4 @@
-import { supabaseRequest, findInstitutionalUser } from '../services/supabase-auth'
+import { AuthenticationServiceError, InstitutionalAccessError, supabaseRequest, findInstitutionalUser } from '../services/supabase-auth'
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
 
@@ -36,7 +36,13 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
       const identity = await supabaseRequest('user', { headers: { Authorization: `Bearer ${token}` } })
       req.user = await findInstitutionalUser(identity.email) as AuthenticatedUser
       return next()
-    } catch {
+    } catch (error) {
+      if (error instanceof AuthenticationServiceError && error.statusCode !== 401) {
+        return res.status(error.statusCode).json({ error: error.message })
+      }
+      if (error instanceof InstitutionalAccessError) {
+        return res.status(403).json({ error: error.message })
+      }
       return res.status(401).json({ error: 'Sessão expirada ou usuário sem acesso. Faça login novamente.' })
     }
   }

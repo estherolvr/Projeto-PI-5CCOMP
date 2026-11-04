@@ -1,4 +1,4 @@
-import { supabaseRequest, findInstitutionalUser } from '../services/supabase-auth'
+import { AuthenticationServiceError, InstitutionalAccessError, supabaseRequest, findInstitutionalUser } from '../services/supabase-auth'
 import { Router } from 'express'
 import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken } from '../middleware/auth'
@@ -16,7 +16,13 @@ authRouter.post('/login', async (req, res) => {
     })
     const user = await findInstitutionalUser(session.user.email)
     return res.json({ token: session.access_token, user })
-  } catch {
+  } catch (error) {
+    if (error instanceof AuthenticationServiceError && error.statusCode !== 401) {
+      return res.status(error.statusCode).json({ error: error.message })
+    }
+    if (error instanceof InstitutionalAccessError) {
+      return res.status(403).json({ error: error.message })
+    }
     return res.status(401).json({ error: 'E-mail ou senha inválidos, ou usuário sem acesso institucional.' })
   }
 })

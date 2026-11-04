@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { Router, Response } from 'express'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
-import { appointmentService } from '../services/appointment.service'
+import { AppointmentError, appointmentService } from '../services/appointment.service'
 import { r2Service } from '../services/r2.service'
 import { prisma } from '../db'
 
@@ -14,7 +14,15 @@ export const appointmentRouter = Router()
 appointmentRouter.get('/slots', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { date } = req.query
-    const targetDate = String(date || new Date().toISOString().split('T')[0])
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+    const targetDate = String(date || today)
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(targetDate)
+    const parsed = match ? new Date(`${targetDate}T12:00:00-03:00`) : null
+    if (!match || !parsed || Number.isNaN(parsed.getTime()) || parsed.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }) !== targetDate) {
+      return res.status(400).json({ error: 'Informe uma data válida no formato AAAA-MM-DD.' })
+    }
+    if (targetDate < today) return res.status(400).json({ error: 'Não é possível consultar horários de uma data passada.' })
+    if ([0, 6].includes(parsed.getDay())) return res.status(400).json({ error: 'Os atendimentos presenciais acontecem de segunda a sexta-feira.' })
     const studentId = req.user?.role === 'aluno' ? req.user.id : undefined
     const result = await appointmentService.getAvailableSlots(targetDate, studentId)
     res.json({ date: targetDate, ...result })
@@ -190,7 +198,7 @@ appointmentRouter.post('/', authenticateToken, async (req: AuthenticatedRequest,
   } catch (error: any) {
     if (uploadedKey && !persisted) await r2Service.deleteObject(uploadedKey).catch(()=>false)
     console.error('Erro ao criar agendamento presencial:', error)
-    res.status(500).json({ error: error.message || 'Erro ao confirmar agendamento presencial.' })
+    res.status(error instanceof AppointmentError ? error.statusCode : 500).json({ error: error.message || 'Erro ao confirmar agendamento presencial.' })
   }
 })
 
@@ -288,7 +296,7 @@ appointmentRouter.patch('/:id/status', authenticateToken, async (req: Authentica
     res.json(updated)
   } catch (error: any) {
     console.error('Erro ao atualizar status do agendamento:', error)
-    res.status(500).json({ error: error.message || 'Erro ao atualizar status do agendamento.' })
+    res.status(error instanceof AppointmentError ? error.statusCode : 500).json({ error: error.message || 'Erro ao atualizar status do agendamento.' })
   }
 })
 

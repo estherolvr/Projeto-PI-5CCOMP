@@ -726,14 +726,17 @@ export default function AlunoAgendamento() {
                         Google Agenda
                       </a>
                     )}
-                    <a
-                      href={api.appointments.getIcsUrl(apt.id)}
-                      download={`agendamento-${apt.protocol}.ics`}
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try { await api.appointments.downloadIcs(apt.id) }
+                        catch (error) { setListError(error instanceof Error ? error.message : 'Não foi possível exportar o calendário.') }
+                      }}
                       className="inline-flex items-center gap-1.5 text-2xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700"
                     >
                       <Download size={12} />
                       .ICS
-                    </a>
+                    </button>
                   </div>
 
                   {(apt.status === 'confirmado' || apt.status === 'agendado') && (

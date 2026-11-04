@@ -421,7 +421,7 @@ getUsers: (role?: string) => {
         body: JSON.stringify({ status, resolutionNotes }),
       }),
     getDocument: (id: string) => request<{ name: string; type: string; size: string; dataUrl: string }>(`/appointments/${id}/document`),
-    getIcsUrl: (id: string) => getFullUrl(`/appointments/${id}/ics`),
+    downloadIcs: (id: string) => downloadFile(`/appointments/${encodeURIComponent(id)}/ics`),
     download: (id: string) => downloadFile(`/appointments/${encodeURIComponent(id)}/download`),
   },
 }

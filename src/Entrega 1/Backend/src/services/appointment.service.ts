@@ -1,5 +1,13 @@
 import { prisma } from '../db'
 import { AuthenticatedUser } from '../middleware/auth'
+import { randomUUID } from 'node:crypto'
+
+export class AppointmentError extends Error {
+  constructor(message: string, public readonly statusCode: number) {
+    super(message)
+    this.name = 'AppointmentError'
+  }
+}
 
 export interface CreateAppointmentDTO {
   studentId: string
@@ -44,8 +52,7 @@ export class AppointmentService {
    */
   private generateProtocol(): string {
     const year = new Date().getFullYear()
-    const random = Math.floor(1000 + Math.random() * 9000)
-    return `AG-${year}-${random}`
+    return `AG-${year}-${randomUUID().replaceAll('-', '').slice(0, 8).toUpperCase()}`
   }
 
   /**
@@ -177,11 +184,16 @@ export class AppointmentService {
 
     const hasBookingOnDate = !!studentAppointmentOnDate
 
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
+    const currentTime = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).format(new Date())
     const slots = this.DEFAULT_SLOTS.map(time => {
       const bookedCount = countMap[time] || 0
       const alreadyBookedByYou = studentBookedSet.has(time)
+      const isPast = date < today || (date === today && time <= currentTime)
       // Se o aluno já possui um agendamento neste dia, nenhum outro horário fica disponível para ele
-      const isAvailable = hasBookingOnDate ? false : bookedCount < MAX_PER_SLOT
+      const isAvailable = !isPast && !hasBookingOnDate && bookedCount < MAX_PER_SLOT
 
       return {
         time,
@@ -278,42 +290,17 @@ export class AppointmentService {
    * Cria novo agendamento presencial com validação, geração de protocolo e LGPD audit log
    */
   public async createAppointment(data: CreateAppointmentDTO, authorUser?: AuthenticatedUser) {
-    // 1. Obter dados cadastrais do aluno
-    let student = await prisma.student.findUnique({
+    const student = await prisma.student.findUnique({
       where: { id: data.studentId },
     })
 
-    if (!student) throw new Error('Selecione um aluno cadastrado para agendar o atendimento.')
+    if (!student) throw new AppointmentError('Selecione um aluno cadastrado para agendar o atendimento.', 400)
     const studentName = student.name
     const studentRa = student.ra
     const studentEmail = student.email
     const studentCourse = student.course
 
-    // 1.1 Regra de Negócio: Um aluno só pode marcar 1 horário presencial por dia
-    const existingStudentAppOnDate = await prisma.appointment.findFirst({
-      where: {
-        studentId: data.studentId,
-        date: data.date,
-        status: { in: ['agendado', 'confirmado', 'em_atendimento'] },
-      },
-    })
-    if (existingStudentAppOnDate) {
-      throw new Error(`Você já possui um agendamento presencial ativo para o dia ${data.date} às ${existingStudentAppOnDate.time} (Protocolo: ${existingStudentAppOnDate.protocol}). Pelas regras institucionais da Central ASA, cada estudante só pode marcar 1 horário por dia.`)
-    }
-
-    // 1.2 Validação de vaga: horário reservado fica indisponível para outros agendamentos
-    const slotBookedCount = await prisma.appointment.count({
-      where: {
-        date: data.date,
-        time: data.time,
-        status: { in: ['agendado', 'confirmado', 'em_atendimento'] },
-      },
-    })
-    if (slotBookedCount >= 1) {
-      throw new Error(`O horário das ${data.time} no dia ${data.date} já foi preenchido. Por favor, escolha outro horário disponível na grade.`)
-    }
-
-    // 2. Protocolo e links
+    // Protocolo com entropia suficiente para evitar colisões entre Workers.
     const protocol = this.generateProtocol()
     const location = 'Campus Liberdade · Bloco B · Térreo (Central ASA)'
     const gCalLink = this.buildGoogleCalendarUrl({
@@ -327,32 +314,38 @@ export class AppointmentService {
       notes: data.notes,
     })
 
-    // 3. Persistência
-    const appointment = await prisma.appointment.create({
-      omit: { documentData: true },
-      data: {
-        protocol,
-        studentId: data.studentId,
-        studentName,
-        studentRa,
-        studentEmail,
-        studentCourse,
-        subject: data.subject,
-        date: data.date,
-        time: data.time,
-        durationMinutes: data.durationMinutes || 30,
-        location,
-        desk: data.desk || 'Guichê Presencial ASA',
-        notes: data.notes || '',
-        status: 'confirmado',
-        googleCalendarLink: gCalLink,
-        documentName: data.documentName || null,
-        documentType: data.documentType || null,
-        documentSize: data.documentSize || null,
-        documentData: data.documentData || null,
-        r2Key: data.r2Key || null,
-      },
-    })
+    // O advisory lock é transacional no PostgreSQL e serializa reservas do mesmo
+    // dia/horário entre instâncias do Worker. SQLite é usado apenas nos testes locais.
+    const appointment = await prisma.$transaction(async tx => {
+      if (process.env.NODE_ENV === 'production') {
+        await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))', `appointment:${data.date}`)
+      }
+      const activeStatuses = ['agendado', 'confirmado', 'em_atendimento']
+      const existingStudentAppOnDate = await tx.appointment.findFirst({
+        where: { studentId: data.studentId, date: data.date, status: { in: activeStatuses } },
+      })
+      if (existingStudentAppOnDate) {
+        throw new AppointmentError(`Você já possui um agendamento presencial ativo para o dia ${data.date} às ${existingStudentAppOnDate.time} (Protocolo: ${existingStudentAppOnDate.protocol}).`, 409)
+      }
+      const slotBookedCount = await tx.appointment.count({
+        where: { date: data.date, time: data.time, status: { in: activeStatuses } },
+      })
+      if (slotBookedCount >= 1) {
+        throw new AppointmentError(`O horário das ${data.time} no dia ${data.date} já foi preenchido. Escolha outro horário disponível.`, 409)
+      }
+      return tx.appointment.create({
+        omit: { documentData: true },
+        data: {
+          protocol, studentId: data.studentId, studentName, studentRa, studentEmail, studentCourse,
+          subject: data.subject, date: data.date, time: data.time,
+          durationMinutes: data.durationMinutes || 30, location,
+          desk: data.desk || 'Guichê Presencial ASA', notes: data.notes || '', status: 'confirmado',
+          googleCalendarLink: gCalLink, documentName: data.documentName || null,
+          documentType: data.documentType || null, documentSize: data.documentSize || null,
+          documentData: data.documentData || null, r2Key: data.r2Key || null,
+        },
+      })
+    }, { timeout: 8_000 })
 
     // 4. Registro de Auditoria / LGPD (Rastreabilidade e Finalidade de Tratamento)
     try {
@@ -385,8 +378,20 @@ export class AppointmentService {
     user?: AuthenticatedUser
   ) {
     const existing = await prisma.appointment.findUnique({ where: { id }, omit: {documentData:true} })
-    if (!existing) {
-      throw new Error('Agendamento não encontrado.')
+    if (!existing) throw new AppointmentError('Agendamento não encontrado.', 404)
+
+    const transitions: Record<string, string[]> = {
+      agendado: ['confirmado', 'cancelado'],
+      confirmado: ['em_atendimento', 'cancelado', 'ausente'],
+      em_atendimento: ['concluido', 'cancelado', 'ausente'],
+      concluido: [], cancelado: [], ausente: [],
+    }
+    if (!(status in transitions)) throw new AppointmentError('Status de agendamento inválido.', 400)
+    if (status !== existing.status && !transitions[existing.status]?.includes(status)) {
+      throw new AppointmentError(`Não é possível alterar um agendamento de ${existing.status} para ${status}.`, 409)
+    }
+    if (status === 'concluido' && (!resolutionNotes || !resolutionNotes.trim())) {
+      throw new AppointmentError('Informe as observações da conclusão do atendimento.', 400)
     }
 
     const updateData: any = { status }
@@ -437,7 +442,7 @@ export class AppointmentService {
    * Métricas agregadas do calendário de agendamentos
    */
   public async getMetrics() {
-    const today = new Date().toISOString().split('T')[0]
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' })
 
     const [total, todayCount, inProgressCount, completedCount, cancelledCount] = await Promise.all([
       prisma.appointment.count(),
@@ -453,7 +458,9 @@ export class AppointmentService {
       inProgressCount,
       completedCount,
       cancelledCount,
-      attendanceRate: total > 0 ? Math.round(((completedCount) / Math.max(1, total - cancelledCount)) * 100) : 100,
+      attendanceRate: total - cancelledCount > 0
+        ? Math.round((completedCount / (total - cancelledCount)) * 100)
+        : 0,
     }
   }
 }

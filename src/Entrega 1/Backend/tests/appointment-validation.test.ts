@@ -120,7 +120,38 @@ test('appointments validate creation and protect calendar exports by ownership',
       const stored=await prisma.appointment.findUniqueOrThrow({where:{id:created.data.id}})
       assert.equal(stored.documentData,null);assert.ok(stored.r2Key);assert.ok(objects.has(stored.r2Key!))
       assert.equal(created.data.documentData,undefined)
-      const count=objects.size;assert.equal((await request('aluno',body,'student-2')).status,500);assert.equal(objects.size,count)
+      const count=objects.size;assert.equal((await request('aluno',body,'student-2')).status,409);assert.equal(objects.size,count)
+    })
+    await t.test('slots reject invalid calendar dates and status transitions are enforced', async () => {
+      const headers = { Authorization: `Bearer ${token('staff-1', 'asa')}`, 'Content-Type': 'application/json' }
+      for (const date of ['2020-01-01', '2026-02-30', futureSaturday.toISOString().slice(0, 10)]) {
+        const response = await fetch(`${baseUrl}/appointments/slots?date=${date}`, { headers })
+        assert.equal(response.status, 400)
+      }
+      const invalid = await fetch(`${baseUrl}/appointments/${byRa.data.id}/status`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'qualquer' }),
+      })
+      assert.equal(invalid.status, 400)
+      const premature = await fetch(`${baseUrl}/appointments/${byRa.data.id}/status`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'concluido', resolutionNotes: 'feito' }),
+      })
+      assert.equal(premature.status, 409)
+      const started = await fetch(`${baseUrl}/appointments/${byRa.data.id}/status`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'em_atendimento' }),
+      })
+      assert.equal(started.status, 200)
+      const missingNotes = await fetch(`${baseUrl}/appointments/${byRa.data.id}/status`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'concluido' }),
+      })
+      assert.equal(missingNotes.status, 400)
+      const completed = await fetch(`${baseUrl}/appointments/${byRa.data.id}/status`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'concluido', resolutionNotes: 'Atendimento concluído.' }),
+      })
+      assert.equal(completed.status, 200)
+      const reopen = await fetch(`${baseUrl}/appointments/${byRa.data.id}/status`, {
+        method: 'PATCH', headers, body: JSON.stringify({ status: 'em_atendimento' }),
+      })
+      assert.equal(reopen.status, 409)
     })
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
