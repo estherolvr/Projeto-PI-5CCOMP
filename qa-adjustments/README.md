@@ -30,9 +30,13 @@ E2E_ALLOW_TEST_WRITES=1 npx playwright test --config qa-adjustments/playwright.c
 | ADJ-004 | Admin | Descrição real do agendamento nos detalhes após reload |
 | ADJ-005 | Todos | Permissões no backend e frontend; remoção de Automação/Regras |
 | ADJ-006 | ASA | Monitor de SLA e navegação/consulta das notificações |
+| ADJ-007 | Aluno | Agendamento sem anexo e com JPEG grande, persistência, download e cancelamento do registro QA |
+| ADJ-008 | Aluno e ASA | Marcar todas como lidas com persistência após reload |
 
 ADJ-004 requer um agendamento com descrição da conta de aluno de teste. Se não existir, falha com `PRECONDITION` e deve ser contabilizado como bloqueado, nunca aprovado. Credenciais ausentes e autorização de gravação desabilitada seguem a mesma regra. Não há skips ou retries automáticos que ocultem falhas.
 
 Evidências ficam em `work/qa-adjustments/<run>/`: resultados JSON, relatório HTML, logs HTTP/console sem tokens e screenshots com campos pessoais mascarados. Estados de autenticação permanecem somente em memória; traces e vídeos ficam desativados para não registrar senhas/tokens.
 
 As alterações de SLA (criação/edição, primeira resposta, vencimento e reabertura) são cobertas adicionalmente pelos testes de backend com banco isolado. A execução em produção consulta o monitor sem alterar as regras reais.
+
+ADJ-008 grava o estado de leitura da conta de teste. Execute somente com contas autorizadas para essa operação; requer notificações não lidas (ADJ-007 gera eventos de QA).

@@ -1,6 +1,6 @@
-import {test,expect,api,evidence} from './fixtures'
-for(const role of ['student','asa'] as const) test(`ADJ-008 ${role} marca todas como lidas e preserva estado após recarregar`,async({session},info)=>{
- const page=await session(role)
+import {test,expect,api,evidence,allowWrites} from './fixtures'
+for(const role of ['student','asa'] as const) test(`ADJ-008 @write ${role} marca todas como lidas e preserva estado após recarregar`,async({session},info)=>{
+ allowWrites();const page=await session(role)
  const initial=await api(page,'/api/notifications');expect(initial.status).toBe(200)
  expect(initial.data.some((n:any)=>!n.read),'Há notificações não lidas de registros de teste').toBe(true)
  await page.getByRole('button',{name:'Notificações',exact:true}).click()

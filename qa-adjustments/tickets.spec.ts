@@ -16,6 +16,7 @@ test('ADJ-001 @write Aluno anexa chamado; ASA responde, resolve e consulta histÃ
   const createdPromise = student.waitForResponse(response => new URL(response.url()).pathname.replace(/\/$/, '') === '/api/tickets' && response.request().method() === 'POST')
   await student.getByRole('button', { name: 'Confirmar e abrir chamado', exact: true }).click()
   const created = await createdPromise
+  if(created.status()!==201) await info.attach('ticket-http-error',{body:Buffer.from((await created.text()).slice(0,2000)),contentType:'text/plain'})
   expect(created.status()).toBe(201)
   const ticket = await created.json()
   await info.attach('controlled-record', { body: Buffer.from(JSON.stringify({ kind: 'test-ticket', id: ticket.id, number: ticket.number, marker })), contentType: 'application/json' })

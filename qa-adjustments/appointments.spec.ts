@@ -2,6 +2,7 @@ import { test, expect, api, allowWrites, evidence } from './fixtures'
 for(const withFile of [false,true]) test(`ADJ-007 @write agendamento presencial ${withFile ? 'com anexo JPEG' : 'sem anexo'} persiste e libera vaga após cancelamento`, async ({session}, info)=>{
  allowWrites();const page=await session('student');await page.goto('/aluno/agendamento');
  const mine=await api(page,'/api/appointments/my');expect(mine.status).toBe(200);
+ await expect(page.getByRole('button').filter({hasText:/Data: \d{4}/}).first()).toBeVisible();
  const dates=await page.getByRole('button').allTextContents();
  const date=dates.map(t=>t.match(/Data: (\d{4}-\d{2}-\d{2})/)?.[1]).filter(Boolean).find(d=>!mine.data.some((a:any)=>a.date===d&&['agendado','confirmado','em_atendimento'].includes(a.status)))!;
  expect(date).toBeTruthy();await page.getByRole('button').filter({hasText:`Data: ${date}`}).click();
