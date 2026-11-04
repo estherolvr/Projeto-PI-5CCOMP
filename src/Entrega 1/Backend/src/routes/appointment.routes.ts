@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { Router, Response } from 'express'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 import { appointmentService } from '../services/appointment.service'
@@ -108,6 +109,8 @@ appointmentRouter.get('/:id', authenticateToken, async (req: AuthenticatedReques
  * Cria novo agendamento presencial
  */
 appointmentRouter.post('/', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  let uploadedKey: string | undefined
+  let persisted = false
   try {
     const {
       subject,
@@ -155,6 +158,16 @@ appointmentRouter.post('/', authenticateToken, async (req: AuthenticatedRequest,
       return res.status(400).json({ error: 'Os atendimentos presenciais acontecem de segunda a sexta-feira.' })
     }
 
+    if (documentData) {
+      if (typeof documentData !== 'string' || !documentData.startsWith('data:') || documentData.length > 12*1024*1024) return res.status(400).json({error:'Envie um documento de até 8 MB.'})
+      if (!r2Service.isConfigured()) return res.status(503).json({error:'Armazenamento indisponível. O agendamento não foi confirmado; tente novamente.'})
+      const match=documentData.match(/^data:([^;]+);base64,([\s\S]+)$/)
+      if(!match) return res.status(400).json({error:'Arquivo em formato inválido.'})
+      const bytes=Buffer.from(match[2],'base64')
+      if(bytes.length>8*1024*1024) return res.status(400).json({error:'Envie um documento de até 8 MB.'})
+      uploadedKey=`agendamentos/${randomUUID()}/original`
+      await r2Service.uploadBuffer(uploadedKey,bytes,match[1])
+    }
     const appointment = await appointmentService.createAppointment({
       studentId: targetStudentId,
       studentName,
@@ -168,29 +181,14 @@ appointmentRouter.post('/', authenticateToken, async (req: AuthenticatedRequest,
       documentName,
       documentType,
       documentSize,
-      documentData,
+      r2Key: uploadedKey,
     }, req.user)
 
-    // Sincronização de arquivo no Cloudflare R2 e persistência do r2Key no banco
-    if (documentData && r2Service.isConfigured()) {
-      try {
-        const sanitizedName = (documentName || 'anexo').replace(/[^a-zA-Z0-9._-]/g, '_')
-        const r2Key = `agendamentos/${appointment.id}/${sanitizedName}`
-        await r2Service.uploadBase64(r2Key, documentData)
-        // Salva a chave R2 no registro do agendamento
-        await prisma.appointment.update({
-          where: { id: appointment.id },
-          data: { r2Key },
-        })
-        appointment.r2Key = r2Key
-        console.log(`☁️ Documento do agendamento persistido no R2 e r2Key salvo: ${r2Key}`)
-      } catch (r2Err: any) {
-        console.warn('Falha na persistência R2 do anexo do agendamento:', r2Err.message)
-      }
-    }
+    persisted = true
 
     res.status(201).json(appointment)
   } catch (error: any) {
+    if (uploadedKey && !persisted) await r2Service.deleteObject(uploadedKey).catch(()=>false)
     console.error('Erro ao criar agendamento presencial:', error)
     res.status(500).json({ error: error.message || 'Erro ao confirmar agendamento presencial.' })
   }
@@ -203,9 +201,9 @@ appointmentRouter.post('/', authenticateToken, async (req: AuthenticatedRequest,
 appointmentRouter.get('/:id/document', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const id = String(req.params.id)
-    const appointment = await appointmentService.getById(id)
+    const appointment = await appointmentService.getById(id, true)
 
-    if (!appointment || !appointment.documentData) {
+    if (!appointment || (!appointment.documentData && !appointment.r2Key)) {
       return res.status(404).json({ error: 'Nenhum documento anexo encontrado para este agendamento.' })
     }
 
@@ -213,11 +211,14 @@ appointmentRouter.get('/:id/document', authenticateToken, async (req: Authentica
       return res.status(403).json({ error: 'Acesso não autorizado ao documento deste agendamento (LGPD).' })
     }
 
+    let dataUrl=appointment.documentData
+    if(appointment.r2Key){const file=await r2Service.getFile(appointment.r2Key);if(file)dataUrl=`data:${file.contentType};base64,${file.buffer.toString('base64')}`}
+    if(!dataUrl)return res.status(404).json({error:'Arquivo não encontrado.'})
     res.json({
       name: appointment.documentName || 'documento-agendamento',
       type: appointment.documentType || 'application/octet-stream',
       size: appointment.documentSize || '0 KB',
-      dataUrl: appointment.documentData,
+      dataUrl,
     })
   } catch (error: any) {
     console.error('Erro ao buscar documento do agendamento:', error)
@@ -250,8 +251,9 @@ appointmentRouter.get('/:id/download', authenticateToken, async (req: Authentica
       const file=await r2Service.getFile(appointment.r2Key)
       if(file){res.setHeader('Content-Type',file.contentType);res.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(appointment.documentName||'anexo')}`);return res.send(file.buffer)}
     }
-    if (appointment.documentData) {
-      const match=appointment.documentData.match(/^data:([^;]+);base64,([\s\S]+)$/)
+    const legacy=await prisma.appointment.findUnique({where:{id},select:{documentData:true}})
+    if (legacy?.documentData) {
+      const match=legacy.documentData.match(/^data:([^;]+);base64,([\s\S]+)$/)
       if(match){res.setHeader('Content-Type',match[1]);res.setHeader('Content-Disposition',`attachment; filename*=UTF-8''${encodeURIComponent(appointment.documentName||'anexo')}`);return res.send(Buffer.from(match[2],'base64'))}
     }
 

@@ -1,0 +1,16 @@
+import {test,expect,api,evidence} from './fixtures'
+for(const role of ['student','asa'] as const) test(`ADJ-008 ${role} marca todas como lidas e preserva estado após recarregar`,async({session},info)=>{
+ const page=await session(role)
+ const initial=await api(page,'/api/notifications');expect(initial.status).toBe(200)
+ expect(initial.data.some((n:any)=>!n.read),'Há notificações não lidas de registros de teste').toBe(true)
+ await page.getByRole('button',{name:'Notificações',exact:true}).click()
+ const dialog=page.getByRole('dialog',{name:'Notificações recentes'})
+ const saved=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/notifications/read-all'&&r.request().method()==='PATCH')
+ await dialog.getByRole('button',{name:'Marcar todas como lidas',exact:true}).click()
+ expect((await saved).status()).toBe(200)
+ await expect(dialog.getByRole('button',{name:'Marcar todas como lidas',exact:true})).toBeDisabled()
+ await page.reload();const feed=await api(page,'/api/notifications')
+ expect(feed.status).toBe(200);expect(feed.data.every((n:any)=>n.read)).toBe(true)
+ await page.getByRole('button',{name:'Notificações',exact:true}).click()
+ await evidence(page,info,`${role}-all-read-persisted`)
+})

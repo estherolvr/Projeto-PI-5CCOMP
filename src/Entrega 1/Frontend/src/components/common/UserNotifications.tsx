@@ -11,25 +11,34 @@ export function useNotifications() {
   const query = useApiQuery(api.notifications.list)
   const [actionError, setActionError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
+  const [readIds, setReadIds] = useState<Set<string>>(new Set())
   useEffect(() => {
-    const refresh = () => { void query.refresh() }
-    window.addEventListener(READ_EVENT, refresh)
-    return () => window.removeEventListener(READ_EVENT, refresh)
-  }, [query.refresh])
-  async function read(notification: UserNotification) {
-    if (notification.read) return true
-    setBusy(notification.id)
-    setActionError(null)
+    const sync = (event: Event) => {
+      const {ids, value} = (event as CustomEvent<{ids:string[];value:boolean}>).detail
+      setReadIds(previous => {const next=new Set(previous);for(const id of ids) value ? next.add(id) : next.delete(id);return next})
+    }
+    window.addEventListener(READ_EVENT, sync)
+    return () => window.removeEventListener(READ_EVENT, sync)
+  }, [])
+  const data=query.data?.map(item=>({...item,read:item.read||readIds.has(item.id)})) || null
+  async function save(ids:string[], all:boolean) {
+    if (!ids.length) return true
+    setBusy(all ? 'all' : ids[0]);setActionError(null)
+    const notify=(value:boolean)=>window.dispatchEvent(new CustomEvent(READ_EVENT,{detail:{ids,value}}))
+    notify(true)
     try {
-      await api.notifications.read(notification.id)
-      window.dispatchEvent(new Event(READ_EVENT))
+      if(all) await api.notifications.readAll()
+      else await api.notifications.read(ids[0])
       return true
-    } catch (error) {
-      setActionError(error instanceof Error ? error.message : 'Não foi possível atualizar a notificação.')
+    } catch(error) {
+      notify(false)
+      setActionError(error instanceof Error ? error.message : 'Não foi possível salvar a leitura. Tente novamente.')
       return false
-    } finally { setBusy(null) }
+    } finally {setBusy(null)}
   }
-  return { ...query, actionError, busy, read, unread: query.data?.filter(item => !item.read).length || 0 }
+  const read=(notification:UserNotification)=>notification.read ? Promise.resolve(true) : save([notification.id],false)
+  const readAll=()=>save((data||[]).filter(item=>!item.read).map(item=>item.id),true)
+  return { ...query, data, actionError, busy, read, readAll, unread: data?.filter(item => !item.read).length || 0 }
 }
 
 export function NotificationItems({ items, busy, onRead, onOpen }: {
@@ -48,7 +57,7 @@ export function NotificationItems({ items, busy, onRead, onOpen }: {
     <time className="block text-xs text-gray-400 mt-1" dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString('pt-BR')}</time>
     <div className="flex flex-wrap gap-4 mt-2 text-xs">
       <button type="button" disabled={busy !== null} onClick={() => void onOpen(item)} className="text-brand-600 underline disabled:opacity-50">Abrir solicitação</button>
-      {!item.read ? <button type="button" disabled={busy !== null} onClick={() => void onRead(item)} className="text-brand-600 underline disabled:opacity-50">{busy === item.id ? 'Salvando…' : 'Marcar como lida'}</button> : <span className="text-gray-400">Lida</span>}
+      {!item.read ? <button type="button" disabled={busy !== null} onClick={() => void onRead(item)} className="text-brand-600 underline disabled:opacity-50">{busy === item.id ? 'Salvando…' : 'Marcar como lida'}</button> : <span className="text-gray-400">{busy === item.id || busy === 'all' ? 'Salvando…' : 'Lida'}</span>}
     </div>
   </article>)}</>
 }
@@ -76,6 +85,7 @@ export default function UserNotifications() {
     </button>
     {open && <section role="dialog" aria-label="Notificações recentes" className="fixed right-4 top-16 z-50 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-auto bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl shadow-xl p-4">
       <div className="flex justify-between mb-3"><h2 className="font-semibold dark:text-slate-100">Notificações recentes</h2><button type="button" aria-label="Fechar notificações" onClick={() => setOpen(false)}><X className="w-4 h-4" /></button></div>
+      <button type="button" disabled={!query.unread || query.busy !== null} onClick={() => void query.readAll()} className="text-xs text-brand-600 underline disabled:opacity-50 mb-2">{query.busy === 'all' ? 'Salvando…' : 'Marcar todas como lidas'}</button>
       {query.actionError && <p role="alert" className="text-sm text-red-600">{query.actionError}</p>}
       <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
         {!query.data?.length ? <p className="text-sm text-gray-500 py-4">Nenhuma notificação por enquanto.</p> : <NotificationItems items={query.data} busy={query.busy} onRead={query.read} onOpen={openNotification} />}

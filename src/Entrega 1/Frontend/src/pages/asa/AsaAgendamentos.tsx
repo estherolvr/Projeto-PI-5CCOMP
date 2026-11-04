@@ -73,7 +73,7 @@ export default function AsaAgendamentos() {
 
   const handleOpenDocument = (apt: Appointment) => {
     if (!apt.documentName && !apt.documentData && !(apt as any).r2Key) return
-    if ((apt as any).r2Key && !apt.documentData) {
+    if (!apt.documentData) {
       const token = localStorage.getItem('asaia_auth_token') || ''
       const url = api.appointments.getDownloadUrl(apt.id)
       window.open(`${url}?token=${encodeURIComponent(token)}`, '_blank')

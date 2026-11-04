@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { authenticateToken, requireRole, type AuthenticatedRequest } from '../middleware/auth'
-import { listUserNotifications, markNotificationRead } from '../services/notifications.service'
+import { listUserNotifications, markNotificationRead, markAllNotificationsRead } from '../services/notifications.service'
 
 export const notificationsRouter = Router()
 notificationsRouter.use(authenticateToken, requireRole(['aluno','asa','admin']))
@@ -8,6 +8,10 @@ notificationsRouter.use(authenticateToken, requireRole(['aluno','asa','admin']))
 notificationsRouter.get('/', async (req:AuthenticatedRequest,res)=>{
   try {res.json(await listUserNotifications(req.user!))}
   catch {res.status(500).json({error:'Não foi possível carregar as notificações.'})}
+})
+notificationsRouter.patch('/read-all', async (req:AuthenticatedRequest,res)=>{
+  try {res.json(await markAllNotificationsRead(req.user!))}
+  catch {res.status(500).json({error:'Não foi possível marcar todas as notificações como lidas.'})}
 })
 notificationsRouter.patch('/:id/read', async (req:AuthenticatedRequest,res)=>{
   try {

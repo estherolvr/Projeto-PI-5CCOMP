@@ -17,6 +17,7 @@ export interface CreateAppointmentDTO {
   documentType?: string
   documentSize?: string
   documentData?: string
+  r2Key?: string
 }
 
 export interface AppointmentFilterDTO {
@@ -228,6 +229,7 @@ export class AppointmentService {
 
     const appointments = await prisma.appointment.findMany({
       where,
+      omit: { documentData: true },
       orderBy: [
         { date: 'desc' },
         { time: 'asc' },
@@ -248,6 +250,7 @@ export class AppointmentService {
   public async getStudentAppointments(studentId: string) {
     return prisma.appointment.findMany({
       where: { studentId },
+      omit: { documentData: true },
       orderBy: [
         { date: 'desc' },
         { time: 'asc' },
@@ -258,9 +261,10 @@ export class AppointmentService {
   /**
    * Retorna detalhe de um agendamento específico
    */
-  public async getById(id: string) {
+  public async getById(id: string, includeDocument = false) {
     return prisma.appointment.findUnique({
       where: { id },
+      omit: { documentData: !includeDocument },
       include: {
         student: true,
         attendant: {
@@ -325,6 +329,7 @@ export class AppointmentService {
 
     // 3. Persistência
     const appointment = await prisma.appointment.create({
+      omit: { documentData: true },
       data: {
         protocol,
         studentId: data.studentId,
@@ -345,6 +350,7 @@ export class AppointmentService {
         documentType: data.documentType || null,
         documentSize: data.documentSize || null,
         documentData: data.documentData || null,
+        r2Key: data.r2Key || null,
       },
     })
 
@@ -378,7 +384,7 @@ export class AppointmentService {
     resolutionNotes?: string,
     user?: AuthenticatedUser
   ) {
-    const existing = await prisma.appointment.findUnique({ where: { id } })
+    const existing = await prisma.appointment.findUnique({ where: { id }, omit: {documentData:true} })
     if (!existing) {
       throw new Error('Agendamento não encontrado.')
     }
@@ -394,6 +400,7 @@ export class AppointmentService {
     }
 
     const updated = await prisma.appointment.update({
+      omit: { documentData: true },
       where: { id },
       data: updateData,
     })

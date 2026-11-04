@@ -95,9 +95,10 @@ export async function listUserNotifications(user: AuthenticatedUser, now = new D
       priority:'medium',link:student?'/aluno/agendamento':`${prefix}/agendamentos`,createdAt:appointment.updatedAt.toISOString(),read:false})
   }
   const recent=notifications.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||a.id.localeCompare(b.id)).slice(0,100)
-  const receipts=await prisma.auditEvent.findMany({where:{userId:user.id,action:'notification.read',resource:'Notification',resourceId:{in:recent.map(item=>item.id)}},select:{resourceId:true}})
+  const receipts=await prisma.auditEvent.findMany({where:{userId:user.id,action:'notification.read',resource:'Notification',resourceId:{in:['all',...recent.map(item=>item.id)]}},select:{resourceId:true,createdAt:true}})
   const read=new Set(receipts.map(receipt=>receipt.resourceId))
-  return recent.map(item=>({...item,read:read.has(item.id)}))
+  const allReadAt=receipts.find(receipt=>receipt.resourceId==='all')?.createdAt.getTime() || 0
+  return recent.map(item=>({...item,read:read.has(item.id)||new Date(item.createdAt).getTime()<=allReadAt}))
 }
 
 export async function markNotificationRead(user:AuthenticatedUser,id:string):Promise<UserNotification|null>{
@@ -107,4 +108,11 @@ export async function markNotificationRead(user:AuthenticatedUser,id:string):Pro
   await prisma.auditEvent.upsert({where:{id:receiptId},update:{},create:{id:receiptId,userId:user.id,userName:user.name,userRole:user.role,
     action:'notification.read',resource:'Notification',resourceId:id,details:null,severity:'info'}})
   return {...notification,read:true}
+}
+
+export async function markAllNotificationsRead(user:AuthenticatedUser){
+  const id='notification-read-all-'+createHash('sha256').update(user.id).digest('hex')
+  const readAt=new Date()
+  await prisma.auditEvent.upsert({where:{id},update:{createdAt:readAt},create:{id,userId:user.id,userName:user.name,userRole:user.role,action:'notification.read',resource:'Notification',resourceId:'all',createdAt:readAt,severity:'info'}})
+  return {readAt:readAt.toISOString()}
 }

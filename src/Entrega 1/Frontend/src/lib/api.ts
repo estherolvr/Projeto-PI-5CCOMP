@@ -71,6 +71,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const api = {
   notifications: {
+    readAll: () => request<{readAt:string}>('/notifications/read-all', { method: 'PATCH' }),
     list: () => request<UserNotification[]>('/notifications'),
     read: (id: string) => request<UserNotification>(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' }),
   },
@@ -338,6 +339,7 @@ getUsers: (role?: string) => {
           createdAt: string
         }>
       }>('/admin/feedback'),
+    markAllNotificationsRead: () => request<{count:number}>('/admin/notifications/read-all', {method:'PATCH'}),
     getNotifications: () => request<any[]>('/admin/notifications'),
     markNotificationRead: (id: string) =>
       request<any>(`/admin/notifications/${id}/read`, { method: 'PATCH' }),

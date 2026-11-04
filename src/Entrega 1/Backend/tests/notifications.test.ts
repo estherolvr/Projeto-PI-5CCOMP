@@ -89,6 +89,16 @@ test('notification feed and read receipts respect the authenticated recipient', 
       await prisma.ticketMessage.create({data:{ticketId:'tc',senderId:'staff',senderName:'staff',senderRole:'asa',content:'Primeira resposta pública'}})
       assert.ok(!(await request('','staff')).data.some((n:any)=>n.id.startsWith('sla-first-response:tc:')))
     })
+    await t.test('bulk read is scoped, idempotent, and does not swallow future notifications',async()=>{
+      const before=(await request('','b')).data
+      assert.equal((await request('/read-all','a','PATCH')).status,200)
+      assert.ok((await request()).data.every((n:any)=>n.read))
+      assert.deepEqual((await request('','b')).data,before)
+      assert.equal((await request('/read-all','a','PATCH')).status,200)
+      assert.equal(await prisma.auditEvent.count({where:{userId:'a',resourceId:'all',action:'notification.read'}}),1)
+      await prisma.ticketMessage.create({data:{id:'after-bulk',ticketId:'ta',senderId:'staff',senderName:'staff',senderRole:'asa',content:'Nova resposta',createdAt:new Date(Date.now()+1000)}})
+      assert.equal((await request()).data.find((n:any)=>n.id==='ticket-message:after-bulk').read,false)
+    })
   } finally {
     await prisma.$disconnect();await new Promise<void>(r=>server.close(()=>r()));rmSync(dir,{recursive:true,force:true})
   }

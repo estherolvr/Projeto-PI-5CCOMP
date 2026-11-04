@@ -236,6 +236,11 @@ adminRouter.get('/notifications', authenticateToken, async (req: AuthenticatedRe
   }
 })
 
+adminRouter.patch('/notifications/read-all', authenticateToken, requireRole(['admin']), async (_req, res) => {
+  try {const result=await prisma.notification.updateMany({where:{read:false},data:{read:true}});res.json(result)}
+  catch {res.status(500).json({error:'Não foi possível marcar as notificações como lidas.'})}
+})
+
 adminRouter.patch('/notifications/:id/read', authenticateToken, async (req, res) => {
   try {
     const id = String(req.params.id)

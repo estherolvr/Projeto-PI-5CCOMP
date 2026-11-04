@@ -1,3 +1,4 @@
+import { withRuntimeContext } from '../src/services/runtime-context'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -31,6 +32,8 @@ test('appointments validate creation and protect calendar exports by ownership',
   ])
   const app = express()
   app.use(express.json())
+  const objects=new Map<string,Uint8Array>()
+  app.use((_req,_res,next)=>withRuntimeContext({storage:{async put(key,bytes){objects.set(key,new Uint8Array(bytes))},async get(key){const b=objects.get(key);return b?{arrayBuffer:async()=>b.buffer as ArrayBuffer}:null},async delete(key){objects.delete(key)}},waitUntil:()=>{}},next))
   app.use('/appointments', appointmentRouter)
   const server = app.listen(0, '127.0.0.1')
   await new Promise<void>(resolve => server.once('listening', resolve))
@@ -99,6 +102,25 @@ test('appointments validate creation and protect calendar exports by ownership',
         assert.ok(text.includes('BEGIN:VCALENDAR'))
         assert.ok(text.includes(valid.notes))
       }
+    })
+    await t.test('lists and details exclude file bytes while authorized download retains original', async()=>{
+      const bytes=Buffer.alloc(1024*1024,65)
+      await prisma.appointment.update({where:{id:byRa.data.id},data:{documentName:'test.txt',documentType:'text/plain',documentData:'data:text/plain;base64,'+bytes.toString('base64')}})
+      for(const [path,id,role] of [['/my','student-1','aluno'],['','staff-1','asa'],['/'+byRa.data.id,'student-1','aluno']]){
+        const response=await fetch(baseUrl+'/appointments'+path,{headers:{Authorization:`Bearer ${token(id,role)}`}})
+        assert.equal(response.status,200)
+        const text=await response.text();assert.ok(text.length<10000);assert.ok(!text.includes('documentData'))
+      }
+      const file=await fetch(baseUrl+'/appointments/'+byRa.data.id+'/download',{headers:{Authorization:`Bearer ${token('student-1','aluno')}`}})
+      assert.equal(file.status,200);assert.deepEqual(Buffer.from(await file.arrayBuffer()),bytes)
+    })
+    await t.test('new appointment attachments live in object storage and failed bookings clean up uploads',async()=>{
+      const body={...valid,time:'09:15',documentName:'qa.jpg',documentType:'image/jpeg',documentData:'data:image/jpeg;base64,/9j/2Q=='}
+      const created=await request('aluno',body,'student-2');assert.equal(created.status,201)
+      const stored=await prisma.appointment.findUniqueOrThrow({where:{id:created.data.id}})
+      assert.equal(stored.documentData,null);assert.ok(stored.r2Key);assert.ok(objects.has(stored.r2Key!))
+      assert.equal(created.data.documentData,undefined)
+      const count=objects.size;assert.equal((await request('aluno',body,'student-2')).status,500);assert.equal(objects.size,count)
     })
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
