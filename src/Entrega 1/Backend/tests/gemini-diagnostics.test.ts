@@ -16,6 +16,7 @@ test('Gemini HTTP failures expose safe status categories', () => {
   )
   assert.equal(geminiFailureDiagnostic('chat_response', 'gemini-3.8-flash', { status: 404 }).category, 'model_or_endpoint_not_found')
   assert.equal(geminiFailureDiagnostic('chat_response', 'gemini-3.8-flash', { status: 429 }).category, 'quota_or_rate_limit')
+  assert.equal(geminiFailureDiagnostic('generation_probe', 'gemini-3.8-flash', { status: 503, providerStatus: 'UNAVAILABLE' }).category, 'provider_unavailable')
 })
 
 test('Gemini timeouts and transport failures are distinguished without raw error text', () => {
@@ -46,4 +47,9 @@ test('Gemini generation probe reports missing credentials without contacting Goo
     provider: 'google-gemini', model: 'gemini-3.8-flash', configured: false,
     available: false, category: 'missing_api_key',
   })
+})
+
+test('diagnostic probes reject unapproved model overrides', async () => {
+  assert.equal((await probeGeminiModel({}, 10_000, 'unexpected-model')).category, 'model_not_allowed')
+  assert.equal((await probeGeminiGeneration({}, 20_000, 'unexpected-model')).category, 'model_not_allowed')
 })

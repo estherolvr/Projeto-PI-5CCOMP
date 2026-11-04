@@ -23,12 +23,31 @@ export async function operationalHealth(checkDatabase: () => Promise<unknown>, e
   return { checkedAt, checks }
 }
 
+const DIAGNOSTIC_GEMINI_MODELS = new Set(['gemini-3.5-flash-lite'])
+
+function resolveProbeModel(env: NodeJS.ProcessEnv, modelOverride?: string) {
+  const configuredModel = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+  if (!modelOverride) return configuredModel
+  if (modelOverride === configuredModel || DIAGNOSTIC_GEMINI_MODELS.has(modelOverride)) return modelOverride
+  return null
+}
+
+async function readProviderStatus(response: Response) {
+  const body = await response.json().catch(() => null) as { error?: { status?: unknown } } | null
+  return typeof body?.error?.status === 'string' && /^[A-Z][A-Z0-9_]{0,49}$/.test(body.error.status)
+    ? body.error.status
+    : undefined
+}
+
 /** Read-only Google API probe. It validates access to model metadata without generating content. */
-export async function probeGeminiModel(env = process.env, timeoutMs = 10_000) {
+export async function probeGeminiModel(env = process.env, timeoutMs = 10_000, modelOverride?: string) {
   const apiKey = (env.GEMINI_API_KEY || '').trim()
-  const model = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+  const model = resolveProbeModel(env, modelOverride)
   const configured = Boolean(apiKey && apiKey !== 'sua_chave_gemini_aqui' && apiKey.length > 10)
 
+  if (!model) {
+    return { provider: 'google-gemini', model: 'unsupported', configured, available: false, category: 'model_not_allowed' as const }
+  }
   if (!configured) {
     return { provider: 'google-gemini', model, configured: false, available: false, category: 'missing_api_key' as const }
   }
@@ -57,12 +76,14 @@ export async function probeGeminiModel(env = process.env, timeoutMs = 10_000) {
       }
     }
 
+    const providerStatus = await readProviderStatus(response)
     const diagnostic = geminiFailureDiagnostic('health_probe', model, {
-      name: 'GoogleGeminiHealthProbeError', status: response.status, statusText: response.statusText,
+      name: 'GoogleGeminiHealthProbeError', status: response.status, statusText: response.statusText, providerStatus,
     })
     return {
       provider: 'google-gemini', model, configured: true, available: false,
-      httpStatus: response.status, category: diagnostic.category, latencyMs,
+      httpStatus: response.status, category: diagnostic.category,
+      ...(diagnostic.providerStatus ? { providerStatus: diagnostic.providerStatus } : {}), latencyMs,
     }
   } catch (error) {
     const diagnostic = geminiFailureDiagnostic('health_probe', model, error)
@@ -77,11 +98,14 @@ export async function probeGeminiModel(env = process.env, timeoutMs = 10_000) {
 }
 
 /** On-demand, fixed-prompt generation probe used to compare REST inference with the SDK path. */
-export async function probeGeminiGeneration(env = process.env, timeoutMs = 20_000) {
+export async function probeGeminiGeneration(env = process.env, timeoutMs = 20_000, modelOverride?: string) {
   const apiKey = (env.GEMINI_API_KEY || '').trim()
-  const model = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+  const model = resolveProbeModel(env, modelOverride)
   const configured = Boolean(apiKey && apiKey !== 'sua_chave_gemini_aqui' && apiKey.length > 10)
 
+  if (!model) {
+    return { provider: 'google-gemini', model: 'unsupported', configured, available: false, category: 'model_not_allowed' as const }
+  }
   if (!configured) {
     return { provider: 'google-gemini', model, configured: false, available: false, category: 'missing_api_key' as const }
   }
@@ -102,12 +126,14 @@ export async function probeGeminiGeneration(env = process.env, timeoutMs = 20_00
     })
     const latencyMs = Date.now() - startedAt
     if (!response.ok) {
+      const providerStatus = await readProviderStatus(response)
       const diagnostic = geminiFailureDiagnostic('generation_probe', model, {
-        name: 'GoogleGeminiGenerationProbeError', status: response.status, statusText: response.statusText,
+        name: 'GoogleGeminiGenerationProbeError', status: response.status, statusText: response.statusText, providerStatus,
       })
       return {
         provider: 'google-gemini', model, configured: true, available: false,
-        httpStatus: response.status, category: diagnostic.category, latencyMs,
+        httpStatus: response.status, category: diagnostic.category,
+        ...(diagnostic.providerStatus ? { providerStatus: diagnostic.providerStatus } : {}), latencyMs,
       }
     }
 

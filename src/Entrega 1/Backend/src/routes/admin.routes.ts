@@ -24,12 +24,14 @@ adminRouter.get('/health', async (_req, res) => {
 })
 
 adminRouter.get('/health/gemini', async (_req, res) => {
-  const result = await probeGeminiModel()
+  const model = typeof _req.query.model === 'string' ? _req.query.model : undefined
+  const result = await probeGeminiModel(process.env, 10_000, model)
   res.status(result.available ? 200 : 502).json(result)
 })
 
 adminRouter.post('/health/gemini/generation-test', requireRole(['admin']), async (_req, res) => {
-  const result = await probeGeminiGeneration()
+  const model = typeof _req.body?.model === 'string' ? _req.body.model : undefined
+  const result = await probeGeminiGeneration(process.env, 20_000, model)
   res.status(result.available ? 200 : 502).json(result)
 })
 

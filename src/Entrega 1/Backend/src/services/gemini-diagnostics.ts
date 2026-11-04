@@ -7,6 +7,7 @@ export interface GeminiFailureDiagnostic {
   category: string
   status?: number
   statusText?: string
+  providerStatus?: string
   errorName?: string
   code?: string
 }
@@ -31,7 +32,16 @@ function safeStatusText(value: unknown): string | undefined {
   return normalized || undefined
 }
 
-function categoryForStatus(status: number): string {
+function safeProviderStatus(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !/^[A-Z][A-Z0-9_]{0,49}$/.test(value)) return undefined
+  return value
+}
+
+function categoryForStatus(status: number, providerStatus?: string): string {
+  if (providerStatus === 'UNAVAILABLE') return 'provider_unavailable'
+  if (providerStatus === 'RESOURCE_EXHAUSTED') return 'quota_or_rate_limit'
+  if (providerStatus === 'UNAUTHENTICATED') return 'invalid_api_key_or_authentication'
+  if (providerStatus === 'PERMISSION_DENIED') return 'permission_denied'
   if (status === 400) return 'invalid_request'
   if (status === 401) return 'invalid_api_key_or_authentication'
   if (status === 403) return 'permission_denied'
@@ -54,11 +64,12 @@ export function geminiFailureDiagnostic(
     && details.status >= 100 && details.status <= 599
     ? details.status
     : undefined
+  const providerStatus = safeProviderStatus(details.providerStatus)
   const errorName = safeIdentifier(details.name)
   const code = safeCode(details.code) || safeCode(cause.code)
   const message = typeof details.message === 'string' ? details.message.toLowerCase() : ''
 
-  let category = status !== undefined ? categoryForStatus(status) : 'sdk_or_response_error'
+  let category = status !== undefined ? categoryForStatus(status, providerStatus) : 'sdk_or_response_error'
   if (status === undefined && (
     errorName === 'AbortError' || errorName === 'TimeoutError'
     || code?.includes('TIMEOUT') || /timed? ?out|request aborted/.test(message)
@@ -77,6 +88,7 @@ export function geminiFailureDiagnostic(
     category,
     ...(status === undefined ? {} : { status }),
     ...(safeStatusText(details.statusText) ? { statusText: safeStatusText(details.statusText) } : {}),
+    ...(providerStatus ? { providerStatus } : {}),
     ...(errorName ? { errorName } : {}),
     ...(code ? { code } : {}),
   }
