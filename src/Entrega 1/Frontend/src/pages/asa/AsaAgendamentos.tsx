@@ -62,6 +62,7 @@ export default function AsaAgendamentos() {
 
   // Modal de Visualização de Documento Anexado
   const [documentModalOpen, setDocumentModalOpen] = useState(false)
+  const [loadingDocumentId, setLoadingDocumentId] = useState<string | null>(null)
   const [previewDocument, setPreviewDocument] = useState<{
     name: string
     type?: string
@@ -71,23 +72,30 @@ export default function AsaAgendamentos() {
     studentName?: string
   } | null>(null)
 
-  const handleOpenDocument = (apt: Appointment) => {
+  const handleOpenDocument = async (apt: Appointment) => {
     if (!apt.documentName && !apt.documentData && !(apt as any).r2Key) return
-    if (!apt.documentData) {
-      const token = localStorage.getItem('asaia_auth_token') || ''
-      const url = api.appointments.getDownloadUrl(apt.id)
-      window.open(`${url}?token=${encodeURIComponent(token)}`, '_blank')
-      return
+    setLoadingDocumentId(apt.id)
+    try {
+      const document = apt.documentData
+        ? {
+            name: apt.documentName || 'documento-agendamento',
+            type: apt.documentType || 'application/octet-stream',
+            size: apt.documentSize || 'Anexo',
+            dataUrl: apt.documentData,
+          }
+        : await api.appointments.getDocument(apt.id)
+
+      setPreviewDocument({
+        ...document,
+        protocol: apt.protocol,
+        studentName: apt.studentName,
+      })
+      setDocumentModalOpen(true)
+    } catch (error) {
+      show(error instanceof Error ? error.message : 'Não foi possível carregar o anexo.', 'error')
+    } finally {
+      setLoadingDocumentId(null)
     }
-    setPreviewDocument({
-      name: apt.documentName || 'documento-agendamento',
-      type: apt.documentType,
-      size: apt.documentSize,
-      dataUrl: apt.documentData,
-      protocol: apt.protocol,
-      studentName: apt.studentName,
-    })
-    setDocumentModalOpen(true)
   }
   const [copiedFeed, setCopiedFeed] = useState(false)
 
@@ -662,10 +670,11 @@ export default function AsaAgendamentos() {
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button
                             type="button"
-                            onClick={() => handleOpenDocument(apt)}
+                            onClick={() => void handleOpenDocument(apt)}
+                            disabled={loadingDocumentId === apt.id}
                             className="px-2 py-0.5 rounded bg-brand-600 hover:bg-brand-700 text-white font-semibold text-[10px] transition-colors"
                           >
-                            Ver
+                            {loadingDocumentId === apt.id ? 'Carregando…' : 'Ver'}
                           </button>
                           <button
                             type="button"
@@ -1069,10 +1078,11 @@ export default function AsaAgendamentos() {
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <button
                   type="button"
-                  onClick={() => handleOpenDocument(selectedAppointment)}
-                  className="px-2.5 py-1 text-2xs font-semibold rounded-lg bg-brand-600 text-white hover:bg-brand-700"
+                  onClick={() => void handleOpenDocument(selectedAppointment)}
+                  disabled={loadingDocumentId === selectedAppointment.id}
+                  className="px-2.5 py-1 text-2xs font-semibold rounded-lg bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-60"
                 >
-                  Visualizar
+                  {loadingDocumentId === selectedAppointment.id ? 'Carregando…' : 'Visualizar'}
                 </button>
                 {selectedAppointment.documentData && (
                   <a
