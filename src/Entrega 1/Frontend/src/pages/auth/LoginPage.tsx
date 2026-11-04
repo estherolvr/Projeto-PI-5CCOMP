@@ -13,6 +13,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [recovering, setRecovering] = useState(false);
+  const [recoveryMessage, setRecoveryMessage] = useState('');
 
   const navigate = useNavigate();
   const setCurrentUser = useAppStore(state => state.setCurrentUser);
@@ -35,6 +37,14 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRecovery = async () => {
+    if (!email.trim()) { setErrorMessage('Informe seu e-mail antes de solicitar a recuperação.'); return }
+    setRecovering(true); setErrorMessage(''); setRecoveryMessage('')
+    try { const result = await api.auth.recoverPassword(email.trim()); setRecoveryMessage(result.message) }
+    catch (error: any) { setErrorMessage(error.message || 'Não foi possível solicitar a recuperação.') }
+    finally { setRecovering(false) }
   };
 
   return (
@@ -183,6 +193,7 @@ export default function LoginPage() {
                 <span>{errorMessage}</span>
               </motion.div>
             )}
+            {recoveryMessage && <div role="status" className="mb-5 p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-800">{recoveryMessage}</div>}
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-1.5">
@@ -247,7 +258,7 @@ export default function LoginPage() {
               </button>
 
               <div className="text-center">
-                <p className="text-sm text-gray-500">Para recuperar seu acesso, procure a administração.</p>
+                <button type="button" disabled={recovering} onClick={handleRecovery} className="text-sm text-brand-700 hover:underline disabled:opacity-50">{recovering?'Enviando…':'Esqueci minha senha'}</button>
               </div>
             </form>
 

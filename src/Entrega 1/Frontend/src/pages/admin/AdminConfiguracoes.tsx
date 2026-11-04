@@ -3,6 +3,7 @@ import { useAppStore } from '@/store/app-store'
 import { api } from '@/lib/api'
 import { useAdminQuery } from '@/lib/use-admin-query'
 import { AdminDataState } from '@/components/admin/AdminDataState'
+import ChangePasswordForm from '@/components/auth/ChangePasswordForm'
 
 export default function AdminConfiguracoes() {
   const { theme, setTheme } = useAppStore()
@@ -23,6 +24,7 @@ export default function AdminConfiguracoes() {
         <p className="text-sm text-gray-500">Perfil: {query.data?.user.role} · Status: {query.data?.user.status}</p>
       </section>
     </AdminDataState>
+    <ChangePasswordForm />
     <section className="p-6 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl space-y-3">
       <h2 className="font-semibold dark:text-slate-100">Serviços e integrações</h2>
       <p className="text-sm text-gray-500 dark:text-slate-400">Configurações de e-mail e manutenção ainda não podem ser alteradas pelo painel.</p>

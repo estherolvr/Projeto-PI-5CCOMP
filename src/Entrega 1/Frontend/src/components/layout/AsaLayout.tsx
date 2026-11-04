@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, FileText, MessageSquare, Users, Bot, BookOpen,
   Clock, BarChart2, FileBarChart, Bell, Shield, ChevronLeft, ChevronRight,
-  Sun, Moon, LogOut, Search, Menu, X, Calendar
+  Sun, Moon, LogOut, Search, Menu, X, Calendar, Settings
 } from 'lucide-react'
 import { useState } from 'react'
 import UserNotifications from '../common/UserNotifications'
@@ -56,6 +56,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: Bell, label: 'Notificações', to: '/asa/notificacoes' },
       { icon: Shield, label: 'Auditoria', to: '/asa/auditoria' },
+      { icon: Settings, label: 'Minha conta', to: '/asa/perfil' },
     ],
   },
 ]

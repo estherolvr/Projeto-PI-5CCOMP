@@ -27,6 +27,49 @@ authRouter.post('/login', async (req, res) => {
   }
 })
 
+authRouter.post('/recover-password', async (req, res) => {
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : ''
+  if (!email) return res.status(400).json({ error: 'Informe o e-mail institucional.' })
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) return res.status(503).json({ error: 'Serviço de autenticação indisponível.' })
+  try {
+    const configuredRedirect = process.env.AUTH_REDIRECT_URL || 'https://alvaro-ai.joao-fsantana.workers.dev/'
+    const redirectTo = new URL('/reset-password', configuredRedirect).toString()
+    await supabaseRequest('recover', { method: 'POST', body: JSON.stringify({ email, redirect_to: redirectTo }) })
+    return res.json({ message: 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir a senha.' })
+  } catch (error) {
+    if (error instanceof AuthenticationServiceError && [429, 503].includes(error.statusCode)) return res.status(error.statusCode).json({ error: error.message })
+    return res.json({ message: 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir a senha.' })
+  }
+})
+
+authRouter.post('/reset-password', async (req, res) => {
+  const accessToken = typeof req.body?.accessToken === 'string' ? req.body.accessToken.trim() : ''
+  const password = typeof req.body?.password === 'string' ? req.body.password : ''
+  if (!accessToken) return res.status(400).json({ error: 'Link de recuperação inválido ou expirado.' })
+  if (password.length < 8) return res.status(400).json({ error: 'A nova senha deve ter pelo menos 8 caracteres.' })
+  try {
+    await supabaseRequest('user', { method: 'PUT', headers: { Authorization: `Bearer ${accessToken}` }, body: JSON.stringify({ password }) })
+    return res.json({ message: 'Senha redefinida com sucesso.' })
+  } catch (error) {
+    if (error instanceof AuthenticationServiceError && error.statusCode === 503) return res.status(503).json({ error: error.message })
+    return res.status(400).json({ error: 'Link de recuperação inválido ou expirado.' })
+  }
+})
+
+authRouter.post('/change-password', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  const password = typeof req.body?.password === 'string' ? req.body.password : ''
+  if (password.length < 8) return res.status(400).json({ error: 'A nova senha deve ter pelo menos 8 caracteres.' })
+  const accessToken = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || ''))?.[1]
+  if (!accessToken) return res.status(401).json({ error: 'Sessão inválida.' })
+  try {
+    await supabaseRequest('user', { method: 'PUT', headers: { Authorization: `Bearer ${accessToken}` }, body: JSON.stringify({ password }) })
+    return res.json({ message: 'Senha alterada com sucesso.' })
+  } catch (error) {
+    if (error instanceof AuthenticationServiceError) return res.status(error.statusCode).json({ error: error.message })
+    return res.status(500).json({ error: 'Não foi possível alterar a senha.' })
+  }
+})
+
 // Kept as an explicit denial so old clients cannot obtain a simulated session.
 authRouter.post('/demo-login', (_req, res) => res.status(403).json({ error: 'Acesso de demonstração desativado.' }))
 

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { useAppStore } from './store/app-store'
 
 // Layouts
@@ -8,58 +8,60 @@ import AsaLayout from './components/layout/AsaLayout'
 import AdminLayout from './components/layout/AdminLayout'
 
 // Auth & Public Portal
-import FecapPortalPage from './pages/public/FecapPortalPage'
-import LoginPage from './pages/auth/LoginPage'
+const FecapPortalPage = lazy(() => import('./pages/public/FecapPortalPage'))
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
 
 // Aluno pages
-import AlunoDashboard from './pages/aluno/AlunoDashboard'
-import AlunoChat from './pages/aluno/AlunoChat'
-import AlunoChamados from './pages/aluno/AlunoChamados'
-import NovoChamado from './pages/aluno/NovoChamado'
-import DetalheChamadoAluno from './pages/aluno/DetalheChamadoAluno'
-import AlunoProfile from './pages/aluno/AlunoProfile'
-import AlunoDocumentos from './pages/aluno/AlunoDocumentos'
-import AlunoAgendamento from './pages/aluno/AlunoAgendamento'
+const AlunoDashboard = lazy(() => import('./pages/aluno/AlunoDashboard'))
+const AlunoChat = lazy(() => import('./pages/aluno/AlunoChat'))
+const AlunoChamados = lazy(() => import('./pages/aluno/AlunoChamados'))
+const NovoChamado = lazy(() => import('./pages/aluno/NovoChamado'))
+const DetalheChamadoAluno = lazy(() => import('./pages/aluno/DetalheChamadoAluno'))
+const AlunoProfile = lazy(() => import('./pages/aluno/AlunoProfile'))
+const AlunoDocumentos = lazy(() => import('./pages/aluno/AlunoDocumentos'))
+const AlunoAgendamento = lazy(() => import('./pages/aluno/AlunoAgendamento'))
 
 // ASA pages
-import AsaDashboard from './pages/asa/AsaDashboard'
-import AsaFila from './pages/asa/AsaFila'
-import AsaAgendamentos from './pages/asa/AsaAgendamentos'
-import AsaDetalheChamado from './pages/asa/AsaDetalheChamado'
-import AsaConversas from './pages/asa/AsaConversas'
-import AsaAlunos from './pages/asa/AsaAlunos'
-import AsaAgenteIA from './pages/asa/AsaAgenteIA'
-import AsaBaseConhecimento from './pages/asa/AsaBaseConhecimento'
-import AsaSLA from './pages/asa/AsaSLA'
-import AsaMetricas from './pages/asa/AsaMetricas'
-import AsaRelatorios from './pages/asa/AsaRelatorios'
-import AsaNotificacoes from './pages/asa/AsaNotificacoes'
-import AsaAuditoria from './pages/asa/AsaAuditoria'
+const AsaDashboard = lazy(() => import('./pages/asa/AsaDashboard'))
+const AsaFila = lazy(() => import('./pages/asa/AsaFila'))
+const AsaAgendamentos = lazy(() => import('./pages/asa/AsaAgendamentos'))
+const AsaDetalheChamado = lazy(() => import('./pages/asa/AsaDetalheChamado'))
+const AsaConversas = lazy(() => import('./pages/asa/AsaConversas'))
+const AsaAlunos = lazy(() => import('./pages/asa/AsaAlunos'))
+const AsaAgenteIA = lazy(() => import('./pages/asa/AsaAgenteIA'))
+const AsaBaseConhecimento = lazy(() => import('./pages/asa/AsaBaseConhecimento'))
+const AsaSLA = lazy(() => import('./pages/asa/AsaSLA'))
+const AsaMetricas = lazy(() => import('./pages/asa/AsaMetricas'))
+const AsaRelatorios = lazy(() => import('./pages/asa/AsaRelatorios'))
+const AsaNotificacoes = lazy(() => import('./pages/asa/AsaNotificacoes'))
+const AsaAuditoria = lazy(() => import('./pages/asa/AsaAuditoria'))
+const AsaPerfil = lazy(() => import('./pages/asa/AsaPerfil'))
 
 // Admin pages
-import AdminAgendamentos from './pages/admin/AdminAgendamentos'
-import AdminCommandCenter from './pages/admin/AdminCommandCenter'
-import AdminChamados from './pages/admin/AdminChamados'
-import AdminFila from './pages/admin/AdminFila'
-import AdminSLA from './pages/admin/AdminSLA'
-import AdminCategorias from './pages/admin/AdminCategorias'
-import AdminAgenteIA from './pages/admin/AdminAgenteIA'
-import AdminPrompts from './pages/admin/AdminPrompts'
-import AdminBaseConhecimento from './pages/admin/AdminBaseConhecimento'
-import AdminRAG from './pages/admin/AdminRAG'
-import AdminFeedback from './pages/admin/AdminFeedback'
-import AdminUsuarios from './pages/admin/AdminUsuarios'
-import AdminAlunos from './pages/admin/AdminAlunos'
-import AdminEquipeASA from './pages/admin/AdminEquipeASA'
-import AdminPermissoes from './pages/admin/AdminPermissoes'
-import AdminIntegracoes from './pages/admin/AdminIntegracoes'
-import AdminMetricas from './pages/admin/AdminMetricas'
-import AdminRelatorios from './pages/admin/AdminRelatorios'
-import AdminAuditoria from './pages/admin/AdminAuditoria'
-import AdminLogs from './pages/admin/AdminLogs'
-import AdminSeguranca from './pages/admin/AdminSeguranca'
-import AdminConfiguracoes from './pages/admin/AdminConfiguracoes'
-import AdminSaude from './pages/admin/AdminSaude'
+const AdminAgendamentos = lazy(() => import('./pages/admin/AdminAgendamentos'))
+const AdminCommandCenter = lazy(() => import('./pages/admin/AdminCommandCenter'))
+const AdminChamados = lazy(() => import('./pages/admin/AdminChamados'))
+const AdminFila = lazy(() => import('./pages/admin/AdminFila'))
+const AdminSLA = lazy(() => import('./pages/admin/AdminSLA'))
+const AdminCategorias = lazy(() => import('./pages/admin/AdminCategorias'))
+const AdminAgenteIA = lazy(() => import('./pages/admin/AdminAgenteIA'))
+const AdminPrompts = lazy(() => import('./pages/admin/AdminPrompts'))
+const AdminBaseConhecimento = lazy(() => import('./pages/admin/AdminBaseConhecimento'))
+const AdminRAG = lazy(() => import('./pages/admin/AdminRAG'))
+const AdminFeedback = lazy(() => import('./pages/admin/AdminFeedback'))
+const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios'))
+const AdminAlunos = lazy(() => import('./pages/admin/AdminAlunos'))
+const AdminEquipeASA = lazy(() => import('./pages/admin/AdminEquipeASA'))
+const AdminPermissoes = lazy(() => import('./pages/admin/AdminPermissoes'))
+const AdminIntegracoes = lazy(() => import('./pages/admin/AdminIntegracoes'))
+const AdminMetricas = lazy(() => import('./pages/admin/AdminMetricas'))
+const AdminRelatorios = lazy(() => import('./pages/admin/AdminRelatorios'))
+const AdminAuditoria = lazy(() => import('./pages/admin/AdminAuditoria'))
+const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'))
+const AdminSeguranca = lazy(() => import('./pages/admin/AdminSeguranca'))
+const AdminConfiguracoes = lazy(() => import('./pages/admin/AdminConfiguracoes'))
+const AdminSaude = lazy(() => import('./pages/admin/AdminSaude'))
 
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/common/ErrorBoundary'
@@ -107,10 +109,11 @@ function App() {
     <BrowserRouter>
       <ErrorBoundary>
         <AuthSessionSync />
-        <Routes>
+        <Suspense fallback={<div className="min-h-screen grid place-items-center text-sm text-gray-500">Carregando…</div>}><Routes>
           {/* Public Institutional Portal & Auth */}
           <Route path="/" element={<FecapPortalPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Aluno - Protegido por JWT e Sessão */}
           <Route element={<ProtectedRoute allowedRoles={['aluno']} />}>
@@ -143,6 +146,7 @@ function App() {
               <Route path="relatorios" element={<AsaRelatorios />} />
               <Route path="notificacoes" element={<AsaNotificacoes />} />
               <Route path="auditoria" element={<AsaAuditoria />} />
+              <Route path="perfil" element={<AsaPerfil />} />
             </Route>
           </Route>
 
@@ -179,7 +183,7 @@ function App() {
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+        </Routes></Suspense>
       </ErrorBoundary>
     </BrowserRouter>
   )

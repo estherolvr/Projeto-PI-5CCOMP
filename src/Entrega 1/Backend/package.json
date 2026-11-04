@@ -38,5 +38,8 @@
     "@types/pg": "^8.23.1",
     "prisma": "^6.19.3",
     "typescript": "~6.0.2"
+  },
+  "overrides": {
+    "deepmerge-ts": "8.0.2"
   }
 }

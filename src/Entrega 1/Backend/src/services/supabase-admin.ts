@@ -76,6 +76,19 @@ export async function removeProvisionedUser(userId: string) {
   }
 }
 
+export async function findProvisionedUserByEmail(email: string) {
+  try {
+    const response = await fetch(authUrl('admin/users?page=1&per_page=1000'), { headers: adminHeaders() })
+    if (!response.ok) throw await providerError(response)
+    const body = await response.json() as { users?: Array<{ id?: unknown; email?: unknown }> }
+    const user = body.users?.find(item => typeof item.email === 'string' && item.email.toLowerCase() === email.toLowerCase())
+    return typeof user?.id === 'string' ? user.id : null
+  } catch (error) {
+    if (error instanceof SupabaseProvisioningError) throw error
+    throw new SupabaseProvisioningError(503, 'Serviço de autenticação temporariamente indisponível.')
+  }
+}
+
 export function requiresSupabaseProvisioning() {
   return process.env.NODE_ENV === 'production' || process.env.APP_AUTH_PROVIDER === 'supabase'
 }

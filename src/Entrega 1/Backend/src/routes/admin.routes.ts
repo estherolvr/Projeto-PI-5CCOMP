@@ -6,7 +6,7 @@ import { operationalHealth, probeGeminiGeneration, probeGeminiModel, publicInteg
 import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 import { assignedSlaPolicies, evaluateTicketSla, validateSlaRule } from '../services/ticket-sla'
-import { createInstitutionalUser, removeProvisionedUser, requiresSupabaseProvisioning, SupabaseProvisioningError } from '../services/supabase-admin'
+import { createInstitutionalUser, findProvisionedUserByEmail, removeProvisionedUser, requiresSupabaseProvisioning, SupabaseProvisioningError } from '../services/supabase-admin'
 
 export const adminRouter = Router()
 adminRouter.use(authenticateToken, requireRole(['admin', 'asa']))
@@ -465,6 +465,37 @@ adminRouter.patch('/students/:id/status', authenticateToken, requireRole(['admin
     res.json(student)
   } catch (error: any) {
     res.status(500).json({ error: 'Erro ao atualizar status do estudante' })
+  }
+})
+
+// Removes only unused student records. Records with service history must be deactivated instead.
+adminRouter.delete('/students/:id', authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id: String(req.params.id) },
+      include: { _count: { select: { tickets: true, appointments: true, conversations: true } } },
+    })
+    if (!student) return res.status(404).json({ error: 'Aluno não encontrado.' })
+    if (Object.values(student._count).some(count => count > 0)) {
+      return res.status(409).json({ error: 'Alunos com histórico devem ser desativados, não excluídos.' })
+    }
+    const authUserId = requiresSupabaseProvisioning() ? await findProvisionedUserByEmail(student.email) : null
+    await prisma.$transaction(async tx => {
+      await tx.student.delete({ where: { id: student.id } })
+      await tx.auditEvent.create({ data: {
+        userId: req.user?.id || null, userName: req.user?.name || 'Administrador', userRole: 'admin',
+        action: 'EXCLUIU_ALUNO_SEM_HISTORICO', resource: 'Student', resourceId: student.id,
+        details: JSON.stringify({ email: student.email, ra: student.ra }), severity: 'warning',
+      } })
+    })
+    if (authUserId && !await removeProvisionedUser(authUserId)) {
+      return res.status(502).json({ error: 'Cadastro acadêmico removido, mas o login precisa ser removido manualmente no Supabase.', removed: true })
+    }
+    return res.status(204).send()
+  } catch (error) {
+    if (error instanceof SupabaseProvisioningError) return res.status(error.statusCode).json({ error: error.message })
+    console.error('Erro ao excluir aluno sem histórico:', error)
+    return res.status(500).json({ error: 'Não foi possível excluir o aluno.' })
   }
 })
 

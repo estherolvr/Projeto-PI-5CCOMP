@@ -111,6 +111,9 @@ export const api = {
         body: JSON.stringify({ email, password }),
       }),
     me: () => request<{ user: any }>('/auth/me'),
+    recoverPassword: (email: string) => request<{ message: string }>('/auth/recover-password', { method: 'POST', body: JSON.stringify({ email }) }),
+    resetPassword: (accessToken: string, password: string) => request<{ message: string }>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ accessToken, password }) }),
+    changePassword: (password: string) => request<{ message: string }>('/auth/change-password', { method: 'POST', body: JSON.stringify({ password }) }),
   },
 
   tickets: {
