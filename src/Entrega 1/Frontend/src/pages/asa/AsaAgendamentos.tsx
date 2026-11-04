@@ -161,15 +161,22 @@ export default function AsaAgendamentos() {
   }, [appointments, searchTerm, statusFilter])
 
   // Appointments for the currently selected date
+  const calendarAppointments = useMemo(() => {
+    // In the default calendar view, completed appointments belong to the history,
+    // not the remaining schedule. The explicit status filter can still show them.
+    if (statusFilter !== 'todos') return filteredAppointments
+    return filteredAppointments.filter(apt => apt.status !== 'concluido')
+  }, [filteredAppointments, statusFilter])
+
   const selectedDateAppointments = useMemo(() => {
-    return filteredAppointments.filter(apt => apt.date === selectedDate)
-  }, [filteredAppointments, selectedDate])
+    return calendarAppointments.filter(apt => apt.date === selectedDate)
+  }, [calendarAppointments, selectedDate])
 
   // Count appointments by date (map for calendar days)
   const dateCountsMap = useMemo(() => {
     const map: Record<string, number> = {}
     appointments.forEach(apt => {
-      if (apt.status !== 'cancelado') {
+      if (apt.status !== 'cancelado' && apt.status !== 'concluido') {
         map[apt.date] = (map[apt.date] || 0) + 1
       }
     })
@@ -198,16 +205,20 @@ export default function AsaAgendamentos() {
 
   const handleConfirmComplete = async () => {
     if (!selectedAppointment) return
+    const completedAppointmentId = selectedAppointment.id
     setSubmittingStatus(true)
     try {
       await api.appointments.updateStatus(
-        selectedAppointment.id,
+        completedAppointmentId,
         'concluido',
         resolutionNotes.trim() || 'Atendimento presencial concluído pela equipe ASA.'
       )
+      setAppointments(current => current.map(apt =>
+        apt.id === completedAppointmentId ? { ...apt, status: 'concluido' } : apt
+      ))
       show(`Agendamento de ${selectedAppointment.studentName} marcado como concluído.`, 'success')
       setCompleteModalOpen(false)
-      loadData()
+      void loadData()
     } catch (err: any) {
       show(err.message || 'Erro ao concluir agendamento.', 'error')
     } finally {
