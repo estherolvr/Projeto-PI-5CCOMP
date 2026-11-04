@@ -46,4 +46,8 @@ As rotas `/aluno` e `/admin` já tinham grupos de proteção separados. A causa 
 - A autenticação continua usando token de acesso no `localStorage`, pois a arquitetura atual não usa cookie HttpOnly. A persistência da identidade foi removida, mas uma migração futura para cookie de sessão é uma defesa adicional contra roubo de token por XSS.
 - A renovação de sessão Supabase não foi modificada nesta correção; expiração e refresh devem ser auditados separadamente.
 
-O primeiro conjunto foi publicado pelo pipeline na versão `da90638`. O ajuste adicional de autorização ASA/Admin precisa ser publicado em um novo commit. O isolamento integral também depende da execução dos cenários autenticados acima; os resultados locais não são apresentados como prova de comportamento em produção.
+## Deploy
+
+Os commits `da90638` e `17abaec` foram publicados em `main`. A pipeline `41928186513` terminou com sucesso: build, testes do backend e deploy do Cloudflare Worker passaram; as etapas de migração Supabase foram puladas porque não havia migrações SQL versionadas. Uma requisição simples à URL publicada respondeu HTTP 200.
+
+O isolamento integral ainda depende da execução dos cenários autenticados acima; os resultados locais não são apresentados como prova de comportamento em produção.
