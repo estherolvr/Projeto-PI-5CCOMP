@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { UserRole } from '../lib/types'
+import { clearAuthToken } from '../lib/auth-session'
 
 export type Theme = 'light' | 'dark'
 
@@ -83,7 +84,7 @@ export const useAppStore = create<AppState>()(
         })
       },
       logout: () => {
-        localStorage.removeItem('asaia_auth_token')
+        clearAuthToken()
         for (const key of Object.keys(localStorage)) if (key === 'asaia_student_conversations' || key === 'asaia_custom_kb_documents' || key.startsWith('asaia_chat_messages_')) localStorage.removeItem(key)
         set({ currentUser: null, activeRole: 'aluno' })
       },
@@ -99,8 +100,12 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         theme: state.theme,
         sidebarCollapsed: state.sidebarCollapsed,
-        activeRole: state.activeRole,
-        currentUser: state.currentUser,
+      }),
+      // The server-verified identity must never be restored from browser storage.
+      version: 2,
+      migrate: (persistedState: any) => ({
+        theme: persistedState?.theme === 'dark' ? 'dark' : 'light',
+        sidebarCollapsed: Boolean(persistedState?.sidebarCollapsed),
       }),
       onRehydrateStorage: () => (state) => {
         for (const key of Object.keys(localStorage)) if (key === 'asaia_student_conversations' || key === 'asaia_custom_kb_documents' || key.startsWith('asaia_chat_messages_')) localStorage.removeItem(key)

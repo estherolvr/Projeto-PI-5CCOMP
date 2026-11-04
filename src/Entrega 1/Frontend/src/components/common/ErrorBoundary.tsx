@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react'
 import FecapLogo from '../ui/FecapLogo'
 import { AlertTriangle, RefreshCw, Home, LogIn } from 'lucide-react'
+import { clearAuthToken } from '../../lib/auth-session'
 
 interface Props {
   children: ReactNode
@@ -36,8 +37,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   private handleClearAndLogin = () => {
     try {
-      localStorage.removeItem('asaia_auth_token')
-      localStorage.removeItem('asaia-app-store')
+      clearAuthToken()
     } catch {}
     window.location.href = '/login'
   }

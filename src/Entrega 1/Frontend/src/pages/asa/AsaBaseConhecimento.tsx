@@ -303,11 +303,10 @@ export default function AsaBaseConhecimento() {
                     <div className="flex items-center justify-end gap-1">
                       {(doc.r2Key || doc.source === 'upload') && (
                         <button
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            const token = localStorage.getItem('asaia_auth_token') || '';
-                            const url = api.kb.getDownloadUrl(doc.id);
-                            window.open(`${url}?token=${encodeURIComponent(token)}`, '_blank');
+                            try { await api.kb.downloadOriginal(doc.id) }
+                            catch (error) { setLoadError(error instanceof Error ? error.message : 'Não foi possível baixar o arquivo original.') }
                           }}
                           className="p-1.5 text-blue-600 hover:text-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors cursor-pointer"
                           title="Baixar Arquivo Original do Cloudflare R2"
@@ -599,10 +598,9 @@ export default function AsaBaseConhecimento() {
                 <div className="flex items-center gap-2">
                   {(viewDocModal.r2Key || viewDocModal.source === 'upload') && (
                     <button
-                      onClick={() => {
-                        const token = localStorage.getItem('asaia_auth_token') || '';
-                        const url = api.kb.getDownloadUrl(viewDocModal.id);
-                        window.open(`${url}?token=${encodeURIComponent(token)}`, '_blank');
+                      onClick={async () => {
+                        try { await api.kb.downloadOriginal(viewDocModal.id) }
+                        catch (error) { setLoadError(error instanceof Error ? error.message : 'Não foi possível baixar o arquivo original.') }
                       }}
                       className="px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                     >

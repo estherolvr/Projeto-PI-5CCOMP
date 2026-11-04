@@ -689,16 +689,15 @@ export default function AsaAgendamentos() {
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={async () => {
                               if (apt.documentData) {
                                 const a = document.createElement('a')
                                 a.href = apt.documentData
                                 a.download = apt.documentName || 'anexo'
                                 a.click()
                               } else {
-                                const token = localStorage.getItem('asaia_auth_token') || ''
-                                const url = api.appointments.getDownloadUrl(apt.id)
-                                window.open(`${url}?token=${encodeURIComponent(token)}`, '_blank')
+                                try { await api.appointments.download(apt.id) }
+                                catch (error) { show(error instanceof Error ? error.message : 'Não foi possível baixar o anexo.', 'error') }
                               }
                             }}
                             className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold text-[10px] hover:bg-gray-50 transition-colors cursor-pointer"

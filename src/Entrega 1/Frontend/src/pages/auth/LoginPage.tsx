@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FecapLogo from '../../components/ui/FecapLogo';
 import { api } from '../../lib/api';
+import { setAuthToken } from '../../lib/auth-session';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -14,7 +15,6 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
 
   const navigate = useNavigate();
-  const setActiveRole = useAppStore(state => state.setActiveRole);
   const setCurrentUser = useAppStore(state => state.setCurrentUser);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -23,15 +23,12 @@ export default function LoginPage() {
     setErrorMessage('');
     try {
       const res = await api.auth.login(email, password);
-      if (res?.token) {
-        localStorage.setItem('asaia_auth_token', res.token);
+      if (!res?.token || !res?.user || !['aluno', 'asa', 'admin'].includes(res.user.role)) {
+        throw new Error('O servidor retornou uma sessão inválida. Tente entrar novamente.')
       }
-      if (res?.user) {
-        setCurrentUser(res.user);
-        const role = res.user.role || 'aluno';
-        setActiveRole(role);
-        navigate(`/${role}`, { replace: true });
-      }
+      setAuthToken(res.token);
+      setCurrentUser(res.user);
+      navigate(`/${res.user.role}`, { replace: true });
     } catch (err: any) {
       console.error('Erro ao fazer login:', err);
       setErrorMessage(err.message || 'E-mail institucional ou senha incorretos.');

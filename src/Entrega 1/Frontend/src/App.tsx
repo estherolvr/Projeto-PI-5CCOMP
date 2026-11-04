@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAppStore } from './store/app-store'
 
@@ -63,6 +63,34 @@ import AdminSaude from './pages/admin/AdminSaude'
 
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ErrorBoundary from './components/common/ErrorBoundary'
+import { AUTH_SESSION_CHANGED_EVENT, AUTH_TOKEN_KEY } from './lib/auth-session'
+
+function AuthSessionSync() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const setCurrentUser = useAppStore(state => state.setCurrentUser)
+
+  useEffect(() => {
+    const handleSessionChange = () => {
+      setCurrentUser(null)
+      if (location.pathname !== '/login' && location.pathname !== '/') {
+        navigate('/login', { replace: true })
+      }
+    }
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === AUTH_TOKEN_KEY) handleSessionChange()
+    }
+
+    window.addEventListener(AUTH_SESSION_CHANGED_EVENT, handleSessionChange)
+    window.addEventListener('storage', handleStorage)
+    return () => {
+      window.removeEventListener(AUTH_SESSION_CHANGED_EVENT, handleSessionChange)
+      window.removeEventListener('storage', handleStorage)
+    }
+  }, [location.pathname, navigate, setCurrentUser])
+
+  return null
+}
 
 function App() {
   const { theme } = useAppStore()
@@ -78,6 +106,7 @@ function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
+        <AuthSessionSync />
         <Routes>
           {/* Public Institutional Portal & Auth */}
           <Route path="/" element={<FecapPortalPage />} />
@@ -99,7 +128,7 @@ function App() {
           </Route>
 
           {/* ASA - Protegido por JWT e Sessão */}
-          <Route element={<ProtectedRoute allowedRoles={['asa', 'admin']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['asa']} />}>
             <Route path="/asa" element={<AsaLayout />}>
               <Route index element={<AsaDashboard />} />
               <Route path="agendamentos" element={<AsaAgendamentos />} />

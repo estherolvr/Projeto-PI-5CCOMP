@@ -1,4 +1,6 @@
 import type { Ticket, TicketCategory, TicketPriority, TicketStatus, UserRole } from './types'
+import { clearAuthToken, getAuthToken } from './auth-session'
+import { useAppStore } from '../store/app-store'
 
 export interface UserNotification {
   id: string
@@ -23,7 +25,7 @@ function getFullUrl(endpoint: string): string {
 }
 
 function getAuthHeaders(): Record<string, string> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('asaia_auth_token') : null
+  const token = getAuthToken()
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   }
@@ -54,11 +56,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   if (!response.ok) {
     if (response.status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('asaia_auth_token')
-        const currentPath = window.location.pathname
-        if (currentPath !== '/login' && currentPath !== '/') {
-          window.location.href = '/login'
-        }
+        clearAuthToken()
+        useAppStore.getState().setCurrentUser(null)
       }
     }
     const errorData = await response.json().catch(() => ({}))
@@ -67,6 +66,36 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   return response.json()
+}
+
+async function downloadFile(endpoint: string): Promise<void> {
+  const response = await fetch(getFullUrl(endpoint), { headers: getAuthHeaders() })
+  if (response.status === 401) {
+    clearAuthToken()
+    useAppStore.getState().setCurrentUser(null)
+  }
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || response.statusText || `Código HTTP ${response.status}`)
+  }
+
+  const blob = await response.blob()
+  const disposition = response.headers.get('Content-Disposition') || ''
+  const encodedName = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
+  const plainName = disposition.match(/filename="?([^";]+)"?/i)?.[1]
+  let filename = plainName || 'download'
+  if (encodedName) {
+    try { filename = decodeURIComponent(encodedName) } catch { filename = encodedName }
+  }
+
+  const objectUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = filename
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000)
 }
 
 export const api = {
@@ -199,7 +228,7 @@ export const api = {
       request<any>(`/knowledge-base/${id}`, {
         method: 'DELETE',
       }),
-    getDownloadUrl: (id: string) => getFullUrl(`/knowledge-base/${id}/download`),
+    downloadOriginal: (id: string) => downloadFile(`/knowledge-base/${encodeURIComponent(id)}/download`),
   },
 
   students: {
@@ -393,6 +422,6 @@ getUsers: (role?: string) => {
       }),
     getDocument: (id: string) => request<{ name: string; type: string; size: string; dataUrl: string }>(`/appointments/${id}/document`),
     getIcsUrl: (id: string) => getFullUrl(`/appointments/${id}/ics`),
-    getDownloadUrl: (id: string) => getFullUrl(`/appointments/${id}/download`),
+    download: (id: string) => downloadFile(`/appointments/${encodeURIComponent(id)}/download`),
   },
 }

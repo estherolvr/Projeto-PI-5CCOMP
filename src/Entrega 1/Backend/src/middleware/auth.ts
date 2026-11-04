@@ -22,7 +22,8 @@ export interface AuthenticatedRequest extends Request {
  */
 export async function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization']
-  const token = (authHeader && authHeader.split(' ')[1]) || (req.query?.token as string)
+  const bearer = typeof authHeader === 'string' ? /^Bearer\s+([^\s,]+)$/i.exec(authHeader.trim()) : null
+  const token = bearer?.[1]
 
   if (!token) {
     return res.status(401).json({

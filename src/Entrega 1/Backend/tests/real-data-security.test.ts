@@ -15,8 +15,8 @@ test('real records and ownership remain enforced without demos', async t => {
  process.env.DATABASE_URL=`file:${path}`;process.env.JWT_SECRET='isolated-security-test';process.env.NODE_ENV='test';process.env.APP_AUTH_PROVIDER=''
  const require=createRequire(import.meta.url),db=new DatabaseSync(path)
  db.exec(execFileSync(process.execPath,[require.resolve('prisma/build/index.js'),'migrate','diff','--from-empty','--to-schema-datamodel',join(backend,'prisma/schema.prisma'),'--script'],{cwd:backend,encoding:'utf8'}));db.close()
- const [{prisma},{chatRouter},{kbRouter},{studentRouter},{authRouter}]=await Promise.all([import('../src/db'),import('../src/routes/chat.routes'),import('../src/routes/kb.routes'),import('../src/routes/student.routes'),import('../src/routes/auth.routes')])
- const app=express();app.use(express.json());app.use('/chat',chatRouter);app.use('/kb',kbRouter);app.use('/students',studentRouter);app.use('/auth',authRouter)
+ const [{prisma},{chatRouter},{kbRouter},{studentRouter},{authRouter},{adminRouter}]=await Promise.all([import('../src/db'),import('../src/routes/chat.routes'),import('../src/routes/kb.routes'),import('../src/routes/student.routes'),import('../src/routes/auth.routes'),import('../src/routes/admin.routes')])
+ const app=express();app.use(express.json());app.use('/chat',chatRouter);app.use('/kb',kbRouter);app.use('/students',studentRouter);app.use('/auth',authRouter);app.use('/admin',adminRouter)
  const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const address=server.address();assert.ok(address&&typeof address!=='string')
  const base=`http://127.0.0.1:${address.port}`,tokens=Object.fromEntries([['a','aluno'],['b','aluno'],['staff','asa'],['missing','aluno']].map(([id,role])=>[id,jwt.sign({id,role,name:id,email:id+'@test.invalid'},process.env.JWT_SECRET!)]))
  async function request(path:string,who='a',method='GET',body?:unknown){const r=await fetch(base+path,{method,headers:{Authorization:`Bearer ${tokens[who]}`,'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});return {status:r.status,data:await r.json() as any}}
@@ -34,6 +34,14 @@ test('real records and ownership remain enforced without demos', async t => {
   await t.test('contact update persists only for its owner',async()=>{assert.equal((await request('/students/b/contact','a','PATCH',{phone:'11987654321'})).status,403);assert.equal((await request('/students/a/contact','a','PATCH',{phone:'invalid'})).status,400);assert.equal((await request('/students/a/contact','a','PATCH',{phone:'11987654321'})).status,200);assert.equal((await prisma.student.findUnique({where:{id:'a'}}))?.phone,'11987654321');assert.equal((await prisma.student.findUnique({where:{id:'b'}}))?.phone,null)})
   await t.test('staff edits real institutional content',async()=>{assert.equal((await request('/kb/active','staff','PUT',{title:'Equipe'})).status,200);assert.equal((await prisma.kBDocument.findUnique({where:{id:'active'}}))?.title,'Equipe')})
   await t.test('demo login never issues tokens',async()=>{const r=await request('/auth/demo-login','staff','POST',{role:'admin'});assert.equal(r.status,403);assert.equal(r.data.token,undefined)})
+  await t.test('students cannot read or mutate administrator API routes',async()=>{
+   assert.equal((await request('/admin/users','a')).status,403)
+   assert.equal((await request('/admin/integrations','a')).status,403)
+   assert.equal((await request('/admin/users','a','POST',{name:'No',email:'no@test.invalid',role:'admin'})).status,403)
+   assert.equal((await request('/admin/students','a','POST',{name:'No',ra:'no',email:'no@test.invalid',course:'No'})).status,403)
+   assert.equal((await request('/admin/users','a','PATCH',{status:'inativo'})).status,403)
+   assert.equal(await prisma.user.count(),0)
+  })
   await t.test('KB search retrieves late PDF deadlines and excludes archived or unindexed sources', async () => {
    const introduction = 'Projeto Órbita: aplicativo de atendimento acadêmico e integração com serviços de nuvem. '.repeat(120)
    const content = introduction + 'Cronograma de entregas. Entrega final: 15/12/2034 até 20:35. '
