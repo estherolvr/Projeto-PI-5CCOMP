@@ -4,6 +4,7 @@ import { AuthenticatedRequest, authenticateToken, requireRole } from '../middlew
 import { aiService } from '../services/ai.service'
 import { r2Service } from '../services/r2.service'
 import { scheduleBackground } from '../services/runtime-context'
+import { ChatAttachmentError, chatUpload, publicChatMessage, recentAttachmentContexts, removeChatAttachments, saveChatAttachments, storedChatAttachments, type StoredChatAttachment } from '../services/chat-attachments'
 
 export const chatRouter = Router()
 
@@ -74,10 +75,7 @@ chatRouter.post('/conversations', authenticateToken, requireRole(['aluno']), asy
 
     res.status(201).json({
       ...conversation,
-      messages: conversation.messages.map(m => ({
-        ...m,
-        actions: m.actions ? JSON.parse(m.actions) : undefined,
-      })),
+      messages: conversation.messages.map(publicChatMessage),
     })
   } catch (error: any) {
     console.error('Erro ao criar conversa:', error)
@@ -107,10 +105,7 @@ chatRouter.get('/conversations/:id', authenticateToken, async (req: Authenticate
 
     res.json({
       ...conversation,
-      messages: conversation.messages.map(m => ({
-        ...m,
-        actions: m.actions ? JSON.parse(m.actions) : undefined,
-      })),
+      messages: conversation.messages.map(publicChatMessage),
     })
   } catch (error) {
     console.error('Erro ao buscar conversa:', error)
@@ -118,147 +113,90 @@ chatRouter.get('/conversations/:id', authenticateToken, async (req: Authenticate
   }
 })
 
-// Send message in conversation & receive AI response (with RAG knowledge retrieval)
-chatRouter.post('/conversations/:id/messages', authenticateToken, requireRole(['aluno']), async (req: AuthenticatedRequest, res) => {
+// Original bytes are served only after conversation ownership / staff authorization.
+chatRouter.get('/conversations/:id/messages/:messageId/attachments/:attachmentId/download', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const id = String(req.params.id)
-    const { content } = req.body
+    const conversation = await prisma.conversation.findUnique({ where: { id } })
+    if (!conversation) return res.status(404).json({ error: 'Conversa não encontrada.' })
+    if (req.user?.role === 'aluno' && conversation.studentId !== req.user.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
+    const message = await prisma.chatMessage.findFirst({ where: { id: String(req.params.messageId), conversationId: id, role: 'user' } })
+    const attachment = message && storedChatAttachments(message.actions).find(a => a.id === String(req.params.attachmentId))
+    if (!attachment || attachment.storageKey !== `chat-attachments/${id}/${attachment.id}/original`) return res.status(404).json({ error: 'Anexo não encontrado.' })
+    const file = await r2Service.getFile(attachment.storageKey)
+    if (!file) return res.status(404).json({ error: 'Arquivo não encontrado no armazenamento.' })
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(attachment.name)}`)
+    res.setHeader('Content-Type', 'application/octet-stream')
+    res.setHeader('X-Content-Type-Options', 'nosniff')
+    res.setHeader('Cache-Control', 'private, no-store')
+    return res.send(file.buffer)
+  } catch {
+    res.status(503).json({ error: 'Não foi possível baixar o anexo. Tente novamente.' })
+  }
+})
 
-    if (!content || !content.trim()) {
-      return res.status(400).json({ error: 'Conteúdo da mensagem é obrigatório' })
-    }
-
+// Send a message and optional documents, then persist both sides atomically.
+chatRouter.post('/conversations/:id/messages', authenticateToken, requireRole(['aluno']), chatUpload, async (req: AuthenticatedRequest, res) => {
+  let stored: StoredChatAttachment[] = []
+  let persisted = false
+  try {
+    const id = String(req.params.id)
+    const files = (req.files || []) as Express.Multer.File[]
+    const userTimestamp = new Date()
+    if (req.body?.content !== undefined && typeof req.body.content !== 'string') return res.status(400).json({ error: 'A mensagem deve ser um texto.' })
+    const content = (req.body?.content || '').trim() || (files.length ? 'Analise os arquivos anexados.' : '')
+    if (!content || content.length > 10000) return res.status(400).json({ error: 'Informe uma mensagem de até 10 mil caracteres ou anexe um arquivo.' })
     const conversation = await prisma.conversation.findUnique({
       where: { id },
-      include: {
-        messages: {
-          orderBy: { timestamp: 'asc' },
-          take: 8,
-        },
-      },
+      include: { messages: { orderBy: [{ timestamp: 'desc' }, { id: 'desc' }], take: 8 } },
     })
-
-    if (!conversation) {
-      return res.status(404).json({ error: 'Conversa não encontrada' })
-    }
-
+    if (!conversation) return res.status(404).json({ error: 'Conversa não encontrada.' })
     if (conversation.studentId !== req.user?.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
-
-    // 1. Fetch student context
-    const student = await prisma.student.findUnique({
-      where: { id: conversation.studentId },
-    })
-
-    // 2. Save user message
-    const userMessage = await prisma.chatMessage.create({
-      data: {
-        conversationId: id,
-        role: 'user',
-        content: content.trim(),
-      },
-    })
-
-    // 3. Format conversation history for LLM
-    const history = conversation.messages.map(m => ({
-      role: m.role,
-      content: m.content,
-    }))
-
-    // 4. Generate RAG response via AIService
-    const ragResult = await aiService.generateChatResponse(
-      content.trim(),
-      history,
-      student ? {
-        id: student.id,
-        name: student.name,
-        email: student.email,
-        ra: student.ra,
-        course: student.course,
-        semester: student.semester,
-        period: student.period,
-      } : undefined
-    )
-
-    // Append source citations if available
+    const student = await prisma.student.findUnique({ where: { id: conversation.studentId } })
+    const upload = await saveChatAttachments(id, files)
+    stored = upload.attachments
+    const recentMessages = [...conversation.messages].reverse()
+    const attachmentContexts = await recentAttachmentContexts(recentMessages, upload.contexts)
+    const history = recentMessages.map(m => ({ role: m.role, content: m.content }))
+    const ragResult = await aiService.generateChatResponse(content, history, student ? {
+      id: student.id, name: student.name, email: student.email, ra: student.ra,
+      course: student.course, semester: student.semester, period: student.period,
+    } : undefined, attachmentContexts)
     let finalContent = ragResult.provider === 'local'
       ? '**IA generativa indisponível.** A orientação abaixo usa somente os trechos disponíveis na base de conhecimento.\n\n' + ragResult.content
       : ragResult.content
-    if (ragResult.sources.length > 0) {
-      const sourceList = ragResult.sources
-        .map(s => `• 📄 **${s.title}** (${s.category})`)
-        .join('\n')
-      finalContent += `\n\n---\n**Fontes Consultadas:**\n${sourceList}`
+    if (ragResult.sources.length) {
+      finalContent += `\n\n---\n**Fontes Consultadas:**\n${ragResult.sources.map(source => `• 📄 **${source.title}** (${source.category})`).join('\n')}`
     }
-
-    // 5. Save AI response
-    const aiMessage = await prisma.chatMessage.create({
-      data: {
-        conversationId: id,
-        role: 'assistant',
-        content: finalContent,
-        actions: ragResult.actions.length > 0 ? JSON.stringify(ragResult.actions) : null,
-      },
+    const result = await prisma.$transaction(async tx => {
+      const userMessage = await tx.chatMessage.create({ data: {
+        conversationId: id, role: 'user', content, timestamp: userTimestamp,
+        actions: stored.length ? JSON.stringify(stored.map(attachment => ({ action: 'download_attachment', label: attachment.name, attachment }))) : null,
+      } })
+      const aiMessage = await tx.chatMessage.create({ data: {
+        conversationId: id, role: 'assistant', content: finalContent,
+        timestamp: new Date(Math.max(Date.now(), userTimestamp.getTime() + 1)),
+        actions: ragResult.actions.length ? JSON.stringify(ragResult.actions) : null,
+      } })
+      await tx.conversation.update({ where: { id }, data: {
+        ...(conversation.messages.length <= 2 ? { title: content.slice(0, 32) + (content.length > 32 ? '...' : '') } : {}),
+        updatedAt: new Date(),
+      } })
+      return { userMessage: publicChatMessage(userMessage), aiMessage: publicChatMessage(aiMessage) }
     })
-
-    // 6. Update conversation title and timestamp
-    const msgCount = conversation.messages.length
-    if (msgCount <= 2) {
-      await prisma.conversation.update({
-        where: { id },
-        data: {
-          title: content.slice(0, 32) + (content.length > 32 ? '...' : ''),
-          updatedAt: new Date(),
-        },
-      })
-    } else {
-      await prisma.conversation.update({
-        where: { id },
-        data: { updatedAt: new Date() },
-      })
-    }
-
-    // 7. Persistência e Snapshot no Cloudflare R2 (assíncrono para alta performance)
+    persisted = true
     if (r2Service.isConfigured()) {
-      const synchronization = prisma.chatMessage.findMany({
-        where: { conversationId: id },
-        orderBy: { timestamp: 'asc' },
-      }).then(allMessages => {
-        return r2Service.saveConversationSnapshot(id, conversation.studentId, {
-          title: conversation.title,
-          student: student ? {
-            id: student.id,
-            name: student.name,
-            ra: student.ra,
-            course: student.course,
-            email: student.email,
-          } : null,
-          messages: allMessages.map(m => ({
-            id: m.id,
-            role: m.role,
-            content: m.content,
-            actions: m.actions ? JSON.parse(m.actions) : undefined,
-            timestamp: m.timestamp,
-          })),
-        })
-      }).catch(err => {
-        console.warn('Sincronização R2 em segundo plano:', err.message)
-      })
+      const synchronization = prisma.conversation.findUnique({ where: { id }, include: { messages: { orderBy: { timestamp: 'asc' } } } })
+        .then(saved => saved ? r2Service.saveConversationSnapshot(id, conversation.studentId, {
+          title: saved.title, messages: saved.messages.map(publicChatMessage), updatedAt: saved.updatedAt,
+        }) : null).catch(() => { console.warn('Não foi possível sincronizar o snapshot da conversa no armazenamento.') })
       scheduleBackground(synchronization)
     }
-
-    res.status(201).json({
-      userMessage: {
-        ...userMessage,
-        actions: undefined,
-      },
-      aiMessage: {
-        ...aiMessage,
-        actions: ragResult.actions,
-      },
-    })
+    res.status(201).json(result)
   } catch (error) {
-    console.error('Erro ao enviar mensagem no chat:', error)
-    res.status(500).json({ error: 'Erro ao processar mensagem do chat' })
+    if (!persisted) await removeChatAttachments(stored)
+    const expected = error instanceof ChatAttachmentError
+    res.status(expected ? error.status : 500).json({ error: expected ? error.message : 'Erro ao processar mensagem do chat. Tente novamente.' })
   }
 })
 

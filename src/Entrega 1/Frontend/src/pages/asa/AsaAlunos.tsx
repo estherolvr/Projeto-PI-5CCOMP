@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, User, Mail, BookOpen, Clock, Users } from 'lucide-react';
 import { api } from '../../lib/api';
+import StudentAcademicProfile from '../../components/asa/StudentAcademicProfile';
 
 export default function AsaAlunos() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   const fetchStudents = async () => {
     try {
@@ -85,7 +87,7 @@ export default function AsaAlunos() {
             
             <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center text-xs text-gray-500">
               <span>Chamados: <strong>{student._count?.tickets || 0}</strong></span>
-              <span className="text-brand-600 font-medium cursor-pointer hover:underline">Perfil acadêmico</span>
+              <button type="button" onClick={() => setSelectedStudentId(student.id)} aria-label={`Ver perfil acadêmico de ${student.name}`} className="text-brand-600 font-medium hover:underline">Perfil acadêmico</button>
             </div>
           </div>
         ))}
@@ -96,6 +98,7 @@ export default function AsaAlunos() {
           Nenhum aluno encontrado para "{search}".
         </div>
       )}
+      {selectedStudentId && <StudentAcademicProfile key={selectedStudentId} studentId={selectedStudentId} onClose={() => setSelectedStudentId(null)} />}
     </motion.div>
   );
 }

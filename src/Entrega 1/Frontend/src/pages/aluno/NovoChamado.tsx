@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, UploadCloud, CheckCircle2, MessageSquare, Bot, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { api } from '../../lib/api';
+import { TicketFilePicker } from '../../components/common/TicketAttachments';
 
 export default function NovoChamado() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function NovoChamado() {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
 
   const categories = ['Matrícula', 'Financeiro', 'Acadêmico', 'Documentos', 'Infraestrutura', 'Outros'];
 
@@ -48,12 +50,13 @@ export default function NovoChamado() {
   }, [conversationId]);
 
   const handleNext = () => {
-    if (step === 1 && title && category && description) {
+    if (step === 1 && title.trim() && category && description.trim()) {
       setStep(2);
     }
   };
 
   const handleSubmit = async () => {
+    if (isLoading) return;
     setIsLoading(true); setError(null);
     try {
       const ticket = await api.tickets.create({
@@ -61,6 +64,7 @@ export default function NovoChamado() {
         description,
         category: category.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
         conversationId: conversationId || undefined,
+        files,
       });
       setCreatedTicket(ticket);
       setStep(3);
@@ -159,8 +163,9 @@ export default function NovoChamado() {
             className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm space-y-6"
           >
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Assunto</label>
+              <label htmlFor="ticket-title" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Assunto</label>
               <input
+                id="ticket-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -170,8 +175,9 @@ export default function NovoChamado() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Categoria</label>
+              <label htmlFor="ticket-category" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Categoria</label>
               <select
+                id="ticket-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-brand-600 focus:border-brand-600 dark:bg-slate-900 dark:text-white outline-none transition-all text-sm"
@@ -182,8 +188,9 @@ export default function NovoChamado() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Descrição Detalhada</label>
+              <label htmlFor="ticket-description" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Descrição Detalhada</label>
               <textarea
+                id="ticket-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={5}
@@ -194,17 +201,13 @@ export default function NovoChamado() {
 
             <div className="space-y-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">Anexos (opcional)</label>
-              <div className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 text-center hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer">
-                <UploadCloud className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm font-medium text-gray-700 dark:text-slate-300">Clique ou arraste arquivos aqui</p>
-                <p className="text-xs text-gray-500 mt-1">PDF, JPG, PNG até 10MB</p>
-              </div>
+              <TicketFilePicker files={files} onChange={setFiles} onError={message=>setError(message||null)} disabled={isLoading}/>
             </div>
 
             <div className="pt-4 flex justify-end">
               <button
                 onClick={handleNext}
-                disabled={!title || !category || !description}
+                disabled={!title.trim() || !category || !description.trim()}
                 className="px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors cursor-pointer text-sm shadow-xs"
               >
                 Continuar
@@ -243,6 +246,7 @@ export default function NovoChamado() {
                 <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Descrição do Chamado</h4>
                 <p className="text-gray-800 dark:text-slate-200 whitespace-pre-wrap text-sm leading-relaxed">{description}</p>
               </div>
+              {files.length>0&&<div className="border-t border-gray-100 dark:border-slate-700 pt-4"><h4 className="text-xs font-bold uppercase text-gray-400 mb-2">Anexos</h4><ul className="text-sm text-gray-700 dark:text-slate-300 space-y-1">{files.map((file,index)=><li key={index}>{file.name} ({(file.size/1024).toFixed(1)} KB)</li>)}</ul></div>}
             </div>
 
             <div className="flex justify-end gap-3">
@@ -285,7 +289,7 @@ export default function NovoChamado() {
             
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Chamado aberto com sucesso!</h2>
             <p className="text-base text-gray-500 dark:text-slate-400 mb-6">
-              Protocolo número <strong className="text-gray-900 dark:text-white font-mono">#{createdTicket?.number || '1058'}</strong>
+              Protocolo número <strong className="text-gray-900 dark:text-white font-mono">#{createdTicket?.number}</strong>
             </p>
 
             <div className="flex gap-4">
@@ -296,7 +300,7 @@ export default function NovoChamado() {
                 Ver todos meus chamados
               </button>
               <button
-                onClick={() => navigate(`/aluno/chamados/${createdTicket?.id || 'ticket-01'}`)}
+                onClick={() => navigate(`/aluno/chamados/${createdTicket.id}`)}
                 className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-medium transition-colors cursor-pointer text-sm shadow-xs"
               >
                 Acompanhar chamado

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Paperclip, Plus, ArrowLeft, Bot, Book, Sparkles, MessageSquare, Loader2, Ticket as TicketIcon, Cloud, Download, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Send, Paperclip, Plus, ArrowLeft, Bot, Book, Sparkles, MessageSquare, Loader2, Ticket as TicketIcon, Cloud, Download, ThumbsUp, ThumbsDown, X } from 'lucide-react';
 import { formatRelative, cn } from '../../lib/utils';
 import { api } from '../../lib/api';
 import MarkdownRenderer from '../../components/ui/MarkdownRenderer';
@@ -19,6 +19,9 @@ export default function AlunoChat() {
   const [inputValue, setInputValue] = useState(initialQuery || '');
   const [isLoadingConv, setIsLoadingConv] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [downloading, setDownloading] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSidebar, setShowSidebar] = useState(false); // Mobile
   const [evaluatedMessages, setEvaluatedMessages] = useState<Record<string, 'positive' | 'negative'>>({});
 
@@ -42,7 +45,7 @@ export default function AlunoChat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const loadConversation = async (convId: string) => {
-    setIsLoadingConv(true); setLoadError(null); setActiveConvId(''); setMessages([]);
+    setIsLoadingConv(true); setLoadError(null); setActiveConvId(''); setMessages([]); setSelectedFiles([]);
     try { const conv = await api.chat.getConversation(convId); setActiveConvId(conv.id); setMessages(conv.messages || []); }
     catch (error) { setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar a conversa.'); }
     finally { setIsLoadingConv(false); }
@@ -77,8 +80,9 @@ export default function AlunoChat() {
   }, [initialQuery, activeConvId, isLoadingConv]);
 
   const handleCreateNewConversation = async () => {
+    if (isTyping) return;
     try {
-      setIsLoadingConv(true);
+      setIsLoadingConv(true); setLoadError(null); setSelectedFiles([]);
       const newConv = await api.chat.createConversation('Nova Conversa com Álvaro AI');
       const updatedList = [newConv, ...conversations];
       setConversations(updatedList);
@@ -88,26 +92,30 @@ export default function AlunoChat() {
 
       setShowSidebar(false);
     } catch (err) {
-      console.error('Erro ao criar conversa:', err);
+      setLoadError(err instanceof Error ? err.message : 'Não foi possível iniciar uma conversa.');
     } finally {
       setIsLoadingConv(false);
     }
   };
 
   const handleSelectConversation = async (convId: string) => {
+    if (isTyping) return;
     setShowSidebar(false);
     await loadConversation(convId);
   };
 
   const handleSend = async (text: string) => {
-    if (!text.trim() || isTyping) return;
+    if ((!text.trim() && !selectedFiles.length) || isTyping || isLoadingConv) return;
     if (!activeConvId) { setLoadError('Inicie uma conversa antes de enviar sua mensagem.'); return; }
     setLoadError(null);
+    const outgoingText = text.trim() || 'Analise os arquivos anexados.';
+    const outgoingFiles = [...selectedFiles];
 
     const tempUserMsg = {
       id: `temp-${Date.now()}`,
       role: 'user',
-      content: text,
+      content: outgoingText,
+      attachments: outgoingFiles.map((file, index) => ({ id: `pending-${index}`, name: file.name, size: file.size })),
       timestamp: new Date().toISOString()
     };
 
@@ -118,10 +126,12 @@ export default function AlunoChat() {
     setIsTyping(true);
 
     try {
-      const response = await api.chat.sendMessage(activeConvId, text);
+      const response = await api.chat.sendMessage(activeConvId, outgoingText, outgoingFiles);
+      if (!response?.aiMessage || !response?.userMessage) throw new Error('A resposta do chat está incompleta. Atualize a conversa antes de reenviar.');
       if (response?.aiMessage) {
-        const updatedWithAi = [...updatedWithUser, response.aiMessage];
+        const updatedWithAi = [...updatedWithUser.filter(m => m.id !== tempUserMsg.id), response.userMessage, response.aiMessage];
         setMessages(updatedWithAi);
+        setSelectedFiles([]);
 
         // Refresh conversation list preview
         api.chat.getConversations().then(res => {
@@ -141,6 +151,25 @@ export default function AlunoChat() {
     }
   };
 
+  const handleFiles = (files: FileList | null) => {
+    if (!files) return;
+    const next = [...selectedFiles, ...Array.from(files)];
+    if (next.length > 3 || next.some(file => file.size > 5 * 1024 * 1024) || next.reduce((size, file) => size + file.size, 0) > 10 * 1024 * 1024) {
+      setLoadError('Envie até 3 arquivos, com até 5 MB cada e 10 MB no total.'); return;
+    }
+    if (next.some(file => !/\.(pdf|txt|md)$/i.test(file.name) || !file.size)) {
+      setLoadError('Envie arquivos PDF, TXT ou Markdown (.md) que não estejam vazios.'); return;
+    }
+    setSelectedFiles(next); setLoadError(null);
+  };
+
+  const handleDownloadAttachment = async (messageId: string, attachment: any) => {
+    setDownloading(attachment.id);
+    try { await api.chat.downloadAttachment(activeConvId, messageId, attachment.id, attachment.name); }
+    catch (error) { setLoadError(error instanceof Error ? error.message : 'Não foi possível baixar o anexo.'); }
+    finally { setDownloading(null); }
+  };
+
   const handleExportConversation = () => {
     if (!messages || messages.length === 0) return;
     const activeConv = conversations.find(c => c.id === activeConvId);
@@ -153,6 +182,7 @@ export default function AlunoChat() {
         role: m.role,
         content: m.content,
         timestamp: m.timestamp,
+        attachments: m.attachments || [],
       })),
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -208,6 +238,7 @@ export default function AlunoChat() {
         <div className="p-3">
           <button
             onClick={handleCreateNewConversation}
+            disabled={isTyping || isLoadingConv}
             className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-brand-600 text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-900/20 rounded-lg font-medium transition-colors cursor-pointer text-sm"
           >
             <Plus size={16} />
@@ -220,6 +251,7 @@ export default function AlunoChat() {
             <button
               key={conv.id}
               onClick={() => handleSelectConversation(conv.id)}
+              disabled={isTyping}
               className={cn(
                 "w-full text-left p-3.5 border-b border-gray-100 dark:border-slate-800/50 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors cursor-pointer",
                 activeConvId === conv.id && "bg-brand-50 dark:bg-brand-900/15 border-l-4 border-l-brand-600"
@@ -303,6 +335,16 @@ export default function AlunoChat() {
                       <MarkdownRenderer content={msg.content} isUserMessage={isUser} />
                     </div>
 
+                    {msg.attachments?.length > 0 && <div className="flex flex-wrap gap-2">
+                      {msg.attachments.map((file: any) => <button key={file.id} type="button"
+                        disabled={msg.id.startsWith('temp-') || downloading === file.id}
+                        onClick={() => void handleDownloadAttachment(msg.id, file)}
+                        aria-label={`Baixar anexo ${file.name}`}
+                        className="inline-flex items-center gap-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-brand-700 dark:text-brand-300 disabled:opacity-50">
+                        <Download size={14}/><span className="break-all">{file.name}</span><span>{Math.ceil(file.size / 1024)} KB</span>
+                      </button>)}
+                    </div>}
+
                     {msg.actions && Array.isArray(msg.actions) && msg.actions.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
                         {msg.actions.map((act: any, i: number) => (
@@ -341,6 +383,12 @@ export default function AlunoChat() {
         {/* Input Area */}
         <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800">
           <div className="max-w-4xl mx-auto">
+            {selectedFiles.length > 0 && <div className="flex flex-wrap gap-2 pb-2" aria-label="Anexos selecionados">
+              {selectedFiles.map((file, index) => <span key={`${file.name}-${index}`} className="inline-flex items-center gap-2 rounded-lg bg-brand-50 dark:bg-brand-900/30 px-3 py-2 text-xs text-brand-700 dark:text-brand-300">
+                <Paperclip size={14}/><span className="break-all">{file.name}</span>
+                <button type="button" aria-label={`Remover ${file.name}`} disabled={isTyping} onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== index))}><X size={14}/></button>
+              </span>)}
+            </div>}
             <div className="flex gap-2 overflow-x-auto pb-2.5 hide-scrollbar">
               {suggestions.map((s, i) => (
                 <button
@@ -354,7 +402,11 @@ export default function AlunoChat() {
             </div>
             
             <div className="relative flex items-end gap-2 bg-gray-50 dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 p-2 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 transition-all">
-              <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl shrink-0">
+              <input ref={fileInputRef} type="file" hidden multiple accept=".pdf,.txt,.md" aria-label="Arquivos do chat"
+                onChange={event => { handleFiles(event.target.files); event.target.value = ''; }}/>
+              <button type="button" aria-label="Anexar arquivo ao chat" title="Anexar PDF, TXT ou MD (até 3 arquivos, 5 MB cada, 10 MB no total)"
+                disabled={!activeConvId || isLoadingConv || isTyping} onClick={() => fileInputRef.current?.click()}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl shrink-0 disabled:opacity-50">
                 <Paperclip size={18} />
               </button>
               
@@ -375,7 +427,8 @@ export default function AlunoChat() {
               
               <button
                 onClick={() => handleSend(inputValue)}
-                disabled={!inputValue.trim() || isTyping}
+                aria-label="Enviar mensagem"
+                disabled={(!inputValue.trim() && !selectedFiles.length) || isTyping || isLoadingConv || !activeConvId}
                 className="p-2.5 bg-brand-600 text-white rounded-xl shrink-0 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-xs"
               >
                 <Send size={16} />
@@ -384,7 +437,7 @@ export default function AlunoChat() {
             
             <div className="text-center mt-2">
               <span className="text-[10px] text-gray-400">
-                Respostas geradas pelo Álvaro AI com base nos regulamentos e manuais da FECAP.
+                Anexos: PDF com texto selecionável, TXT ou MD · até 3 arquivos, 5 MB cada e 10 MB no total.
               </span>
             </div>
           </div>

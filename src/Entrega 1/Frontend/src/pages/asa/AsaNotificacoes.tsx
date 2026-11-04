@@ -1,5 +1,30 @@
 import { useState } from 'react'
-import { api } from '@/lib/api'
-import { useApiQuery } from '@/lib/use-api-query'
+import { useNavigate } from 'react-router-dom'
+import { RefreshCw } from 'lucide-react'
+import type { UserNotification } from '@/lib/api'
 import { DataState } from '@/components/common/DataState'
-export default function AsaNotificacoes(){const q=useApiQuery(api.admin.getNotifications);const [error,setError]=useState<string|null>(null);async function read(id:string){try{setError(null);await api.admin.markNotificationRead(id);await q.refresh()}catch(e){setError(e instanceof Error?e.message:'Não foi possível atualizar a notificação.')}}return <div className="p-4 md:p-6 space-y-5"><h1 className="text-2xl font-bold dark:text-white">Notificações</h1>{error&&<p role="alert" className="text-red-600">{error}</p>}<DataState loading={q.loading} error={q.error} onRetry={q.refresh} empty={!q.data?.length}>{q.data?.map(n=><article key={n.id} className="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-5"><h2 className="font-semibold dark:text-white">{n.title}</h2><p className="text-sm text-gray-500">{n.message}</p><time className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleString('pt-BR')}</time>{!n.read&&<button onClick={()=>void read(n.id)} className="block text-brand-600 underline mt-2">Marcar como lida</button>}</article>)}</DataState></div>}
+import { NotificationItems, useNotifications } from '@/components/common/UserNotifications'
+
+export default function AsaNotificacoes() {
+  const query = useNotifications()
+  const navigate = useNavigate()
+  const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const visible = (query.data || []).filter(notification => filter === 'all' || !notification.read)
+  async function open(notification: UserNotification) {
+    if (await query.read(notification)) navigate(notification.link)
+  }
+  return <div className="p-4 md:p-6 space-y-5">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><h1 className="text-2xl font-bold dark:text-white">Notificações</h1><p className="text-sm text-gray-500 mt-1">Chamados, respostas, agendamentos e prazos. Até 100 notificações recentes.</p></div>
+      <button type="button" onClick={() => void query.refresh()} className="flex items-center gap-2 text-sm text-brand-600"><RefreshCw className="w-4 h-4" />Atualizar</button>
+    </div>
+    <div className="flex gap-3 text-sm">
+      <button type="button" aria-pressed={filter === 'all'} onClick={() => setFilter('all')} className={filter === 'all' ? 'font-semibold text-brand-600 underline' : 'text-gray-500'}>Todas</button>
+      <button type="button" aria-pressed={filter === 'unread'} onClick={() => setFilter('unread')} className={filter === 'unread' ? 'font-semibold text-brand-600 underline' : 'text-gray-500'}>Não lidas ({query.unread})</button>
+    </div>
+    {query.actionError && <p role="alert" className="text-red-600">{query.actionError}</p>}
+    <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
+      {!visible.length ? <p className="p-8 text-center text-gray-500">{filter === 'unread' ? 'Nenhuma notificação não lida.' : 'Nenhuma notificação por enquanto.'}</p> : <div className="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-5"><NotificationItems items={visible} busy={query.busy} onRead={query.read} onOpen={open} /></div>}
+    </DataState>
+  </div>
+}

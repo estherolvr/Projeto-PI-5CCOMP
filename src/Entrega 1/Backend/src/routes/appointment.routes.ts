@@ -303,6 +303,10 @@ appointmentRouter.get('/:id/ics', authenticateToken, async (req: AuthenticatedRe
       return res.status(404).json({ error: 'Agendamento não encontrado.' })
     }
 
+    if (req.user?.role === 'aluno' && appointment.studentId !== req.user.id) {
+      return res.status(403).json({ error: 'Acesso não autorizado ao calendário deste agendamento.' })
+    }
+
     const icsContent = appointmentService.generateICalendar(appointment)
 
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8')

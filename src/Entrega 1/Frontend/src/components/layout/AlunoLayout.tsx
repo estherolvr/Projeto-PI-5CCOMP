@@ -9,6 +9,7 @@ import Avatar from '../ui/Avatar'
 import FecapLogo from '../ui/FecapLogo'
 import { cn } from '../../lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import UserNotifications from '../common/UserNotifications'
 
 const navItems = [
   { icon: Home, label: 'Início', to: '/aluno' },
@@ -153,7 +154,7 @@ export default function AlunoLayout() {
             <FecapLogo size={28} />
             <span className="font-bold text-gray-900 dark:text-white">Álvaro AI</span>
           </div>
-          <button
+          <div className="flex items-center gap-1"><UserNotifications /><button
             onClick={() => {
               logout()
               navigate('/login', { replace: true })
@@ -162,17 +163,14 @@ export default function AlunoLayout() {
             className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-          </button>
+          </button></div>
         </header>
 
         {/* Desktop header */}
         <header className="hidden md:flex items-center justify-between px-6 py-4 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
           <div />
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-            </button>
+            <UserNotifications />
             <div className="flex items-center gap-2 pl-2 border-l border-gray-100 dark:border-slate-700">
               <Avatar name={currentUser?.name || 'Aluno'} size="sm" />
               <span className="text-sm font-medium text-gray-700 dark:text-slate-300">

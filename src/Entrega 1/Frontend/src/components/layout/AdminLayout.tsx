@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  Calendar, LayoutDashboard, FileText, ListOrdered, Clock, Tag, Zap,
+  Calendar, LayoutDashboard, FileText, ListOrdered, Clock, Tag,
   Bot, FileCode2, BookOpen, Database, ThumbsUp,
   Users, GraduationCap, HeadphonesIcon, Key,
   Mail, BarChart2, FileBarChart,
@@ -39,7 +39,6 @@ const navSections: NavSection[] = [
       { icon: Calendar, label: 'Agendamentos', to: '/admin/agendamentos' },
       { icon: Clock, label: 'SLA', to: '/admin/sla' },
       { icon: Tag, label: 'Categorias', to: '/admin/categorias' },
-      { icon: Zap, label: 'Automações', to: '/admin/automacoes' },
     ],
   },
   {

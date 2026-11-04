@@ -43,7 +43,6 @@ import AdminChamados from './pages/admin/AdminChamados'
 import AdminFila from './pages/admin/AdminFila'
 import AdminSLA from './pages/admin/AdminSLA'
 import AdminCategorias from './pages/admin/AdminCategorias'
-import AdminAutomacoes from './pages/admin/AdminAutomacoes'
 import AdminAgenteIA from './pages/admin/AdminAgenteIA'
 import AdminPrompts from './pages/admin/AdminPrompts'
 import AdminBaseConhecimento from './pages/admin/AdminBaseConhecimento'
@@ -85,7 +84,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
 
           {/* Aluno - Protegido por JWT e Sessão */}
-          <Route element={<ProtectedRoute allowedRoles={['aluno', 'admin']} />}>
+          <Route element={<ProtectedRoute allowedRoles={['aluno']} />}>
             <Route path="/aluno" element={<AlunoLayout />}>
               <Route index element={<AlunoDashboard />} />
               <Route path="chat" element={<AlunoChat />} />
@@ -127,7 +126,8 @@ function App() {
               <Route path="agendamentos" element={<AdminAgendamentos />} />
               <Route path="sla" element={<AdminSLA />} />
               <Route path="categorias" element={<AdminCategorias />} />
-              <Route path="automacoes" element={<AdminAutomacoes />} />
+              <Route path="automacoes" element={<Navigate to="/admin" replace />} />
+              <Route path="regras" element={<Navigate to="/admin" replace />} />
               <Route path="agente-ia" element={<AdminAgenteIA />} />
               <Route path="prompts" element={<AdminPrompts />} />
               <Route path="base-conhecimento" element={<AdminBaseConhecimento />} />

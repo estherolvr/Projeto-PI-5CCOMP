@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, Download, X, Clock, RefreshCw, AlertTriangle, UserCheck } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { formatRelative } from '../../lib/utils';
 import { useAppStore } from '../../store/app-store';
@@ -15,42 +15,62 @@ export default function AsaFila() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('todos');
   const [isLoading, setIsLoading] = useState(true);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const historyMode = searchParams.get('view') === 'history';
+  const currentMode = useRef(historyMode);
+  currentMode.current = historyMode;
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  const requestVersion = useRef(0);
 
   const fetchQueue = async () => {
+    const version = ++requestVersion.current;
     try {
       setIsLoading(true); setApiError(null);
-      const data = await api.metrics.queue();
-      setTickets(data);
+      const data = historyMode ? await api.tickets.list() : await api.metrics.queue();
+      if (version !== requestVersion.current) return;
+      setTickets(data.map((ticket: any) => ({
+        ...ticket,
+        slaRemainingMinutes: Math.ceil((new Date(ticket.slaDeadline).getTime() - Date.now()) / 60000),
+        isSlaRisk: !['resolvido', 'fechado'].includes(ticket.status) && ticket.slaStatus === 'risk',
+        isSlaBreached: !['resolvido', 'fechado'].includes(ticket.status) && ticket.slaStatus === 'breached',
+      })));
     } catch (err) {
+      if (version !== requestVersion.current) return;
       setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) setIsLoading(false);
     }
   };
 
   useEffect(() => {
     fetchQueue();
-  }, []);
+    const timer = window.setInterval(() => { if (!document.hidden) void fetchQueue(); }, 60000);
+    return () => { window.clearInterval(timer); requestVersion.current++; };
+  }, [historyMode]);
+
+  useEffect(() => { setPage(1); }, [searchTerm, selectedStatus, historyMode]);
 
   const handleAssignToMe = async (e: React.MouseEvent, ticketId: string) => {
     e.stopPropagation();
+    const modeAtStart = historyMode;
     try {
       await api.tickets.update(ticketId, {
         assignedTo: currentUser?.id,
         status: 'em_atendimento',
       });
-      fetchQueue();
+      if (currentMode.current === modeAtStart) void fetchQueue();
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Não foi possível concluir a operação.');
     }
   };
 
   const filteredTickets = tickets.filter(t => {
-    const matchesStatus = selectedStatus === 'todos' || t.status === selectedStatus || (selectedStatus === 'risk' && t.isSlaRisk);
+    const matchesStatus = selectedStatus === 'todos' || t.status === selectedStatus || (selectedStatus === 'risk' && (t.isSlaRisk || t.isSlaBreached));
     const q = searchTerm.toLowerCase();
     const matchesSearch = !searchTerm ||
       t.title.toLowerCase().includes(q) ||
-      t.number.toString().includes(q) ||
+      t.number.toString().includes(q.replace(/^#/, '')) ||
       (t.student?.name && t.student.name.toLowerCase().includes(q)) ||
       (t.student?.ra && t.student.ra.includes(q)) ||
       t.category.toLowerCase().includes(q);
@@ -62,6 +82,9 @@ export default function AsaFila() {
   const abertosCount = tickets.filter(t => t.status === 'aberto').length;
   const emAtendimentoCount = tickets.filter(t => t.status === 'em_atendimento').length;
   const slaRiskCount = tickets.filter(t => t.isSlaRisk || t.isSlaBreached).length;
+  const totalPages = Math.max(1, Math.ceil(filteredTickets.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const visibleTickets = filteredTickets.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const getStatusStyle = (status: string) => {
     switch(status) {
@@ -89,7 +112,7 @@ export default function AsaFila() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100">Fila de Atendimento ASA</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{historyMode ? 'Histórico de Chamados ASA' : 'Fila de Atendimento ASA'}</h1>
             <button
               onClick={fetchQueue}
               className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
@@ -99,7 +122,7 @@ export default function AsaFila() {
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500 dark:text-slate-400">
-            <span>Total na fila: <strong className="text-gray-900 dark:text-white">{totalCount}</strong></span>
+            <span>{historyMode ? 'Total registrado' : 'Total na fila'}: <strong className="text-gray-900 dark:text-white">{totalCount}</strong></span>
             <span className="w-1 h-1 rounded-full bg-gray-300"></span>
             <span>Abertos: <strong className="text-blue-600">{abertosCount}</strong></span>
             <span className="w-1 h-1 rounded-full bg-gray-300"></span>
@@ -110,6 +133,10 @@ export default function AsaFila() {
             </span>
           </div>
         </div>
+      </div>
+
+      <div className="flex gap-2" aria-label="Consulta de chamados">
+        {[{ history: false, label: 'Fila ativa' }, { history: true, label: 'Histórico completo' }].map(option => <button key={option.label} type="button" aria-pressed={historyMode === option.history} onClick={() => { if (historyMode === option.history) return; requestVersion.current++; setTickets([]); setSelectedStatus('todos'); setSearchParams(option.history ? { view: 'history' } : {}); }} className={`px-4 py-2 rounded-lg text-sm font-medium ${historyMode === option.history ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'}`}>{option.label}</button>)}
       </div>
 
       {/* Table Card */}
@@ -133,6 +160,7 @@ export default function AsaFila() {
               { id: 'aberto', label: 'Abertos' },
               { id: 'em_atendimento', label: 'Em atendimento' },
               { id: 'aguardando_aluno', label: 'Aguardando Aluno' },
+              ...(historyMode ? [{ id: 'resolvido', label: 'Resolvidos' }, { id: 'fechado', label: 'Fechados' }] : []),
               { id: 'risk', label: '⚠️ SLA em Risco' },
             ].map(f => (
               <button
@@ -168,10 +196,12 @@ export default function AsaFila() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700/60">
-              {filteredTickets.map((ticket: any) => {
+              {isLoading && <tr><td colSpan={10} role="status" className="p-6 text-center text-gray-500">Carregando chamados…</td></tr>}
+              {visibleTickets.map((ticket: any) => {
                 const isMine = ticket.attendant?.id === currentUser?.id;
                 const slaMinutes = ticket.slaRemainingMinutes;
                 const isOverdue = slaMinutes <= 0;
+                const completed = ['resolvido', 'fechado'].includes(ticket.status);
 
                 return (
                   <tr 
@@ -187,7 +217,7 @@ export default function AsaFila() {
                         {ticket.student?.name || 'Aluno'}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-slate-400 font-mono">
-                        RA: {ticket.student?.ra || '24000000'} · {ticket.student?.course || 'Graduação'}
+                        RA: {ticket.student?.ra || 'Não informado'} · {ticket.student?.course || 'Não informado'}
                       </div>
                     </td>
                     <td className="px-4 py-3.5 max-w-xs truncate">
@@ -218,7 +248,7 @@ export default function AsaFila() {
                             {ticket.attendant.name} {isMine && "(Você)"}
                           </span>
                         </div>
-                      ) : (
+                      ) : completed ? <span className="text-xs text-gray-500">Não atribuído</span> : (
                         <button
                           onClick={(e) => handleAssignToMe(e, ticket.id)}
                           className="px-2.5 py-1 text-xs bg-brand-50 hover:bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:hover:bg-brand-900/50 dark:text-brand-300 rounded font-medium transition-colors flex items-center gap-1"
@@ -229,11 +259,11 @@ export default function AsaFila() {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className={`text-xs font-semibold flex items-center gap-1 ${
-                        isOverdue ? 'text-red-600 dark:text-red-400' :
+                        completed ? 'text-gray-500 dark:text-slate-400' : isOverdue ? 'text-red-600 dark:text-red-400' :
                         ticket.isSlaRisk ? 'text-orange-600 dark:text-orange-400' : 'text-emerald-600 dark:text-emerald-400'
                       }`}>
                         <Clock size={13} />
-                        {isOverdue ? 'SLA Estourado' :
+                        {completed ? 'Encerrado' : isOverdue ? 'SLA Estourado' :
                          slaMinutes < 60 ? `${slaMinutes}m restantes` :
                          `${Math.floor(slaMinutes / 60)}h ${slaMinutes % 60}m`}
                       </div>
@@ -243,7 +273,7 @@ export default function AsaFila() {
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       <span className="text-xs text-brand-600 dark:text-brand-400 hover:underline font-medium">
-                        Atender &rarr;
+                        {completed ? 'Consultar' : 'Atender'} &rarr;
                       </span>
                     </td>
                   </tr>
@@ -259,6 +289,10 @@ export default function AsaFila() {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="flex items-center justify-between gap-3 p-4 border-t border-gray-100 dark:border-slate-700 text-sm text-gray-600 dark:text-slate-300">
+          <span>{filteredTickets.length} chamado(s) · Página {currentPage} de {totalPages}</span>
+          <div className="flex gap-2"><button type="button" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-40">Anterior</button><button type="button" disabled={currentPage >= totalPages} onClick={() => setPage(currentPage + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-40">Próxima</button></div>
         </div>
       </div>
     </motion.div>

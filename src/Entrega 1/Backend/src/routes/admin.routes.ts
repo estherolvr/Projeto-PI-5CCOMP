@@ -5,6 +5,7 @@ import { ACTIVE_TICKET_STATUSES, COMPLETED_TICKET_STATUSES, liveSlaStatus, metri
 import { operationalHealth, probeGeminiGeneration, probeGeminiModel, publicIntegrationConfig } from '../services/admin-health'
 import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
+import { assignedSlaPolicies, evaluateTicketSla, validateSlaRule } from '../services/ticket-sla'
 
 export const adminRouter = Router()
 adminRouter.use(authenticateToken, requireRole(['admin', 'asa']))
@@ -47,26 +48,40 @@ adminRouter.get('/sla-rules', authenticateToken, async (req, res) => {
 
 adminRouter.post('/sla-rules', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
-    const { name, priority, category, firstResponseMinutes, resolutionHours, active } = req.body
-    if (typeof name !== 'string' || !name.trim() || !['baixa', 'media', 'alta', 'critica'].includes(priority)
-      || !Number.isInteger(Number(firstResponseMinutes)) || Number(firstResponseMinutes) <= 0
-      || !Number.isInteger(Number(resolutionHours)) || Number(resolutionHours) <= 0) {
-      return res.status(400).json({ error: 'Informe nome, prioridade e prazos inteiros positivos.' })
-    }
-    const rule = await prisma.sLARule.create({
-      data: {
-        name,
-        priority,
-        category: category || null,
-        firstResponseMinutes: Number(firstResponseMinutes),
-        resolutionHours: Number(resolutionHours),
-        active: active !== undefined ? Boolean(active) : true,
-      },
-    })
+    const data = validateSlaRule(req.body)
+    if (!data) return res.status(400).json({ error: 'Informe nome, prioridade e prazos inteiros positivos. A primeira resposta deve ocorrer até o prazo de resolução (máximo 8760 horas).' })
+    const rule = await prisma.sLARule.create({ data })
     res.status(201).json(rule)
   } catch (error) {
     res.status(500).json({ error: 'Erro ao criar regra de SLA' })
   }
+})
+
+adminRouter.put('/sla-rules/:id', requireRole(['admin']), async (req, res) => {
+  try {
+    const id = String(req.params.id)
+    const existing = await prisma.sLARule.findUnique({ where: { id } })
+    if (!existing) return res.status(404).json({ error: 'Regra de SLA não encontrada.' })
+    const data = validateSlaRule({ ...existing, ...req.body })
+    if (!data) return res.status(400).json({ error: 'Informe prazos válidos; a primeira resposta deve ocorrer até a resolução.' })
+    res.json(await prisma.sLARule.update({ where: { id }, data }))
+  } catch { res.status(500).json({ error: 'Não foi possível atualizar a regra de SLA.' }) }
+})
+
+adminRouter.get('/sla-monitor', async (_req, res) => {
+  try {
+    const tickets = await prisma.ticket.findMany({
+      where: { status: { in: ACTIVE_TICKET_STATUSES } },
+      select: { id: true, number: true, title: true, category: true, priority: true, status: true, createdAt: true, slaDeadline: true,
+        student: { select: { name: true } }, attendant: { select: { name: true } },
+        messages: { where: { senderRole: { in: ['asa', 'admin'] }, isInternal: false }, select: { createdAt: true, senderRole: true, isInternal: true } } },
+      orderBy: { slaDeadline: 'asc' },
+    })
+    const audits = tickets.length ? await prisma.auditEvent.findMany({ where: { action: { in: ['ticket.created', 'ticket.updated'] }, resourceId: { in: tickets.flatMap(t => [t.id, `#${t.number}`]) } }, select: { resourceId: true, details: true }, orderBy: { createdAt: 'asc' } }) : []
+    const policies = assignedSlaPolicies(audits)
+    const now = new Date()
+    res.json(tickets.map(({ messages, ...ticket }) => ({ ...ticket, ...evaluateTicketSla({ ...ticket, messages }, policies.get(ticket.id) || policies.get(`#${ticket.number}`), now) })))
+  } catch { res.status(500).json({ error: 'Não foi possível consultar os prazos dos chamados.' }) }
 })
 
 // Automations

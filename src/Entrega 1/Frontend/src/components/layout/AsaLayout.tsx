@@ -5,7 +5,7 @@ import {
   Sun, Moon, LogOut, Search, Menu, X, Calendar
 } from 'lucide-react'
 import { useState } from 'react'
-import AdminNotifications from '../admin/AdminNotifications'
+import UserNotifications from '../common/UserNotifications'
 import { useAppStore } from '../../store/app-store'
 import Avatar from '../ui/Avatar'
 import FecapLogo, { FecapLogoDark } from '../ui/FecapLogo'
@@ -230,7 +230,7 @@ export default function AsaLayout() {
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
-            <AdminNotifications />
+            <UserNotifications />
             <div className="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-slate-700">
               <Avatar name={currentUser?.name || 'Atendente ASA'} size="sm" />
               <div className="hidden md:block">

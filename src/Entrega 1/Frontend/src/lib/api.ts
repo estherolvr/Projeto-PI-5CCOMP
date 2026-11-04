@@ -1,5 +1,16 @@
 import type { Ticket, TicketCategory, TicketPriority, TicketStatus, UserRole } from './types'
 
+export interface UserNotification {
+  id: string
+  type: 'new_ticket' | 'ticket_updated' | 'ticket_message' | 'sla_risk' | 'appointment'
+  title: string
+  message: string
+  priority: 'medium' | 'high'
+  link: string
+  createdAt: string
+  read: boolean
+}
+
 function getBaseUrl(): string {
   const raw = ((import.meta as any).env?.VITE_API_URL || '').trim().replace(/\/+$/, '')
   return raw ? (raw.endsWith('/api') ? raw : `${raw}/api`) : '/api'
@@ -59,6 +70,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 }
 
 export const api = {
+  notifications: {
+    list: () => request<UserNotification[]>('/notifications'),
+    read: (id: string) => request<UserNotification>(`/notifications/${encodeURIComponent(id)}/read`, { method: 'PATCH' }),
+  },
   auth: {
     login: (email: string, password?: string) =>
       request<{ token: string; user: any }>('/auth/login', {
@@ -80,21 +95,36 @@ export const api = {
       return request<Ticket[]>(`/tickets${qs ? `?${qs}` : ''}`)
     },
     get: (id: string) => request<Ticket>(`/tickets/${id}`),
-    create: (data: { title: string; description: string; category: string; priority?: string; tags?: string[]; conversationId?: string }) =>
-      request<Ticket>('/tickets', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+    create: (data: { title: string; description: string; category: string; priority?: string; tags?: string[]; conversationId?: string; files?: File[] }) => {
+      const { files, ...fields } = data
+      const form = new FormData()
+      for (const [key, value] of Object.entries(fields)) if (value !== undefined) form.append(key, typeof value === 'string' ? value : JSON.stringify(value))
+      files?.forEach(file => form.append('files', file))
+      return request<Ticket>('/tickets', { method: 'POST', body: files?.length ? form : JSON.stringify(fields) })
+    },
     update: (id: string, data: Partial<Ticket>) =>
       request<Ticket>(`/tickets/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(data),
       }),
-    addMessage: (id: string, data: { content: string; isInternal?: boolean; attachments?: any[] }) =>
-      request<any>(`/tickets/${id}/messages`, {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
+    addMessage: (id: string, data: { content: string; isInternal?: boolean; files?: File[] }) => {
+      const { files, ...fields } = data
+      const form = new FormData()
+      for (const [key, value] of Object.entries(fields)) if (value !== undefined) form.append(key, String(value))
+      files?.forEach(file => form.append('files', file))
+      return request<any>(`/tickets/${id}/messages`, { method: 'POST', body: files?.length ? form : JSON.stringify(fields) })
+    },
+    downloadAttachment: async (ticketId: string, attachmentId: string, filename: string): Promise<void> => {
+      const response = await fetch(getFullUrl(`/tickets/${encodeURIComponent(ticketId)}/attachments/${encodeURIComponent(attachmentId)}/download`), { headers: getAuthHeaders() })
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.error || 'Não foi possível baixar o anexo.')
+      }
+      const url = URL.createObjectURL(await response.blob())
+      const link = document.createElement('a')
+      link.href = url; link.download = filename; document.body.appendChild(link); link.click(); link.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    },
   },
 
   chat: {
@@ -105,11 +135,25 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ title }),
       }),
-    sendMessage: (conversationId: string, content: string) =>
-      request<{ userMessage: any; aiMessage: any }>(`/chat/conversations/${conversationId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ content }),
-      }),
+    sendMessage: (conversationId: string, content: string, files: File[] = []) => {
+      const form = new FormData()
+      form.append('content', content)
+      files.forEach(file => form.append('files', file))
+      return request<{ userMessage: any; aiMessage: any }>(`/chat/conversations/${encodeURIComponent(conversationId)}/messages`, {
+        method: 'POST', body: files.length ? form : JSON.stringify({ content }),
+      })
+    },
+    downloadAttachment: async (conversationId: string, messageId: string, attachmentId: string, filename: string) => {
+      const path = `/chat/conversations/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachmentId)}/download`
+      const response = await fetch(getFullUrl(path), { headers: getAuthHeaders() })
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}))
+        throw new Error(error.error || 'Não foi possível baixar o anexo.')
+      }
+      const url = URL.createObjectURL(await response.blob())
+      const link = document.createElement('a'); link.href = url; link.download = filename
+      link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000)
+    },
     sendFeedback: (data: {
       conversationId?: string
       messageId?: string
@@ -179,6 +223,8 @@ export const api = {
   admin: {
     getHealth: () => request<any>('/admin/health'),
     getSLARules: () => request<any[]>('/admin/sla-rules'),
+    getSLAMonitor: () => request<any[]>('/admin/sla-monitor'),
+    updateSLARule: (id: string, data: any) => request<any>(`/admin/sla-rules/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     createSLARule: (data: any) =>
       request<any>('/admin/sla-rules', { method: 'POST', body: JSON.stringify(data) }),
     getAutomations: () => request<any[]>('/admin/automations'),

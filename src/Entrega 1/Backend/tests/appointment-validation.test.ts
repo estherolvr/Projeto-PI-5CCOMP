@@ -10,7 +10,7 @@ import { DatabaseSync } from 'node:sqlite'
 import express from 'express'
 import jwt from 'jsonwebtoken'
 
-test('appointment creation requires a registered student and a valid weekday slot', async () => {
+test('appointments validate creation and protect calendar exports by ownership', async t => {
   const backend = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const directory = mkdtempSync(join(tmpdir(), 'alvaro-appointment-validation-'))
   const databasePath = join(directory, 'test.db')
@@ -55,8 +55,20 @@ test('appointment creation requires a registered student and a valid weekday slo
     await prisma.user.create({ data: {
       id: 'staff-1', name: 'Atendente de Teste', email: 'asa@example.invalid', role: 'asa',
     } })
+    await prisma.user.create({ data: {
+      id: 'admin-1', name: 'Administrador de Teste', email: 'admin@example.invalid', role: 'admin',
+    } })
+    await prisma.student.create({ data: {
+      id: 'student-2', name: 'Outro Aluno de Teste', ra: '900002', email: 'outro@example.invalid',
+      course: 'Ciência da Computação', semester: 3, period: 'noite',
+    } })
 
-    const valid = { subject: 'Orientação acadêmica', date: '2026-11-04', time: '14:15' }
+    const futureWeekday = new Date()
+    futureWeekday.setUTCDate(futureWeekday.getUTCDate() + 7)
+    while ([0, 6].includes(futureWeekday.getUTCDay())) futureWeekday.setUTCDate(futureWeekday.getUTCDate() + 1)
+    const futureSaturday = new Date(futureWeekday)
+    while (futureSaturday.getUTCDay() !== 6) futureSaturday.setUTCDate(futureSaturday.getUTCDate() + 1)
+    const valid = { subject: 'Orientação acadêmica', date: futureWeekday.toISOString().slice(0, 10), time: '14:15', notes: 'Descrição acadêmica privada do aluno de teste.' }
     const byRa = await request('asa', { ...valid, studentRa: '900001' })
     assert.equal(byRa.status, 201)
     assert.equal(byRa.data.studentId, 'student-1')
@@ -64,12 +76,30 @@ test('appointment creation requires a registered student and a valid weekday slo
     assert.equal((await request('asa', { ...valid, studentRa: '999999' })).status, 400)
     assert.equal((await request('asa', valid)).status, 400)
     assert.equal((await request('aluno', { ...valid, date: '2020-01-04' })).status, 400)
-    assert.equal((await request('aluno', { ...valid, date: '2026-11-07' })).status, 400)
+    assert.equal((await request('aluno', { ...valid, date: futureSaturday.toISOString().slice(0, 10) })).status, 400)
     assert.equal((await request('aluno', { ...valid, time: '03:17' })).status, 400)
     assert.equal((await request('aluno', { ...valid, date: '2026-02-30' })).status, 400)
 
     const rows = await prisma.appointment.findMany({ select: { studentId: true } })
     assert.deepEqual(rows, [{ studentId: 'student-1' }])
+
+    const calendarUrl = `${baseUrl}/appointments/${byRa.data.id}/ics`
+    await t.test('calendar exports deny anonymous access and another student without exposing notes', async () => {
+      assert.equal((await fetch(calendarUrl)).status, 401)
+      const forbidden = await fetch(calendarUrl, { headers: { Authorization: `Bearer ${token('student-2', 'aluno')}` } })
+      assert.equal(forbidden.status, 403)
+      assert.ok(!(await forbidden.text()).includes(valid.notes))
+    })
+    await t.test('calendar exports retain the description for the owner, ASA and administrator', async () => {
+      for (const [id, role] of [['student-1', 'aluno'], ['staff-1', 'asa'], ['admin-1', 'admin']]) {
+        const calendar = await fetch(calendarUrl, { headers: { Authorization: `Bearer ${token(id, role)}` } })
+        assert.equal(calendar.status, 200)
+        assert.match(calendar.headers.get('content-type') || '', /text\/calendar/)
+        const text = await calendar.text()
+        assert.ok(text.includes('BEGIN:VCALENDAR'))
+        assert.ok(text.includes(valid.notes))
+      }
+    })
   } finally {
     await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
     await prisma.$disconnect()

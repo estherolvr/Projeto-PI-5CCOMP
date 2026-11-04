@@ -19,9 +19,11 @@
     "render:build": "cd \"src/Entrega 1/Backend\" && npm install --include=dev && npm run db:push && npm run db:generate",
     "render:start": "cd \"src/Entrega 1/Backend\" && npx tsx src/index.ts",
     "deploy:cloudflare": "wrangler deploy",
-    "build:cloudflare": "npm run build:frontend && cd \"src/Entrega 1/Backend\" && npx prisma generate --schema prisma/schema.postgresql.prisma"
+    "build:cloudflare": "npm run build:frontend && cd \"src/Entrega 1/Backend\" && npx prisma generate --schema prisma/schema.postgresql.prisma",
+    "test:e2e": "playwright test --config qa-adjustments/playwright.config.ts"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "concurrently": "^10.0.5",
     "postgres": "^3.4.8",
     "wrangler": "^4.156.0"

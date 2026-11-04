@@ -9,6 +9,7 @@ import { api } from '../../lib/api';
 import { formatDateTime, formatRelative, cn } from '../../lib/utils';
 import { useAppStore } from '../../store/app-store';
 import MarkdownRenderer from '../../components/ui/MarkdownRenderer';
+import { TicketAttachmentList, TicketFilePicker } from '../../components/common/TicketAttachments';
 
 export default function AsaDetalheChamado() {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export default function AsaDetalheChamado() {
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [priorityDropdownOpen, setPriorityDropdownOpen] = useState(false);
   const [showChatContext, setShowChatContext] = useState(true);
+  const [files, setFiles] = useState<File[]>([]);
 
   const fetchTicket = async () => {
     if (!id) return;
@@ -45,17 +47,20 @@ export default function AsaDetalheChamado() {
   }, [id]);
 
   const handleSend = async () => {
-    if (!replyText.trim() || !ticket) return;
+    if (!replyText.trim() || !ticket || isSending) return;
+    setApiError(null);
     setIsSending(true);
 
     try {
       const createdMsg = await api.tickets.addMessage(ticket.id, {
         content: replyText.trim(),
         isInternal: isInternalNote,
+        files,
       });
 
       setMessages(prev => [...prev, createdMsg]);
       setReplyText('');
+      setFiles([]);
       setIsInternalNote(false);
 
       // Refresh ticket details
@@ -341,6 +346,7 @@ export default function AsaDetalheChamado() {
                     </div>
                   )}
                   <MarkdownRenderer content={msg.content} isUserMessage={isASA && !isInternal} />
+                  <TicketAttachmentList ticketId={ticket.id} attachments={msg.attachments} onError={setApiError}/>
                 </div>
               </div>
             );
@@ -379,9 +385,7 @@ export default function AsaDetalheChamado() {
             />
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
               <div className="flex gap-2">
-                <button className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
-                  <Paperclip className="w-4 h-4" />
-                </button>
+                <TicketFilePicker files={files} onChange={setFiles} onError={message=>setApiError(message||null)} compact disabled={isSending}/>
                 {ticket.aiSuggestion?.recommendation && (
                   <button 
                     onClick={() => setReplyText(ticket.aiSuggestion.recommendation)}

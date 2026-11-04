@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { api } from '../../lib/api';
 import { useAppStore } from '../../store/app-store';
 import MarkdownRenderer from '../../components/ui/MarkdownRenderer';
+import { TicketAttachmentList, TicketFilePicker } from '../../components/common/TicketAttachments';
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   aberto: { label: 'Aberto', className: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' },
@@ -26,6 +27,7 @@ export default function DetalheChamadoAluno() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
 
   const fetchTicket = async () => {
     if (!id) return;
@@ -47,15 +49,18 @@ export default function DetalheChamadoAluno() {
   }, [id]);
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !ticket) return;
+    if (!newMessage.trim() || !ticket || isSending) return;
+    setError('');
     setIsSending(true);
 
     try {
       const createdMsg = await api.tickets.addMessage(ticket.id, {
         content: newMessage.trim(),
+        files,
       });
       setMessages(prev => [...prev, createdMsg]);
       setNewMessage('');
+      setFiles([]);
       // Refetch ticket in case status changed
       const updatedTicket = await api.tickets.get(ticket.id);
       setTicket(updatedTicket);
@@ -75,7 +80,7 @@ export default function DetalheChamadoAluno() {
     );
   }
 
-  if (error || !ticket) {
+  if (!ticket) {
     return (
       <div className="max-w-4xl mx-auto py-16 px-4 text-center space-y-4">
         <AlertCircle className="w-12 h-12 text-red-500 mx-auto" />
@@ -95,6 +100,7 @@ export default function DetalheChamadoAluno() {
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+      {error&&<p role="alert" className="text-red-600">{error}</p>}
       {/* Header */}
       <div className="flex items-center gap-4">
         <button
@@ -180,6 +186,7 @@ export default function DetalheChamadoAluno() {
                     <span className="text-xs text-gray-500">{formatDateTime(msg.createdAt || msg.timestamp)}</span>
                   </div>
                   <MarkdownRenderer content={msg.content} />
+                  <TicketAttachmentList ticketId={ticket.id} attachments={msg.attachments} onError={setError}/>
                 </div>
               </motion.div>
             );
@@ -197,9 +204,7 @@ export default function DetalheChamadoAluno() {
             className="w-full bg-transparent border-0 focus:ring-0 resize-none py-2 text-gray-900 dark:text-white outline-none min-h-[80px]"
           />
           <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-slate-700">
-            <button className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors rounded-lg">
-              <Paperclip size={20} />
-            </button>
+            <TicketFilePicker files={files} onChange={setFiles} onError={setError} compact disabled={isSending}/>
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || isSending}
