@@ -29,6 +29,9 @@
     "enabled": true
   },
   "minify": true,
+  "limits": {
+    "cpu_ms": 10000
+  },
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
