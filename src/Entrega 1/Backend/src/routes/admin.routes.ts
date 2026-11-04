@@ -2,7 +2,7 @@ import { aiService } from '../services/ai.service'
 import { Router } from 'express'
 import { Prisma } from '@prisma/client'
 import { ACTIVE_TICKET_STATUSES, COMPLETED_TICKET_STATUSES, liveSlaStatus, metricTicketSelect, reportPeriod, statusAuditQuery, ticketAnalytics } from '../services/admin-metrics'
-import { operationalHealth, probeGeminiModel, publicIntegrationConfig } from '../services/admin-health'
+import { operationalHealth, probeGeminiGeneration, probeGeminiModel, publicIntegrationConfig } from '../services/admin-health'
 import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 
@@ -25,6 +25,11 @@ adminRouter.get('/health', async (_req, res) => {
 
 adminRouter.get('/health/gemini', async (_req, res) => {
   const result = await probeGeminiModel()
+  res.status(result.available ? 200 : 502).json(result)
+})
+
+adminRouter.post('/health/gemini/generation-test', requireRole(['admin']), async (_req, res) => {
+  const result = await probeGeminiGeneration()
   res.status(result.available ? 200 : 502).json(result)
 })
 

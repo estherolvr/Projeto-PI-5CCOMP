@@ -76,6 +76,64 @@ export async function probeGeminiModel(env = process.env, timeoutMs = 10_000) {
   }
 }
 
+/** On-demand, fixed-prompt generation probe used to compare REST inference with the SDK path. */
+export async function probeGeminiGeneration(env = process.env, timeoutMs = 20_000) {
+  const apiKey = (env.GEMINI_API_KEY || '').trim()
+  const model = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+  const configured = Boolean(apiKey && apiKey !== 'sua_chave_gemini_aqui' && apiKey.length > 10)
+
+  if (!configured) {
+    return { provider: 'google-gemini', model, configured: false, available: false, category: 'missing_api_key' as const }
+  }
+
+  const startedAt = Date.now()
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'Responda apenas com: OK' }] }],
+        generationConfig: { maxOutputTokens: 8, temperature: 0 },
+      }),
+      signal: controller.signal,
+    })
+    const latencyMs = Date.now() - startedAt
+    if (!response.ok) {
+      const diagnostic = geminiFailureDiagnostic('generation_probe', model, {
+        name: 'GoogleGeminiGenerationProbeError', status: response.status, statusText: response.statusText,
+      })
+      return {
+        provider: 'google-gemini', model, configured: true, available: false,
+        httpStatus: response.status, category: diagnostic.category, latencyMs,
+      }
+    }
+
+    const result = await response.json().catch(() => null) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> }; finishReason?: unknown }>
+    } | null
+    const candidate = result?.candidates?.[0]
+    const hasOutput = Boolean(candidate?.content?.parts?.some(part => typeof part.text === 'string' && part.text.length > 0))
+    const finishReason = typeof candidate?.finishReason === 'string'
+      && /^[A-Z_]{1,40}$/.test(candidate.finishReason) ? candidate.finishReason : undefined
+    return {
+      provider: 'google-gemini', model, configured: true, available: hasOutput,
+      httpStatus: response.status, hasOutput, ...(finishReason ? { finishReason } : {}), latencyMs,
+    }
+  } catch (error) {
+    const diagnostic = geminiFailureDiagnostic('generation_probe', model, error)
+    return {
+      provider: 'google-gemini', model, configured: true, available: false,
+      category: diagnostic.category, errorName: diagnostic.errorName, code: diagnostic.code,
+      latencyMs: Date.now() - startedAt,
+    }
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 /** Integration configuration can include API keys; administration lists only non-secret metadata. */
 export function publicIntegrationConfig(raw: string): Record<string, unknown> {
   try {
