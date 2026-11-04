@@ -85,7 +85,7 @@ adminRouter.get('/sla-monitor', async (_req, res) => {
 })
 
 // Automations
-adminRouter.get('/automations', authenticateToken, async (req, res) => {
+adminRouter.get('/automations', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const automations = await prisma.automationRule.findMany({ orderBy: { createdAt: 'desc' } })
     const formatted = automations.map(a => ({
@@ -193,7 +193,7 @@ adminRouter.get('/integrations', authenticateToken, requireRole(['admin']), asyn
 })
 
 // Users (Equipe ASA e Admins)
-adminRouter.get('/users', authenticateToken, async (req, res) => {
+adminRouter.get('/users', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const { role } = req.query
     const where: any = {}
@@ -224,7 +224,7 @@ adminRouter.get('/users', authenticateToken, async (req, res) => {
 })
 
 // Notifications
-adminRouter.get('/notifications', authenticateToken, async (req: AuthenticatedRequest, res) => {
+adminRouter.get('/notifications', authenticateToken, requireRole(['admin']), async (req: AuthenticatedRequest, res) => {
   try {
     const notifications = await prisma.notification.findMany({
       orderBy: { createdAt: 'desc' },
@@ -241,7 +241,7 @@ adminRouter.patch('/notifications/read-all', authenticateToken, requireRole(['ad
   catch {res.status(500).json({error:'Não foi possível marcar as notificações como lidas.'})}
 })
 
-adminRouter.patch('/notifications/:id/read', authenticateToken, async (req, res) => {
+adminRouter.patch('/notifications/:id/read', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
     const id = String(req.params.id)
     const updated = await prisma.notification.update({

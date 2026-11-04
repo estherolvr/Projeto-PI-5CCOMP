@@ -18,7 +18,7 @@ test('real records and ownership remain enforced without demos', async t => {
  const [{prisma},{chatRouter},{kbRouter},{studentRouter},{authRouter},{adminRouter}]=await Promise.all([import('../src/db'),import('../src/routes/chat.routes'),import('../src/routes/kb.routes'),import('../src/routes/student.routes'),import('../src/routes/auth.routes'),import('../src/routes/admin.routes')])
  const app=express();app.use(express.json());app.use('/chat',chatRouter);app.use('/kb',kbRouter);app.use('/students',studentRouter);app.use('/auth',authRouter);app.use('/admin',adminRouter)
  const server=app.listen(0,'127.0.0.1');await new Promise<void>(r=>server.once('listening',r));const address=server.address();assert.ok(address&&typeof address!=='string')
- const base=`http://127.0.0.1:${address.port}`,tokens=Object.fromEntries([['a','aluno'],['b','aluno'],['staff','asa'],['missing','aluno']].map(([id,role])=>[id,jwt.sign({id,role,name:id,email:id+'@test.invalid'},process.env.JWT_SECRET!)]))
+ const base=`http://127.0.0.1:${address.port}`,tokens=Object.fromEntries([['a','aluno'],['b','aluno'],['staff','asa'],['admin','admin'],['missing','aluno']].map(([id,role])=>[id,jwt.sign({id,role,name:id,email:id+'@test.invalid'},process.env.JWT_SECRET!)]))
  async function request(path:string,who='a',method='GET',body?:unknown){const r=await fetch(base+path,{method,headers:{Authorization:`Bearer ${tokens[who]}`,'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});return {status:r.status,data:await r.json() as any}}
  try{
   await prisma.student.createMany({data:['a','b'].map(id=>({id,name:id,ra:id,email:id+'@test.invalid',course:'Teste',semester:1,period:'noite'}))})
@@ -41,6 +41,17 @@ test('real records and ownership remain enforced without demos', async t => {
    assert.equal((await request('/admin/students','a','POST',{name:'No',ra:'no',email:'no@test.invalid',course:'No'})).status,403)
    assert.equal((await request('/admin/users','a','PATCH',{status:'inativo'})).status,403)
    assert.equal(await prisma.user.count(),0)
+  })
+  await t.test('ASA stays out of administrator-only rosters, automations and notification controls',async()=>{
+   for(const [path,method,body] of [
+    ['/admin/users','GET',undefined],
+    ['/admin/automations','GET',undefined],
+    ['/admin/notifications','GET',undefined],
+    ['/admin/notifications/example/read','PATCH',undefined],
+   ] as const) assert.equal((await request(path,'staff',method,body)).status,403,`${method} ${path}`)
+   assert.equal((await request('/admin/audit-logs','staff')).status,200)
+   assert.equal((await request('/admin/users','admin')).status,200)
+   assert.equal((await request('/admin/notifications','admin')).status,200)
   })
   await t.test('KB search retrieves late PDF deadlines and excludes archived or unindexed sources', async () => {
    const introduction = 'Projeto Órbita: aplicativo de atendimento acadêmico e integração com serviços de nuvem. '.repeat(120)

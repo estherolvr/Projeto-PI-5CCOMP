@@ -14,6 +14,8 @@ Na inspeção do frontend foram confirmados três caminhos que podiam misturar o
 
 Também havia um risco de sessão entre abas: uma alteração de token em outra aba não invalidava a identidade em memória. No backend, a autenticação aceitava tokens em query string, inclusive em links de download, expondo credenciais em URLs, histórico e logs.
 
+A revisão das rotas administrativas também mostrou que ASA podia consultar a lista de usuários da equipe, automações antigas e notificações administrativas globais. Esses endpoints não são usados pelo ambiente ASA atual; a API compartilhada de auditoria, SLA e saúde permanece acessível onde o próprio frontend ASA a utiliza.
+
 As rotas `/aluno` e `/admin` já tinham grupos de proteção separados. A causa encontrada não foi um link de menu comprovadamente apontando para o perfil errado; menus atuais usam prefixos próprios. Os testes em produção com contas reais ainda são necessários para confirmar se algum link específico apresenta o sintoma relatado.
 
 ## Alterações
@@ -26,13 +28,14 @@ As rotas `/aluno` e `/admin` já tinham grupos de proteção separados. A causa 
 - `Frontend/src/pages/asa/AsaBaseConhecimento.tsx` e `Frontend/src/pages/asa/AsaAgendamentos.tsx`: substituem links com token na URL por downloads autenticados.
 - `Frontend/src/components/common/ErrorBoundary.tsx`: limpa a sessão pelo mesmo mecanismo centralizado.
 - `Backend/src/middleware/auth.ts`: aceita apenas cabeçalho Bearer bem formado; ignora tokens de query string.
+- `Backend/src/routes/admin.routes.ts`: exige Admin para lista de usuários, automações antigas e leitura/alteração de notificações administrativas globais.
 - `Backend/tests/auth-authorization.test.ts`, `Backend/tests/real-data-security.test.ts` e `e2e/roles.spec.ts`: cobrem autorização, acesso direto, menus próprios e troca de perfil. A suíte E2E não pula silenciosamente quando faltam credenciais; informa erro de configuração.
 
 ## Verificação executada
 
 - `npm run build` do frontend: aprovado.
 - `npm run build` do backend: aprovado.
-- `npm test` do backend: **83 testes aprovados, 0 reprovados, 0 ignorados**. A suíte usa banco isolado e inclui casos para token via URL, papel forjado em cabeçalho e acesso de aluno às rotas administrativas sem persistir alterações.
+- `npm test` do backend: **84 testes aprovados, 0 reprovados, 0 ignorados**, incluindo o último ajuste dos endpoints ASA/Admin. A suíte usa banco isolado e inclui casos para token via URL, papel forjado em cabeçalho e acesso de Aluno/ASA às rotas administrativas sem persistir alterações.
 - Playwright, contra o preview local do frontend: **1 teste aprovado** — acesso direto sem sessão a `/aluno`, `/asa`, `/admin` e `/admin/usuarios` redireciona ao login.
 - `git diff --check`: aprovado.
 
@@ -43,4 +46,4 @@ As rotas `/aluno` e `/admin` já tinham grupos de proteção separados. A causa 
 - A autenticação continua usando token de acesso no `localStorage`, pois a arquitetura atual não usa cookie HttpOnly. A persistência da identidade foi removida, mas uma migração futura para cookie de sessão é uma defesa adicional contra roubo de token por XSS.
 - A renovação de sessão Supabase não foi modificada nesta correção; expiração e refresh devem ser auditados separadamente.
 
-Esta rodada validou o código localmente. O isolamento integral ainda depende do deploy e da execução dos cenários autenticados acima; os resultados locais não são apresentados como prova de comportamento em produção.
+O primeiro conjunto foi publicado pelo pipeline na versão `da90638`. O ajuste adicional de autorização ASA/Admin precisa ser publicado em um novo commit. O isolamento integral também depende da execução dos cenários autenticados acima; os resultados locais não são apresentados como prova de comportamento em produção.
