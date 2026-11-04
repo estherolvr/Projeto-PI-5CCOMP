@@ -26,7 +26,7 @@ export async function operationalHealth(checkDatabase: () => Promise<unknown>, e
 const DIAGNOSTIC_GEMINI_MODELS = new Set(['gemini-3.5-flash-lite'])
 
 function resolveProbeModel(env: NodeJS.ProcessEnv, modelOverride?: string) {
-  const configuredModel = (env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+  const configuredModel = (env.GEMINI_MODEL || 'gemini-3.5-flash-lite').trim()
   if (!modelOverride) return configuredModel
   if (modelOverride === configuredModel || DIAGNOSTIC_GEMINI_MODELS.has(modelOverride)) return modelOverride
   return null

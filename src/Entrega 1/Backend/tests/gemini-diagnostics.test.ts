@@ -36,15 +36,15 @@ test('Gemini diagnostics never retain the message, prompt, or key from an error 
 })
 
 test('Gemini model probe reports missing credentials without contacting Google', async () => {
-  assert.deepEqual(await probeGeminiModel({ GEMINI_MODEL: 'gemini-3.8-flash' }), {
-    provider: 'google-gemini', model: 'gemini-3.8-flash', configured: false,
+  assert.deepEqual(await probeGeminiModel({ GEMINI_MODEL: 'gemini-3.5-flash-lite' }), {
+    provider: 'google-gemini', model: 'gemini-3.5-flash-lite', configured: false,
     available: false, category: 'missing_api_key',
   })
 })
 
 test('Gemini generation probe reports missing credentials without contacting Google', async () => {
-  assert.deepEqual(await probeGeminiGeneration({ GEMINI_MODEL: 'gemini-3.8-flash' }), {
-    provider: 'google-gemini', model: 'gemini-3.8-flash', configured: false,
+  assert.deepEqual(await probeGeminiGeneration({ GEMINI_MODEL: 'gemini-3.5-flash-lite' }), {
+    provider: 'google-gemini', model: 'gemini-3.5-flash-lite', configured: false,
     available: false, category: 'missing_api_key',
   })
 })
