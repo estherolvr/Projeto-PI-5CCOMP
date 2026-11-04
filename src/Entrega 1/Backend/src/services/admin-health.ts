@@ -45,7 +45,16 @@ export async function probeGeminiModel(env = process.env, timeoutMs = 10_000) {
     })
     const latencyMs = Date.now() - startedAt
     if (response.ok) {
-      return { provider: 'google-gemini', model, configured: true, available: true, httpStatus: response.status, latencyMs }
+      const metadata = await response.json().catch(() => null) as { supportedGenerationMethods?: unknown } | null
+      const supportedMethods = Array.isArray(metadata?.supportedGenerationMethods)
+        ? metadata.supportedGenerationMethods.filter((method): method is string =>
+          typeof method === 'string' && ['generateContent', 'countTokens', 'embedContent', 'batchGenerateContent'].includes(method))
+        : []
+      return {
+        provider: 'google-gemini', model, configured: true, available: true,
+        generateContentSupported: supportedMethods.includes('generateContent'),
+        supportedMethods, httpStatus: response.status, latencyMs,
+      }
     }
 
     const diagnostic = geminiFailureDiagnostic('health_probe', model, {
