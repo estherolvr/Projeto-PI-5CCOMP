@@ -30,7 +30,7 @@ Secrets já configurados no Worker são preservados pelo deploy. A aplicação u
 
 `APP_AUTH_PROVIDER=supabase` valida credenciais e tokens no Supabase Auth. A pessoa também precisa de cadastro institucional com o mesmo e-mail em User ou Student. Login de demonstração da API fica desativado em produção. O frontend não possui login de demonstração, senhas universais ou dados fictícios como substitutos de falhas de API.
 
-O chat principal usa GEMINI_MODEL. Se a geração falhar, a resposta identifica explicitamente a indisponibilidade e usa somente trechos reais da base. No teste de 01/11/2026, o provedor retornou HTTP 503 por alta demanda.
+Chat, análise de chamados e relatórios usam `GEMINI_MODEL`, definido como `gemini-3.8-flash` nas variáveis versionadas do Worker e como padrão no backend. Na execução Node local, uma variável de ambiente `GEMINI_MODEL` prevalece sobre o padrão; reinicie o processo ao alterá-la. Se a geração do chat falhar, a resposta identifica explicitamente a indisponibilidade e usa somente trechos reais da base. No teste de 01/11/2026, o provedor retornou HTTP 503 por alta demanda.
 
 O armazenamento em produção usa o binding nativo `STORAGE`, com o bucket `alvaro-ai-storage`. Credenciais S3 isoladas não comprovam operação. Upload, download, exclusão e snapshots foram exercitados. PDFs são enviados pelo binding privado `PDF_EXTRACTOR` ao Worker `alvaro-ai-pdf`, sem URL pública; PDFs ilegíveis são recusados, não indexados como bytes.
 

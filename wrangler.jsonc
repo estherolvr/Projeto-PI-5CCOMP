@@ -22,7 +22,8 @@
   },
   "vars": {
     "NODE_ENV": "production",
-    "APP_AUTH_PROVIDER": "supabase"
+    "APP_AUTH_PROVIDER": "supabase",
+    "GEMINI_MODEL": "gemini-3.8-flash"
   },
   "observability": {
     "enabled": true

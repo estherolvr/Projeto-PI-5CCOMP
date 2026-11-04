@@ -4,6 +4,9 @@ import { prisma } from '../db'
 
 dotenv.config()
 
+const GEMINI_MODEL = (process.env.GEMINI_MODEL || 'gemini-3.8-flash').trim()
+const GEMINI_REQUEST_TIMEOUT_MS = 25_000
+
 export interface KBChunkMatch {
   docId: string
   docTitle: string
@@ -308,11 +311,11 @@ export class AIService {
     // 2. Se a chave do Gemini estiver configurada, gera resposta via LLM oficial
     if (genAI) {
       console.log('🤖 [Álvaro AI] GEMINI_API_KEY detectada. Conectando ao Google Gemini...')
-      const validModels = [(process.env.GEMINI_MODEL || 'gemini-2.5-flash').trim()]
+      const validModels = [GEMINI_MODEL]
       for (const modelName of validModels) {
         try {
           console.log(`🤖 [Álvaro AI] Solicitando inferência ao modelo: ${modelName}...`)
-          const model = genAI.getGenerativeModel({ model: modelName })
+          const model = genAI.getGenerativeModel({ model: modelName }, { timeout: GEMINI_REQUEST_TIMEOUT_MS })
 
           const knowledgeContext = matches.length
             ? matches.map((m, i) => `[DOCUMENTO INSTITUCIONAL ${i + 1}: ${m.docTitle} (Categoria: ${m.category})]\n${m.content}\n`).join('\n---\n')
@@ -345,13 +348,7 @@ DIRETRIZES DE RESPOSTA OBRIGATÓRIAS:
 5. Mencione o documento fonte utilizado (ex: "De acordo com as diretrizes de [Título do Documento]...").
 6. Se a pergunta realmente não constar nos documentos, oriente o aluno a abrir um chamado com a equipe da Central de Atendimento (ASA).`
 
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT_6S: inferência excedeu 6s')), 6000)
-          )
-          const result = await Promise.race([
-            model.generateContent(prompt),
-            timeoutPromise,
-          ])
+          const result = await model.generateContent(prompt)
           const responseText = result.response.text()
 
           if (responseText && responseText.trim()) {
@@ -401,9 +398,9 @@ DIRETRIZES DE RESPOSTA OBRIGATÓRIAS:
     const genAI = this.getGenAI()
 
     if (genAI) {
-      for (const modelName of ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.5-flash', 'gemini-3.6-flash']) {
+      for (const modelName of [GEMINI_MODEL]) {
         try {
-          const model = genAI.getGenerativeModel({ model: modelName })
+          const model = genAI.getGenerativeModel({ model: modelName }, { timeout: GEMINI_REQUEST_TIMEOUT_MS })
 
           const knowledgeContext = matches.map(m => `Doc: ${m.docTitle} - ${m.content.slice(0, 300)}`).join('\n')
 
@@ -425,13 +422,7 @@ Responda APENAS em formato JSON com as chaves:
   "confidence": 0.95
 }`
 
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT_5S')), 5000)
-          )
-          const res = await Promise.race([
-            model.generateContent(prompt),
-            timeoutPromise,
-          ])
+          const res = await model.generateContent(prompt)
           const textRes = res.response.text().replace(/```json|```/g, '').trim()
           const parsed = JSON.parse(textRes)
 
@@ -579,9 +570,9 @@ Responda APENAS em formato JSON com as chaves:
     const genAI = this.getGenAI()
 
     if (genAI) {
-      for (const modelName of ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.5-flash']) {
+      for (const modelName of [GEMINI_MODEL]) {
         try {
-          const model = genAI.getGenerativeModel({ model: modelName })
+          const model = genAI.getGenerativeModel({ model: modelName }, { timeout: GEMINI_REQUEST_TIMEOUT_MS })
 
           const prompt = `Você é o analista sênior de inteligência operacional e governança da Faculdade FECAP (Central de Atendimento ao Aluno - ASA).
 Analise os seguintes dados reais da operação acadêmica e de atendimento:
@@ -618,14 +609,7 @@ Responda APENAS em formato JSON no formato abaixo, sem markdown adicional:
   ]
 }`
 
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('TIMEOUT_6S')), 6000)
-          )
-
-          const res = await Promise.race([
-            model.generateContent(prompt),
-            timeoutPromise,
-          ])
+          const res = await model.generateContent(prompt)
 
           const textRes = res.response.text().replace(/```json|```/g, '').trim()
           const parsed = JSON.parse(textRes)
