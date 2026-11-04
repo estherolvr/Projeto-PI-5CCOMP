@@ -12,7 +12,16 @@ test('ADJ-002 @write Aluno anexa texto, recebe resposta fundamentada e baixa ap�
   const marker = `ANEXO-QA-${Date.now()}`
   const filename = `${marker.toLowerCase()}.txt`
   const bytes = Buffer.from(`Documento exclusivo de teste automatizado. O código de validação deste anexo é ${marker}. Este documento não contém dados pessoais.`)
-  await page.getByLabel('Arquivos do chat', { exact: true }).setInputFiles({ name: filename, mimeType: 'text/plain', buffer: bytes })
+  const arbitraryFilename = `${marker.toLowerCase()}.bin`
+  const arbitraryBytes = Buffer.from([0, 255, 1, 2, 128, 13, 10])
+  const fileChooserPromise = page.waitForEvent('filechooser')
+  await page.getByRole('button', { name: 'Anexar arquivo ao chat', exact: true }).click()
+  const fileChooser = await fileChooserPromise
+  await fileChooser.setFiles([
+    { name: filename, mimeType: 'text/plain', buffer: bytes },
+    { name: arbitraryFilename, mimeType: 'application/octet-stream', buffer: arbitraryBytes },
+  ])
+  await expect(page.getByLabel('Anexos selecionados').getByText(filename)).toBeVisible()
   await page.locator('textarea').fill('Qual é o código de validação informado no arquivo anexado? Copie o código exatamente.')
   const sentPromise = page.waitForResponse(response => new URL(response.url()).pathname === `/api/chat/conversations/${conversation.id}/messages` && response.request().method() === 'POST')
   await page.getByRole('button', { name: 'Enviar mensagem', exact: true }).click()
@@ -21,11 +30,13 @@ test('ADJ-002 @write Aluno anexa texto, recebe resposta fundamentada e baixa ap�
   const messages = await sent.json()
   expect(messages.aiMessage.content.includes(marker), 'Gemini deve responder com evidência real do anexo').toBe(true)
   expect(messages.aiMessage.content.startsWith('**IA generativa indisponível.**')).toBe(false)
-  expect(messages.userMessage.attachments.length).toBe(1)
+  expect(messages.userMessage.attachments.length).toBe(2)
+  expect(messages.userMessage.attachments.find((file: any) => file.name === arbitraryFilename).readable).toBe(false)
   await page.goto(`/aluno/chat/${conversation.id}`)
   const download = page.getByRole('button', { name: `Baixar anexo ${filename}`, exact: true })
   await expect(download).toBeVisible()
   await downloadMatches(page, download, bytes)
+  await downloadMatches(page, page.getByRole('button', { name: `Baixar anexo ${arbitraryFilename}`, exact: true }), arbitraryBytes)
   const persisted = await api(page, `/api/chat/conversations/${conversation.id}`)
   expect(persisted.status).toBe(200)
   const saved = persisted.data.messages.find((message: any) => message.id === messages.userMessage.id)

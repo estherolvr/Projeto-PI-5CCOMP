@@ -37,8 +37,8 @@ test('chat attachments store actual bytes and text with conversation ownership',
   const base = `http://127.0.0.1:${address.port}`
   const tokens = Object.fromEntries([['a', 'aluno'], ['b', 'aluno'], ['staff', 'asa']].map(([id, role]) => [id, jwt.sign({ id, role, name: id, email: `${id}@test.invalid` }, process.env.JWT_SECRET!)]))
   const request = (path: string, who = 'a', body?: FormData) => fetch(base + path, { method: body ? 'POST' : 'GET', headers: { Authorization: `Bearer ${tokens[who]}` }, body })
-  const form = (name = 'cronograma.txt', content = 'Cronograma de teste: entrega em 13/03/2035 às 17:30.', message = 'Qual a data no arquivo?') => {
-    const data = new FormData(); data.append('content', message); data.append('files', new Blob([content], { type: 'text/plain' }), name); return data
+  const form = (name = 'cronograma.txt', content: string | Uint8Array = 'Cronograma de teste: entrega em 13/03/2035 às 17:30.', message = 'Qual a data no arquivo?', mime = 'text/plain') => {
+    const data = new FormData(); data.append('content', message); data.append('files', new Blob([content], { type: mime }), name); return data
   }
   let saved: any
   try {
@@ -49,17 +49,31 @@ test('chat attachments store actual bytes and text with conversation ownership',
       assert.equal((await request('/chat/conversations/a-chat/messages', 'staff', form())).status, 403)
       assert.equal(objects.size, 0); assert.equal(await prisma.chatMessage.count(), 0)
     })
-    await t.test('unsupported, unreadable and empty files fail without messages or objects', async () => {
-      for (const [filename, content, status] of [['x.exe', 'binary', 400], ['x.txt', '', 400], ['x.pdf', 'not a PDF', 422]] as const) {
-        assert.equal((await request('/chat/conversations/a-chat/messages', 'a', form(filename, content))).status, status)
-      }
-      assert.equal(objects.size, 0); assert.equal(await prisma.chatMessage.count(), 0)
+    await t.test('arbitrary binary formats are accepted and retained without claiming AI text extraction', async () => {
+      const binary = new Uint8Array([0, 255, 1, 2, 128, 13, 10])
+      const uploaded = await request('/chat/conversations/b-chat/messages', 'b', form('apresentacao.pptx', binary, 'O que há neste arquivo?', 'application/vnd.openxmlformats-officedocument.presentationml.presentation'))
+      assert.equal(uploaded.status, 201)
+      const result = await uploaded.json() as any
+      const attachment = result.userMessage.attachments[0]
+      assert.equal(attachment.name, 'apresentacao.pptx')
+      assert.equal(attachment.readable, false)
+      assert.equal(attachment.storageKey, undefined)
+      const message = await prisma.chatMessage.findUniqueOrThrow({ where: { id: result.userMessage.id } })
+      const contexts = await withRuntimeContext({ storage, waitUntil: task => tasks.push(task) }, () => recentAttachmentContexts([message], []))
+      assert.match(contexts[0].content, /não pôde ser interpretado/)
+      const url = `/chat/conversations/b-chat/messages/${result.userMessage.id}/attachments/${attachment.id}/download`
+      const downloaded = await request(url, 'b')
+      assert.equal(downloaded.status, 200)
+      assert.deepEqual(new Uint8Array(await downloaded.arrayBuffer()), binary)
+      assert.equal((await prisma.chatMessage.count({ where: { conversationId: 'a-chat' } })), 0)
     })
     await t.test('missing storage reports failure instead of a successful-looking attachment', async () => {
+      const existingObjects = objects.size
       storageAvailable = false
       try { assert.equal((await request('/chat/conversations/a-chat/messages', 'a', form())).status, 503) }
       finally { storageAvailable = true }
-      assert.equal(await prisma.chatMessage.count(), 0)
+      assert.equal(objects.size, existingObjects)
+      assert.equal(await prisma.chatMessage.count({ where: { conversationId: 'a-chat' } }), 0)
     })
     await t.test('upload persists metadata and readable text, with an explicit unavailable-provider fallback', async () => {
       const r = await request('/chat/conversations/a-chat/messages', 'a', form()); assert.equal(r.status, 201)
@@ -94,7 +108,7 @@ test('chat attachments store actual bytes and text with conversation ownership',
       try { assert.equal((await request('/chat/conversations/a-chat/messages', 'a', form('rollback.txt', 'Rollback fixture', 'fail-persistence'))).status, 500) }
       finally { failureDb.exec('DROP TRIGGER reject_chat'); failureDb.close() }
       assert.deepEqual([...objects.keys()].filter(key => key.startsWith('chat-attachments/')).sort(), before)
-      assert.equal(await prisma.chatMessage.count(), 2)
+      assert.equal(await prisma.chatMessage.count({ where: { conversationId: 'a-chat' } }), 2)
     })
   } finally {
     await Promise.allSettled(tasks); await prisma.$disconnect()

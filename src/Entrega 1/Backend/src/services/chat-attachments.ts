@@ -8,7 +8,7 @@ const MAX_FILE_BYTES = 5 * 1024 * 1024
 const MAX_TOTAL_BYTES = 10 * 1024 * 1024
 const MAX_TEXT_CHARS = 120_000
 export interface StoredChatAttachment {
-  id: string; name: string; type: string; size: number; storageKey: string; textKey: string
+  id: string; name: string; type: string; size: number; storageKey: string; textKey: string; readable?: boolean
 }
 export interface ChatAttachmentContext { name: string; content: string }
 export class ChatAttachmentError extends Error {
@@ -18,7 +18,7 @@ export class ChatAttachmentError extends Error {
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_FILE_BYTES, files: 3, fields: 2, fieldSize: 12_000 } }).array('files', 3)
 export const chatUpload: RequestHandler = (req, res, next) => upload(req, res, error => {
   if (!error) return next()
-  res.status(400).json({ error: 'Envie até 3 arquivos PDF, TXT ou MD, com até 5 MB por arquivo e 10 MB no total.' })
+  res.status(400).json({ error: 'Envie até 3 arquivos de qualquer formato, com até 5 MB por arquivo e 10 MB no total.' })
 })
 
 export function storedChatAttachments(actions: string | null | undefined): StoredChatAttachment[] {
@@ -36,7 +36,7 @@ export function publicChatMessage<T extends { actions?: string | null }>(message
   return {
     ...message,
     actions: actions.filter(action => action?.action !== 'download_attachment'),
-    attachments: storedChatAttachments(message.actions).map(({ id, name, size, type }) => ({ id, name, size, type })),
+    attachments: storedChatAttachments(message.actions).map(({ id, name, size, type, readable }) => ({ id, name, size, type, readable: readable !== false })),
   }
 }
 
@@ -50,25 +50,24 @@ export async function saveChatAttachments(conversationId: string, files: Express
     throw new ChatAttachmentError('Envie até 3 arquivos, com até 5 MB cada e 10 MB no total.')
   }
   if (!r2Service.isConfigured()) throw new ChatAttachmentError('Armazenamento indisponível. Os anexos não foram enviados; tente novamente.', 503)
-  const prepared: Array<{ file: Express.Multer.File; name: string; type: string; text: string }> = []
+  const prepared: Array<{ file: Express.Multer.File; name: string; type: string; text: string; readable: boolean }> = []
   for (const file of files) {
     const name = file.originalname.replace(/\\/g, '/').split('/').at(-1)!.replace(/[\x00-\x1f\x7f]/g, '').slice(0, 180)
     const extension = name.split('.').at(-1)?.toLowerCase()
-    if (!['pdf', 'txt', 'md'].includes(extension || '')) throw new ChatAttachmentError('O chat aceita arquivos PDF, TXT e Markdown (.md).')
-    if (!file.size) throw new ChatAttachmentError(`O arquivo ${name} está vazio.`)
-    let text: string
-    if (extension === 'pdf') {
-      if (!file.buffer.subarray(0, 1024).includes(Buffer.from('%PDF-'))) throw new ChatAttachmentError('O arquivo enviado não é um PDF válido.', 422)
-      try { text = await extractPdfText(file.buffer) }
-      catch { throw new ChatAttachmentError('Não foi possível ler o PDF. Envie um PDF com texto selecionável, TXT ou MD.', 422) }
-    } else {
-      try { text = new TextDecoder('utf-8', { fatal: true }).decode(file.buffer) }
-      catch { throw new ChatAttachmentError('Envie os arquivos de texto na codificação UTF-8.', 422) }
-      if (text.includes('\0')) throw new ChatAttachmentError('O arquivo de texto contém conteúdo binário.', 422)
+    const type = file.mimetype || 'application/octet-stream'
+    let text = ''
+    let readable = false
+    if (extension === 'pdf' && file.buffer.subarray(0, 1024).includes(Buffer.from('%PDF-'))) {
+      try { text = (await extractPdfText(file.buffer)).trim(); readable = Boolean(text) } catch { /* Keep the original even when text extraction is unavailable. */ }
+    } else if (['txt','md','csv','tsv','json','jsonl','xml','html','htm','css','js','ts','jsx','tsx','log','yaml','yml','toml','ini','sql','py','java','c','h','cpp','rb','go','rs','php','sh','svg'].includes(extension || '')) {
+      try {
+        text = new TextDecoder('utf-8', { fatal: true }).decode(file.buffer).trim()
+        readable = Boolean(text) && !text.includes('\0')
+        if (!readable) text = ''
+      } catch { /* Binary or non-UTF-8 files remain downloadable attachments. */ }
     }
-    text = text.trim()
-    if (!text) throw new ChatAttachmentError('O arquivo não contém texto legível.', 422)
-    prepared.push({ file, name, type: extension === 'pdf' ? 'application/pdf' : 'text/plain; charset=utf-8', text })
+    if (!readable) text = `O arquivo "${name}" foi anexado, mas este formato ou conteúdo não pôde ser interpretado pelo assistente.`
+    prepared.push({ file, name, type, text, readable })
   }
   if (prepared.reduce((sum, f) => sum + f.text.length, 0) > MAX_TEXT_CHARS) {
     throw new ChatAttachmentError('O texto dos anexos ultrapassa 120 mil caracteres. Envie documentos menores.', 413)
@@ -78,10 +77,10 @@ export async function saveChatAttachments(conversationId: string, files: Express
   try {
     for (const item of prepared) {
       const id = randomUUID(), prefix = `chat-attachments/${conversationId}/${id}`
-      const attachment = { id, name: item.name, type: item.type, size: item.file.size, storageKey: `${prefix}/original`, textKey: `${prefix}/text` }
+      const attachment = { id, name: item.name, type: item.type, size: item.file.size, storageKey: `${prefix}/original`, textKey: `${prefix}/text`, readable: item.readable }
       // Track both keys before writes so a partial object upload is also cleaned up.
       attachments.push(attachment)
-      await r2Service.uploadBuffer(attachment.storageKey, item.file.buffer, item.type)
+      await r2Service.uploadBuffer(attachment.storageKey, item.file.buffer, 'application/octet-stream')
       await r2Service.uploadBuffer(attachment.textKey, Buffer.from(item.text), 'text/plain; charset=utf-8')
       contexts.push({ name: item.name, content: item.text })
     }

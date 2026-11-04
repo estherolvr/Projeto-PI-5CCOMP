@@ -157,9 +157,6 @@ export default function AlunoChat() {
     if (next.length > 3 || next.some(file => file.size > 5 * 1024 * 1024) || next.reduce((size, file) => size + file.size, 0) > 10 * 1024 * 1024) {
       setLoadError('Envie até 3 arquivos, com até 5 MB cada e 10 MB no total.'); return;
     }
-    if (next.some(file => !/\.(pdf|txt|md)$/i.test(file.name) || !file.size)) {
-      setLoadError('Envie arquivos PDF, TXT ou Markdown (.md) que não estejam vazios.'); return;
-    }
     setSelectedFiles(next); setLoadError(null);
   };
 
@@ -344,6 +341,7 @@ export default function AlunoChat() {
                         <Download size={14}/><span className="break-all">{file.name}</span><span>{Math.ceil(file.size / 1024)} KB</span>
                       </button>)}
                     </div>}
+                    {msg.attachments?.some((file: any) => file.readable === false) && <p className="text-[11px] text-gray-500 dark:text-slate-400">Um ou mais arquivos estão anexados para download, mas o Álvaro AI não conseguiu interpretar seu conteúdo.</p>}
 
                     {msg.actions && Array.isArray(msg.actions) && msg.actions.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">
@@ -402,9 +400,9 @@ export default function AlunoChat() {
             </div>
             
             <div className="relative flex items-end gap-2 bg-gray-50 dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 p-2 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 transition-all">
-              <input ref={fileInputRef} type="file" hidden multiple accept=".pdf,.txt,.md" aria-label="Arquivos do chat"
+              <input ref={fileInputRef} type="file" hidden multiple aria-label="Arquivos do chat"
                 onChange={event => { handleFiles(event.target.files); event.target.value = ''; }}/>
-              <button type="button" aria-label="Anexar arquivo ao chat" title="Anexar PDF, TXT ou MD (até 3 arquivos, 5 MB cada, 10 MB no total)"
+              <button type="button" aria-label="Anexar arquivo ao chat" title="Anexar qualquer tipo de arquivo (até 3 arquivos, 5 MB cada, 10 MB no total)"
                 disabled={!activeConvId || isLoadingConv || isTyping} onClick={() => fileInputRef.current?.click()}
                 className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl shrink-0 disabled:opacity-50">
                 <Paperclip size={18} />
@@ -437,7 +435,7 @@ export default function AlunoChat() {
             
             <div className="text-center mt-2">
               <span className="text-[10px] text-gray-400">
-                Anexos: PDF com texto selecionável, TXT ou MD · até 3 arquivos, 5 MB cada e 10 MB no total.
+                Aceita qualquer tipo de arquivo · até 3 arquivos, 5 MB cada e 10 MB no total. A IA lê texto e PDFs pesquisáveis; outros formatos ficam anexados para download.
               </span>
             </div>
           </div>
