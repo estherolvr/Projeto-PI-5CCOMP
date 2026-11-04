@@ -418,13 +418,13 @@ adminRouter.post('/students', authenticateToken, requireRole(['admin']), async (
         action: 'CRIOU_ALUNO',
         resource: 'Student',
         resourceId: created.id,
-        details: JSON.stringify({ name: created.name, ra: created.ra, course: created.course, authProvisioning: provisionedUserId ? 'invited' : 'local-test' }),
+        details: JSON.stringify({ name: created.name, ra: created.ra, course: created.course, authProvisioning: provisionedUserId ? 'created' : 'local-test' }),
         severity: 'info',
       } })
       return created
     })
 
-    res.status(201).json({ ...student, authProvisioning: provisionedUserId ? 'invited' : 'not_required' })
+    res.status(201).json({ ...student, authProvisioning: provisionedUserId ? 'created' : 'not_required' })
   } catch (error: any) {
     if (provisionedUserId) await removeProvisionedUser(provisionedUserId)
     if (error instanceof SupabaseProvisioningError) return res.status(error.statusCode).json({ error: error.message })
