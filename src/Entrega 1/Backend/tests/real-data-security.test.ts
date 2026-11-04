@@ -34,5 +34,26 @@ test('real records and ownership remain enforced without demos', async t => {
   await t.test('contact update persists only for its owner',async()=>{assert.equal((await request('/students/b/contact','a','PATCH',{phone:'11987654321'})).status,403);assert.equal((await request('/students/a/contact','a','PATCH',{phone:'invalid'})).status,400);assert.equal((await request('/students/a/contact','a','PATCH',{phone:'11987654321'})).status,200);assert.equal((await prisma.student.findUnique({where:{id:'a'}}))?.phone,'11987654321');assert.equal((await prisma.student.findUnique({where:{id:'b'}}))?.phone,null)})
   await t.test('staff edits real institutional content',async()=>{assert.equal((await request('/kb/active','staff','PUT',{title:'Equipe'})).status,200);assert.equal((await prisma.kBDocument.findUnique({where:{id:'active'}}))?.title,'Equipe')})
   await t.test('demo login never issues tokens',async()=>{const r=await request('/auth/demo-login','staff','POST',{role:'admin'});assert.equal(r.status,403);assert.equal(r.data.token,undefined)})
+  await t.test('KB search retrieves late PDF deadlines and excludes archived or unindexed sources', async () => {
+   const introduction = 'Projeto Órbita: aplicativo de atendimento acadêmico e integração com serviços de nuvem. '.repeat(120)
+   const content = introduction + 'Cronograma de entregas. Entrega final: 15/12/2034 até 20:35. '
+   const ids = ['rag-active', 'rag-archived', 'rag-unindexed']
+   await prisma.kBDocument.createMany({data: [
+    {id:ids[0],title:'Projeto Órbita',category:'Acadêmico',content,status:'ativo',indexed:true},
+    {id:ids[1],title:'Projeto Órbita arquivado',category:'Acadêmico',content,status:'arquivado',indexed:true},
+    {id:ids[2],title:'Projeto Órbita não indexado',category:'Acadêmico',content,status:'ativo',indexed:false},
+   ]})
+   try {
+    const result = await request('/kb/search?q=' + encodeURIComponent('Qual o prazo de entrega do projeto Órbita?'))
+    assert.equal(result.status, 200)
+    assert.deepEqual(result.data.map((match:any) => match.docId), [ids[0]])
+    assert.match(result.data[0].content, /15\/12\/2034 até 20:35/)
+    assert.ok(result.data[0].content.length <= 6000)
+    assert.equal((await prisma.kBDocument.findUnique({where:{id:ids[0]}}))?.content, content)
+    assert.deepEqual((await request('/kb/search?q=neurocirurgia')).data, [])
+   } finally {
+    await prisma.kBDocument.deleteMany({where:{id:{in:ids}}})
+   }
+  })
  }finally{await prisma.$disconnect();await new Promise<void>(r=>server.close(()=>r()));rmSync(dir,{recursive:true,force:true})}
 })
