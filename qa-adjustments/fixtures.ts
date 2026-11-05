@@ -14,8 +14,8 @@ function safe(text: string) {
 async function state(browser: Browser, role: Role) {
   if (states.has(role)) return states.get(role)!
   const prefix = role.toUpperCase()
-  const email = process.env[`E2E_${prefix}_EMAIL`]
-  const password = process.env[`E2E_${prefix}_PASSWORD`]
+  const email = process.env[`E2E_${prefix}_EMAIL`]?.trim()
+  const password = process.env[`E2E_${prefix}_PASSWORD`]?.trim()
   if (!email || !password) throw new Error(`PRECONDITION: test credentials missing for ${role}`)
   const context = await browser.newContext({ baseURL, viewport: { width: 1440, height: 1000 } })
   const page = await context.newPage()
