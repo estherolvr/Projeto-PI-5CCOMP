@@ -6,7 +6,7 @@ for (const role of ['student', 'asa', 'admin'] as const) {
     const shell = page.locator('.workspace-shell')
     await expect(shell).toBeVisible()
     await page.waitForLoadState('networkidle')
-    await expect(page.locator('.workspace-hero')).toBeVisible()
+    await expect(page.locator('.workspace-hero, .student-welcome, .asa-welcome')).toBeVisible()
     await page.screenshot({path: info.outputPath(`${role}-desktop.png`), fullPage: true})
     const links = await shell.locator('aside nav a').evaluateAll(nodes => [...new Set(nodes.map(n => n.getAttribute('href')).filter(Boolean))])
     for (const href of links) {
@@ -14,8 +14,10 @@ for (const role of ['student', 'asa', 'admin'] as const) {
       await expect(shell).toBeVisible()
     await page.waitForLoadState('networkidle')
       await expect(page.locator('main')).not.toBeEmpty()
+      if (/conversas|notificacoes|perfil|agendamento/.test(href!)) await page.screenshot({path:info.outputPath(href!.replaceAll('/', '-')+'.png')})
     }
     await page.goto(role === 'student' ? '/aluno' : `/${role}`)
+    await page.waitForLoadState('networkidle')
     await page.getByRole('button', {name: 'Modo escuro', exact:true}).click()
     await expect(page.locator('html')).toHaveClass(/dark/)
     await page.screenshot({path: info.outputPath(`${role}-dark.png`)})

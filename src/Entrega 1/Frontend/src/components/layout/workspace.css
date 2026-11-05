@@ -72,3 +72,144 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .dark .workspace-shell main .text-gray-500,
 .dark .workspace-shell > div > header .text-gray-500,
 .dark .workspace-shell > div > header .text-gray-600 { color: #abc4b7; }
+/* Editorial home pages and focused service workspaces. */
+.workspace-shell .section-kicker { display:flex; align-items:center; gap:8px; color:#52816c; font-size:10px; font-weight:700; letter-spacing:.14em; margin-bottom:12px; }
+.workspace-shell .student-welcome, .workspace-shell .asa-welcome { padding:20px 0 28px; border-bottom:1px solid #ceded4; }
+.workspace-shell .student-welcome h1, .workspace-shell .asa-welcome h1 { font-size:clamp(30px,3.5vw,44px); font-weight:650; letter-spacing:-.055em; }
+.workspace-shell .student-welcome p, .workspace-shell .asa-welcome p { margin-top:12px; line-height:1.65; }
+.workspace-shell .student-welcome .workspace-eyebrow, .workspace-shell .asa-welcome .workspace-eyebrow { color:#00865b; }
+.workspace-shell .student-home .workspace-metrics { gap:0; border:1px solid #dce7e2; border-radius:16px; overflow:hidden; }
+.workspace-shell .student-home .workspace-metrics > * { border:0; border-radius:0; box-shadow:none; border-right:1px solid #dce7e2; }
+.workspace-shell .student-home .workspace-metrics strong { font-size:30px; margin-top:8px; }
+.workspace-shell .student-services { gap:16px; }
+.workspace-shell .student-services .workspace-action { min-height:130px; padding:24px; border-radius:18px; }
+.workspace-shell .service-description { display:block; font-size:12px; font-weight:400; margin-top:6px; opacity:.8; line-height:1.5; }
+.workspace-shell .asa-overview .workspace-metrics { gap:16px; }
+.workspace-shell .asa-overview .workspace-metrics > * { border-top:0; border-left:3px solid #009c6a; }
+.workspace-shell .asa-overview .workspace-metrics strong { font-size:36px; }
+.workspace-shell .asa-welcome .workspace-refresh { background:white; border-color:#cdded3; color:#136343; }
+.workspace-shell .overview-section-title { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px; }
+.workspace-shell .overview-section-title a { font-size:12px; color:#00865b; }
+.workspace-shell .asa-overview section > a, .workspace-shell .student-home section > a { padding:18px 4px; align-items:center; }
+.workspace-shell .conversation-search { display:flex; align-items:center; gap:10px; max-width:500px; color:#789585; }
+.workspace-shell .conversation-columns { border:1px solid #dce7e2; border-radius:20px; overflow:hidden; min-height:580px; }
+.workspace-shell .conversation-columns > section { border:0; border-radius:0 !important; box-shadow:none; }
+.workspace-shell .conversation-columns > section:first-child { background:#edf4ef; max-height:70vh; overflow-y:auto; padding:12px; border-right:1px solid #dce7e2; }
+.workspace-shell .conversation-item { border:1px solid transparent; border-radius:12px; margin-bottom:8px; padding:16px; }
+.workspace-shell .conversation-item[aria-pressed='true'] { background:white; border-color:#abd6bf; box-shadow:0 3px 12px #063e3008; }
+.workspace-shell .conversation-person { float:left; margin-right:12px; color:#00865b; }
+.workspace-shell .conversation-item time { display:block; margin-top:10px; font-size:10px; }
+.workspace-shell .conversation-empty { min-height:460px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px; color:#729482; }
+.workspace-shell .conversation-empty h2 { color:#244e3b; font-size:20px; margin:24px 0 10px; }
+.workspace-shell .conversation-empty p { max-width:320px; font-size:13px; line-height:1.8; }
+.workspace-shell .conversation-message { border:0; border-radius:16px; padding:20px; margin-bottom:16px; background:#f3f6f4; }
+.workspace-shell .conversation-message.from-student { margin-left:24px; background:#e8f6ef; }
+.workspace-shell .notification-tabs { background:#e7eee9; padding:5px; width:fit-content; border-radius:12px; }
+.workspace-shell .notification-tabs button { padding:10px 18px; border-radius:9px; text-decoration:none; }
+.workspace-shell .notification-tabs button[aria-pressed='true'] { background:white; box-shadow:0 2px 5px #123e2b0d; }
+.workspace-shell .notification-read-all { display:flex; align-items:center; gap:8px; padding:10px 0; }
+.workspace-shell .notification-workspace article { padding:24px; border:1px solid #e2ebe6; border-radius:14px; margin-bottom:12px; }
+.workspace-shell .notification-workspace article:has([aria-label='Não lida']) { background:#f0f9f4; border-left:3px solid #00865b; }
+.workspace-shell .notification-workspace article h3 { font-size:15px; }
+.workspace-shell .notification-workspace article p { margin-top:10px; line-height:1.7; }
+.workspace-shell .notification-workspace article button { text-decoration:none; font-weight:600; padding:8px 12px; border:1px solid #cee0d5; border-radius:8px; }
+.workspace-shell .student-form { padding-top:36px; padding-bottom:48px; }
+.workspace-shell .student-form :is(form,section).bg-white { padding:clamp(20px,3vw,36px); }
+.workspace-shell .student-form label { font-size:13px; font-weight:600; letter-spacing:.01em; }
+.workspace-shell .student-form :is(input:not([type='checkbox']):not([type='radio']):not([type='file']),select,textarea) { background:#f7faf8; border:1px solid #cbdcd2; padding:14px 16px; border-radius:12px; font-size:14px; line-height:1.5; }
+.workspace-shell .student-form :is(input,select,textarea):focus { border-color:#00865b; box-shadow:0 0 0 3px #00865b12; }
+.workspace-shell .student-form textarea { min-height:150px; }
+.dark .workspace-shell :is(.conversation-columns > section:first-child,.notification-tabs) { background:#14291f; }
+.dark .workspace-shell :is(.conversation-item[aria-pressed='true'],.notification-tabs button[aria-pressed='true'],.conversation-message,.asa-welcome .workspace-refresh) { background:#213c2e; color:#daf1e5; }
+.dark .workspace-shell :is(.conversation-message.from-student,.notification-workspace article:has([aria-label='Não lida'])) { background:#183e2b; }
+.dark .workspace-shell .conversation-empty h2 { color:#daf1e5; }
+.dark .workspace-shell .student-form :is(input,select,textarea) { background:#13271d; color:#e1f2e8; border-color:#3c5947; }
+@media(max-width:767px) {
+ .workspace-shell .conversation-columns > section:first-child { max-height:300px; border-right:0; border-bottom:1px solid #dce7e2; }
+ .workspace-shell .conversation-empty { min-height:280px; }
+ .workspace-shell .student-home .workspace-metrics > * { border-right:0; border-bottom:1px solid #dce7e2; }
+ .workspace-shell .student-services .workspace-action { min-height:110px; padding:18px; }
+ .workspace-shell .notification-workspace article { padding:18px; }
+}
+.workspace-shell main .student-home .workspace-metrics > * { border-radius:0; }
+
+/* ASA command center: all figures are derived from the existing ticket response. */
+.workspace-shell .asa-command-center { width:100%; max-width:100%; min-width:0; overflow:hidden; color:#14231c; }
+.workspace-shell .asa-dashboard-header { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; padding:8px 0 24px; border-bottom:1px solid #d3e0d8; }
+.workspace-shell .asa-dashboard-header h1 { font-size:clamp(2rem,3vw,2.75rem); font-weight:650; }
+.workspace-shell .asa-dashboard-header p { color:#687b71; margin-top:10px; }
+.workspace-shell .asa-header-actions { display:flex; align-items:center; gap:16px; }
+.workspace-shell .asa-header-actions > span { color:#71857a; font-size:12px; text-transform:capitalize; }
+.workspace-shell .asa-header-actions button { display:flex; align-items:center; gap:8px; padding:10px 14px; background:#fff; color:#075c40; border:1px solid #cbded3; border-radius:10px; font-size:12px; font-weight:600; }
+.workspace-shell .asa-metric-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+.workspace-shell .asa-metric-card { display:flex; align-items:flex-start; gap:16px; min-height:142px; padding:22px; border-radius:16px; box-shadow:0 5px 18px #123e2b06; }
+.workspace-shell .asa-metric-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:11px; flex:none; }
+.workspace-shell .asa-metric-icon.tone-blue { color:#2673c9; background:#e9f2fc; }
+.workspace-shell .asa-metric-icon.tone-violet { color:#7c52bd; background:#f2edfa; }
+.workspace-shell .asa-metric-icon.tone-amber { color:#b47516; background:#fff5df; }
+.workspace-shell .asa-metric-icon.tone-green { color:#087a54; background:#e4f6ed; }
+.workspace-shell .asa-metric-card p { color:#64756c; font-size:12px; }
+.workspace-shell .asa-metric-card strong { display:block; margin:5px 0 6px; color:#101c16; font-size:30px; letter-spacing:-.045em; line-height:1; }
+.workspace-shell .asa-metric-card small { display:block; color:#87958d; font-size:10px; line-height:1.45; }
+.workspace-shell .asa-insight-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr); gap:18px; }
+.workspace-shell .asa-panel { background:#fff; border:1px solid #dce7e2; border-radius:18px; padding:24px; box-shadow:0 5px 22px #123e2b06; }
+.workspace-shell .asa-panel-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:24px; }
+.workspace-shell .asa-panel-heading .section-kicker { margin-bottom:7px; }
+.workspace-shell .asa-panel-heading h2 { font-size:17px; font-weight:650; color:#15231c; }
+.workspace-shell .asa-panel-heading > a { display:flex; align-items:center; gap:6px; color:#087d57; font-size:11px; font-weight:600; white-space:nowrap; }
+.workspace-shell .asa-distribution { display:grid; grid-template-columns:180px 1fr; gap:30px; align-items:center; }
+.workspace-shell .asa-resolution-score { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:170px; border-radius:50%; border:16px solid #ddf2e7; background:#f7fbf9; aspect-ratio:1; }
+.workspace-shell .asa-resolution-score strong { color:#087b55; font-size:34px; letter-spacing:-.05em; }
+.workspace-shell .asa-resolution-score span { font-size:11px; font-weight:650; }
+.workspace-shell .asa-resolution-score small { margin-top:5px; color:#809087; font-size:8px; text-align:center; }
+.workspace-shell .asa-status-bars { display:grid; gap:15px; }
+.workspace-shell .asa-status-bars > div > div:first-child { display:flex; justify-content:space-between; font-size:11px; color:#5f7268; margin-bottom:7px; }
+.workspace-shell .asa-status-bars strong { color:#24352d; }
+.workspace-shell .asa-bar { height:7px; border-radius:99px; background:#edf2ef; overflow:hidden; }
+.workspace-shell .asa-bar span { display:block; height:100%; border-radius:inherit; transition:width .3s ease; }
+.workspace-shell .asa-all-clear { display:flex; align-items:center; gap:14px; min-height:150px; padding:20px; color:#087b55; background:#eef9f3; border-radius:14px; }
+.workspace-shell .asa-all-clear strong { display:block; color:#20533e; font-size:13px; }
+.workspace-shell .asa-all-clear p { margin-top:4px; color:#6d8579; font-size:10px; line-height:1.5; }
+.workspace-shell .asa-alert-list { display:grid; gap:9px; }
+.workspace-shell .asa-alert-list a { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px; border:1px solid #e5ece8; border-radius:11px; }
+.workspace-shell .asa-alert-list a > span { display:grid; place-items:center; width:32px; height:32px; border-radius:9px; }
+.workspace-shell .asa-alert-list .alert-red { color:#c84242; background:#fff0f0; }
+.workspace-shell .asa-alert-list .alert-amber { color:#af7115; background:#fff5df; }
+.workspace-shell .asa-alert-list .alert-blue { color:#276fac; background:#eaf4fc; }
+.workspace-shell .asa-alert-list strong,.workspace-shell .asa-alert-list small { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.workspace-shell .asa-alert-list strong { font-size:11px; }.workspace-shell .asa-alert-list small { margin-top:3px; color:#7a8b82; font-size:9px; }
+.workspace-shell .asa-ticket-heading { align-items:center; }
+.workspace-shell .asa-ticket-heading p { margin-top:6px; color:#7a8b82; font-size:11px; }
+.workspace-shell .asa-ticket-tools { display:flex; justify-content:space-between; gap:14px; padding:14px 0; border-top:1px solid #e5ece8; }
+.workspace-shell .asa-ticket-tools > label { display:flex; align-items:center; gap:9px; width:min(420px,100%); padding:0 12px; color:#789087; background:#f5f8f6; border:1px solid #e0e9e4; border-radius:10px; }
+.workspace-shell .asa-ticket-tools input { width:100%; padding:10px 0 !important; background:transparent !important; border:0 !important; box-shadow:none !important; }
+.workspace-shell .asa-ticket-tools > div { display:flex; align-items:center; gap:8px; color:#789087; }
+.workspace-shell .asa-ticket-tools select { min-width:140px; padding:9px 28px 9px 10px; background:#fff; border:1px solid #d9e5de; font-size:10px; }
+.workspace-shell .asa-ticket-panel { min-width:0; overflow:hidden; }
+.workspace-shell .asa-ticket-table-wrap { width:100%; max-width:100%; overflow-x:auto; }
+.workspace-shell .asa-ticket-table { width:100%; min-width:900px; }
+.workspace-shell .asa-ticket-table th { text-align:left; font-weight:650; text-transform:uppercase; }
+.workspace-shell .asa-ticket-table td { color:#576b61; font-size:11px; border-top:1px solid #e6ede9; }
+.workspace-shell .asa-ticket-table td:first-child { min-width:260px; }
+.workspace-shell .asa-ticket-table td:first-child strong,.workspace-shell .asa-ticket-table td:first-child span { display:block; }
+.workspace-shell .asa-ticket-table td:first-child strong { color:#087b55; font-size:10px; }.workspace-shell .asa-ticket-table td:first-child span { margin-top:3px; max-width:300px; color:#1e2d26; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.workspace-shell .asa-ticket-table tr.needs-attention td:first-child { border-left:3px solid #e35f5f; padding-left:13px; }
+.workspace-shell .asa-quick-access { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.workspace-shell .asa-quick-access > a { display:grid; grid-template-columns:38px 1fr 16px; align-items:center; gap:12px; padding:18px; background:#fff; border:1px solid #dce7e2; border-radius:14px; color:#087454; }
+.workspace-shell .asa-quick-access > a > svg:first-child { padding:9px; width:38px; height:38px; background:#e8f5ee; border-radius:10px; }
+.workspace-shell .asa-quick-access strong,.workspace-shell .asa-quick-access small { display:block; }.workspace-shell .asa-quick-access strong { color:#24352d; font-size:12px; }.workspace-shell .asa-quick-access small { margin-top:3px; color:#83938a; font-size:9px; }
+.dark .workspace-shell .asa-command-center { color:#dcece4; }
+.dark .workspace-shell :is(.asa-metric-card,.asa-panel,.asa-quick-access > a,.asa-header-actions button) { background:#182d24; border-color:#2d493b; }
+.dark .workspace-shell :is(.asa-dashboard-header h1,.asa-metric-card strong,.asa-panel-heading h2,.asa-status-bars strong,.asa-ticket-table td:first-child span,.asa-quick-access strong) { color:#e3f0e9; }
+.dark .workspace-shell .asa-resolution-score { background:#163426; border-color:#20553c; }
+.dark .workspace-shell :is(.asa-ticket-tools > label,.asa-bar) { background:#13261e; border-color:#2c493a; }
+.dark .workspace-shell .asa-ticket-tools select { background:#182d24; border-color:#3b5749; color:#dcece4; }
+.dark .workspace-shell .asa-ticket-table td { border-color:#2d4439; color:#b5c8be; }
+@media(max-width:1100px) { .workspace-shell .asa-metric-grid { grid-template-columns:repeat(2,1fr); }.workspace-shell .asa-insight-grid { grid-template-columns:1fr; } }
+@media(max-width:767px) {
+ .workspace-shell .asa-dashboard-header { align-items:flex-start; flex-direction:column; }.workspace-shell .asa-header-actions { width:100%; justify-content:space-between; }.workspace-shell .asa-header-actions > span { display:none; }
+ .workspace-shell .asa-metric-grid { grid-template-columns:1fr 1fr; gap:10px; }.workspace-shell .asa-metric-card { min-height:150px; padding:17px; flex-direction:column; }.workspace-shell .asa-metric-card small { display:none; }
+ .workspace-shell .asa-distribution { grid-template-columns:1fr; }.workspace-shell .asa-resolution-score { width:170px; justify-self:center; }
+ .workspace-shell .asa-ticket-tools { flex-direction:column; }.workspace-shell .asa-ticket-tools > div { flex-wrap:wrap; }.workspace-shell .asa-ticket-tools select { flex:1; }
+ .workspace-shell .asa-quick-access { grid-template-columns:1fr; }
+}

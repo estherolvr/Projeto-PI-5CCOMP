@@ -76,7 +76,7 @@ export default function NovoChamado() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="student-form max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
       {error && <p role="alert" className="p-3 text-red-600">{error}</p>}
       {/* Header */}
       {step < 3 && (
@@ -162,6 +162,7 @@ export default function NovoChamado() {
             exit={{ opacity: 0, x: 20 }}
             className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm space-y-6"
           >
+            <div className="pb-5 border-b border-gray-100 dark:border-slate-700"><p className="section-kicker">SOLICITAÇÃO À EQUIPE ASA</p><h2 className="text-lg font-semibold dark:text-white">Como podemos ajudar?</h2><p className="text-sm text-gray-500 mt-2">Informe o assunto e os detalhes para direcionarmos seu atendimento.</p></div>
             <div className="space-y-2">
               <label htmlFor="ticket-title" className="block text-sm font-medium text-gray-700 dark:text-slate-300">Assunto</label>
               <input
