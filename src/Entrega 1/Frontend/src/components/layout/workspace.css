@@ -220,6 +220,17 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 @media(max-width:1100px){.workspace-shell .bi-kpis{grid-template-columns:repeat(2,1fr)}.workspace-shell .bi-grid.wide,.workspace-shell .bi-grid.thirds{grid-template-columns:repeat(2,1fr)}.workspace-shell .bi-span-2{grid-column:span 2}}
 @media(max-width:767px){.workspace-shell .bi-dashboard{padding:18px 14px}.workspace-shell .bi-header{align-items:flex-start;flex-direction:column}.workspace-shell .bi-filterbar{grid-template-columns:1fr}.workspace-shell .bi-custom-range{grid-column:1}.workspace-shell .bi-period small{display:none}.workspace-shell .bi-kpis{grid-template-columns:1fr 1fr}.workspace-shell .bi-kpis article{min-height:145px;padding:16px}.workspace-shell .bi-kpis article>strong{font-size:24px}.workspace-shell .bi-grid.wide,.workspace-shell .bi-grid.thirds,.workspace-shell .bi-grid.halves{grid-template-columns:1fr}.workspace-shell .bi-span-2{grid-column:auto}.workspace-shell .bi-insights{grid-template-columns:1fr}.workspace-shell .bi-panel{padding:17px}.workspace-shell .bi-chart.large{height:230px}}
 
+/* Reports share real metrics between ASA and Admin and must stay inside the workspace gutter. */
+.workspace-shell .report-workspace { width:100%; max-width:100%; min-width:0; padding:clamp(20px,3vw,40px); overflow:hidden; }
+.workspace-shell .report-workspace > div:first-child { padding-bottom:20px; border-bottom:1px solid #d5e2da; }
+.workspace-shell .report-workspace > div:first-child h1 { font-size:clamp(30px,3vw,40px); font-weight:650; letter-spacing:-.05em; }
+.workspace-shell .report-workspace > div:first-child p { margin-top:7px; }
+.workspace-shell .report-workspace article { min-width:0; }
+.workspace-shell .report-workspace article p { overflow-wrap:anywhere; }
+.workspace-shell .report-workspace section { max-width:100%; }
+.dark .workspace-shell .report-workspace > div:first-child { border-color:#2d493b; }
+@media(max-width:767px) { .workspace-shell .report-workspace { padding:18px 14px; }.workspace-shell .report-workspace > div:first-child { align-items:flex-start; flex-direction:column; }.workspace-shell .report-workspace > div:first-child > div:last-child { width:100%; }.workspace-shell .report-workspace > div:first-child select { min-width:0; flex:1; } }
+
 /* ASA command center: all figures are derived from the existing ticket response. */
 .workspace-shell .asa-command-center { width:100%; max-width:100%; min-width:0; overflow:hidden; color:#14231c; }
 .workspace-shell .asa-dashboard-header { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; padding:8px 0 24px; border-bottom:1px solid #d3e0d8; }
