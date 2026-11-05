@@ -1,3 +1,4 @@
+import { BookOpen, Wallet, FileText as SubjectFile, Briefcase, MessageCircle } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -56,11 +57,11 @@ export default function AlunoAgendamento() {
   const [cancelling, setCancelling] = useState(false)
 
   const subjects = [
-    { id: 'matr', label: 'Orientação de Matrícula e Grade Horária', icon: '📚', desc: 'Ajuste de matérias, pré-requisitos e turmas' },
-    { id: 'fin', label: 'Acordo e Negociação Financeira / Bolsas', icon: '💰', desc: 'Mensalidades, parcelamento, Prouni e FIES' },
-    { id: 'disp', label: 'Aproveitamento de Estudos / Dispensa', icon: '📄', desc: 'Validação de matérias de outra faculdade' },
-    { id: 'estg', label: 'Validação de Contrato de Estágio', icon: '💼', desc: 'Assinatura e conferência de termos e TCE' },
-    { id: 'geral', label: 'Outros Assuntos / Suporte Geral', icon: '💬', desc: 'Orientação presencial com nossa equipe' },
+    { id: 'matr', label: 'Orientação de Matrícula e Grade Horária', icon: BookOpen, desc: 'Ajuste de matérias, pré-requisitos e turmas' },
+    { id: 'fin', label: 'Acordo e Negociação Financeira / Bolsas', icon: Wallet, desc: 'Mensalidades, parcelamento, Prouni e FIES' },
+    { id: 'disp', label: 'Aproveitamento de Estudos / Dispensa', icon: SubjectFile, desc: 'Validação de matérias de outra faculdade' },
+    { id: 'estg', label: 'Validação de Contrato de Estágio', icon: Briefcase, desc: 'Assinatura e conferência de termos e TCE' },
+    { id: 'geral', label: 'Outros Assuntos / Suporte Geral', icon: MessageCircle, desc: 'Orientação presencial com nossa equipe' },
   ]
 
   // Generate dynamic upcoming business days (ignoring weekends)
@@ -348,7 +349,7 @@ export default function AlunoAgendamento() {
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-2xl">{sub.icon}</span>
+                    <sub.icon className="w-6 h-6 text-brand-600" aria-hidden="true" />
                     <span className="text-xs font-bold leading-tight">{sub.label}</span>
                   </div>
                   <p className="text-[11px] text-gray-500 dark:text-slate-400 leading-snug">

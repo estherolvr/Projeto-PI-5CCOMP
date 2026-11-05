@@ -1,3 +1,4 @@
+import './workspace.css'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Calendar, LayoutDashboard, FileText, ListOrdered, Clock, Tag,
@@ -99,7 +100,7 @@ export default function AdminLayout() {
       <div className={cn('border-b border-gray-100 dark:border-slate-700 flex-shrink-0', collapsed ? 'px-3 py-4' : 'px-5 py-4')}>
         {!collapsed && <div className="h-0.5 w-full asa-accent-bar rounded-full mb-3 opacity-80" />}
         <div className="flex items-center gap-2.5">
-          <FecapLogo size={32} />
+          <FecapLogo variant="white" size={32} />
           {!collapsed && (
             <div>
               <span className="font-bold text-gray-900 dark:text-white tracking-tight">Álvaro AI</span>
@@ -169,7 +170,7 @@ export default function AdminLayout() {
   )
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
+    <div className="workspace-shell flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
       {/* Desktop Sidebar */}
       <aside
         className={cn(

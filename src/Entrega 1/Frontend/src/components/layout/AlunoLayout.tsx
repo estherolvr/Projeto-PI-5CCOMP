@@ -1,3 +1,4 @@
+import './workspace.css'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import {
@@ -28,7 +29,7 @@ export default function AlunoLayout() {
   const navigate = useNavigate()
 
   return (
-    <div className="flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
+    <div className="workspace-shell flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-60 bg-white dark:bg-slate-800 border-r border-gray-100 dark:border-slate-700 flex-shrink-0">
         {/* Logo */}
@@ -36,7 +37,7 @@ export default function AlunoLayout() {
           {/* Barra accent ASA */}
           <div className="h-0.5 w-full asa-accent-bar rounded-full mb-3 opacity-80" />
           <div className="flex items-center gap-2.5">
-            <FecapLogo size={32} />
+            <FecapLogo variant="white" size={32} />
             <div>
               <span className="font-bold text-gray-900 dark:text-white tracking-tight">Álvaro AI</span>
               <p className="text-[10px] text-gray-500 dark:text-slate-400 leading-tight">Portal do Aluno</p>

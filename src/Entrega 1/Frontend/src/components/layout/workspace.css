@@ -1,0 +1,74 @@
+/* Private workspaces only: public pages intentionally have no matching ancestor. */
+.workspace-shell { --workspace-border: #dce7e2; background: #f2f6f3; font-feature-settings: 'cv02', 'cv03', 'cv04'; }
+.workspace-shell > aside { background: #063e30; border: 0; margin: 12px 0 12px 12px; border-radius: 20px; box-shadow: 0 12px 32px #003b2714; }
+.workspace-shell > aside { color: #ecf8f1; }
+.workspace-shell > aside .text-gray-900, .workspace-shell > aside .text-gray-600 { color: #edf8f3; }
+.workspace-shell > aside .text-gray-500, .workspace-shell > aside .text-gray-400 { color: #a4c6b9; }
+.workspace-shell > aside [class*='border-'] { border-color: #ffffff18; }
+.workspace-shell > aside nav { scrollbar-width: thin; scrollbar-color: #73998a transparent; }
+.workspace-shell > aside nav a { min-height: 40px; margin-bottom: 3px; border-radius: 10px; color: #c8ddd4; }
+.workspace-shell > aside nav a:hover { background: #ffffff10; color: white; }
+.workspace-shell > aside nav a[aria-current='page'] { background: #d6f5e5; color: #064b35; box-shadow: 0 3px 12px #001e2020; }
+.workspace-shell > aside nav a[aria-current='page'] svg { color: #00865b; }
+.workspace-shell > aside nav p { font-size: 10px; letter-spacing: .16em; margin-top: 18px; margin-bottom: 8px; }
+.workspace-shell > aside button:hover { background: #ffffff12; color: white; }
+.workspace-shell > div > header { background: #ffffffd9; border-color: var(--workspace-border); min-height: 76px; backdrop-filter: blur(16px); }
+.workspace-shell main { background: radial-gradient(ellipse at top right, #dff0e560, transparent 55%), #f2f6f3; scrollbar-gutter: stable; }
+.workspace-shell main h1 { font-size: clamp(1.65rem, 2.3vw, 2.2rem); letter-spacing: -.045em; line-height: 1.2; font-weight: 750; }
+.workspace-shell main h2 { letter-spacing: -.025em; }
+.workspace-shell main .bg-white { border-color: var(--workspace-border); }
+.workspace-shell main .bg-white.rounded-xl,
+.workspace-shell main .bg-white.rounded-2xl,
+.workspace-shell main .bg-white.rounded-lg { border-radius: 18px; box-shadow: 0 4px 24px #123e2b05; }
+.workspace-shell main table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
+.workspace-shell main thead { background: #edf4ef; }
+.workspace-shell main th { font-size: 11px; letter-spacing: .055em; padding-top: 16px; padding-bottom: 16px; color: #52685d; }
+.workspace-shell main td { padding-top: 16px; padding-bottom: 16px; border-color: #e7eee9; }
+.workspace-shell main tbody tr:hover { background: #f0f8f3; }
+.workspace-shell :is(button, a, input, select, textarea):focus-visible { outline: 2px solid #009b6b; outline-offset: 3px; }
+.workspace-shell main :is(input:not([type='checkbox']):not([type='radio']), select, textarea) { border-radius: 10px; }
+.workspace-shell main button { transition: background-color .15s, box-shadow .15s; }
+.workspace-shell main button.bg-brand-600 { box-shadow: 0 4px 10px #00845a20; }
+.dark .workspace-shell { --workspace-border: #294339; }
+.dark .workspace-shell main { background: #101f1b; }
+.dark .workspace-shell > div > header { background: #162a23; }
+.dark .workspace-shell main thead { background: #1b3027; }
+.dark .workspace-shell main th { color: #acc6b9; }
+.dark .workspace-shell main tbody tr:hover { background: #20382d; }
+@media (max-width: 767px) {
+ .workspace-shell { height: 100dvh; }
+ .workspace-shell > aside { background: #063e30; max-width: 88vw; }
+ .workspace-shell > div > header { min-height: 64px; }
+ .workspace-shell main h1 { font-size: 1.65rem; }
+ .workspace-shell main td, .workspace-shell main th { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .workspace-shell * { transition: none !important; } }
+.workspace-shell .workspace-hero { position: relative; border-radius: 22px; padding: clamp(24px, 3vw, 40px); background: radial-gradient(ellipse at right top, #16856166, transparent 70%), #063e30; border: 1px solid #18543f; color: #fff; }
+.workspace-shell .workspace-hero h1 { color: #fff; }
+.workspace-shell .workspace-hero p { color: #c3dacf; margin-top: 12px; max-width: 55ch; line-height: 1.6; }
+.workspace-shell .workspace-hero .text-gray-900 { color: #fff; }
+.workspace-shell .workspace-eyebrow { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: .15em; font-weight: 650; color: #88dfb4; margin-bottom: 18px; }
+.workspace-shell .workspace-refresh { display: inline-flex; align-items: center; align-self: center; gap: 8px; border: 1px solid #ffffff40; border-radius: 10px; padding: 10px 16px; font-size: 13px; }
+.workspace-shell .workspace-metrics > * { position: relative; padding: 24px; border-top: 3px solid #008c61; }
+.workspace-shell .workspace-metrics strong { display: block; margin-top: 16px; font-size: 2.5rem; letter-spacing: -.05em; font-weight: 650; font-variant-numeric: tabular-nums; }
+.workspace-shell .workspace-action { display: flex; align-items: center; gap: 16px; background: white; color: #164d38; border: 1px solid #dce7e2; border-radius: 16px; min-height: 94px; }
+.workspace-shell .workspace-action:first-child { background: #007e54; color: white; border-color: #007e54; }
+.workspace-shell .workspace-action:hover { box-shadow: 0 6px 20px #063e3012; border-color: #80b69c; }
+.workspace-shell .workspace-action-icon { box-sizing: content-box; padding: 12px; border-radius: 13px; background: #00865b10; flex-shrink: 0; }
+.workspace-shell .workspace-action:first-child .workspace-action-icon { background: #ffffff20; }
+.workspace-shell .workspace-shortcuts a { padding: 12px 18px; border: 1px solid #cbded2; border-radius: 12px; background: #fff; font-size: 13px; font-weight: 600; }
+.dark .workspace-shell .workspace-action:not(:first-child), .dark .workspace-shell .workspace-shortcuts a { background: #1b3027; color: #d9f3e5; border-color: #315343; }
+/* Portaled dialogs are themed only while a private workspace is mounted. */
+body:has(.workspace-shell) [role='dialog'] { border-radius: 20px; }
+body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border-radius: 10px; }
+.workspace-shell main > :first-child { min-width: 0; }
+.workspace-shell main :is(section, article) { min-width: 0; }
+@media (max-width: 767px) {
+ .workspace-shell .workspace-hero { padding: 24px; }
+ .workspace-shell .workspace-metrics > * { padding: 18px; }
+ .workspace-shell .workspace-metrics strong { font-size: 2rem; }
+ .workspace-shell .workspace-action { min-height: 80px; }
+}
+.dark .workspace-shell main .text-gray-500,
+.dark .workspace-shell > div > header .text-gray-500,
+.dark .workspace-shell > div > header .text-gray-600 { color: #abc4b7; }
