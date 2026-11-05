@@ -44,5 +44,8 @@ test('REF-03 Dashboard ASA mantém dados, filtros, links e responsividade', asyn
  await page.screenshot({path:info.outputPath('asa-dashboard-desktop.png'),fullPage:true})
  await page.setViewportSize({width:390,height:844})
  expect(await page.evaluate(()=>document.body.scrollWidth<=innerWidth)).toBe(true)
+ expect(await page.evaluate(()=>getComputedStyle(document.body).overflow)).toBe('hidden')
+ expect(await page.evaluate(()=>getComputedStyle(document.documentElement).overflow)).toBe('hidden')
+ expect(await page.locator('main').evaluate(element=>element.scrollHeight>element.clientHeight)).toBe(true)
  await page.screenshot({path:info.outputPath('asa-dashboard-mobile.png'),fullPage:true})
 })

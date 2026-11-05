@@ -1,5 +1,6 @@
 /* Private workspaces only: public pages intentionally have no matching ancestor. */
 .workspace-shell { --workspace-border: #dce7e2; background: #f2f6f3; font-feature-settings: 'cv02', 'cv03', 'cv04'; }
+html:has(.workspace-shell), body:has(.workspace-shell), #root:has(.workspace-shell) { height:100%; overflow:hidden; }
 .workspace-shell > aside { background: #063e30; border: 0; margin: 12px 0 12px 12px; border-radius: 20px; box-shadow: 0 12px 32px #003b2714; }
 .workspace-shell > aside { color: #ecf8f1; }
 .workspace-shell > aside .text-gray-900, .workspace-shell > aside .text-gray-600 { color: #edf8f3; }
