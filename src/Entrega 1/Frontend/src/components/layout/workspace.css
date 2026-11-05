@@ -237,7 +237,7 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .workspace-shell .asa-profile-heading h1 { font-size:clamp(31px,3.4vw,43px); font-weight:650; letter-spacing:-.055em; }.workspace-shell .asa-profile-heading p { margin-top:9px; color:#718279; font-size:12px; }
 .workspace-shell .asa-profile-heading > span { display:flex; align-items:center; gap:7px; padding:8px 11px; border:1px solid #cae0d4; border-radius:99px; background:#edf8f2; color:#087b55; font-size:9px; font-weight:650; white-space:nowrap; }
 .workspace-shell .asa-profile-card { overflow:hidden; border:1px solid #d9e5de; border-radius:20px; background:#fff; box-shadow:0 8px 30px #123e2b08; }
-.workspace-shell .asa-profile-cover { display:flex; height:100px; align-items:flex-end; padding:18px 28px; background:radial-gradient(circle at 85% 20%,#26a57755,transparent 34%),linear-gradient(115deg,#063e30,#087251); color:#9ce2c2; }
+.workspace-shell .asa-profile-cover { display:flex; height:100px; align-items:flex-start; padding:11px 28px; background:radial-gradient(circle at 85% 20%,#26a57755,transparent 34%),linear-gradient(115deg,#063e30,#087251); color:#9ce2c2; }
 .workspace-shell .asa-profile-cover span { font-size:8px; font-weight:700; letter-spacing:.18em; }
 .workspace-shell .asa-profile-identity { display:flex; align-items:center; gap:16px; padding:0 28px 22px; border-bottom:1px solid #e5ece8; }
 .workspace-shell .asa-profile-avatar { position:relative; display:grid; flex:none; width:76px; height:76px; margin-top:-30px; place-items:center; border:5px solid #fff; border-radius:22px; background:#dff3e8; color:#087b55; box-shadow:0 5px 16px #092c1d18; font-size:20px; font-weight:700; }
