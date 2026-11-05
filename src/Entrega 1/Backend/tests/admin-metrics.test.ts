@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { liveSlaStatus, reportPeriod, resolutionDates, ticketAnalytics, type MetricTicket } from '../src/services/admin-metrics'
+import { liveSlaStatus, reportPeriod, reportPeriodRange, resolutionDates, ticketAnalytics, type MetricTicket } from '../src/services/admin-metrics'
 import { operationalHealth, publicIntegrationConfig } from '../src/services/admin-health'
 
 const now = new Date('2026-10-29T15:00:00Z')
@@ -33,6 +33,18 @@ test('period boundaries are local to São Paulo; deadline is live, regardless of
   assert.equal(result.summary.activeSlaRiskTickets, 1)
   assert.equal(result.summary.slaAdherence, 50)
   assert.equal(liveSlaStatus({ slaDeadline: now }, now), 'breached')
+})
+
+test('custom ranges remain inclusive in São Paulo and expose only real segmentations', () => {
+  const period = reportPeriodRange(new Date('2026-10-01T12:00:00Z'), new Date('2026-10-03T12:00:00Z'))
+  assert.equal(period.days, 3)
+  assert.equal(period.start.toISOString(), '2026-10-01T03:00:00.000Z')
+  assert.equal(period.end.toISOString(), '2026-10-04T02:59:59.999Z')
+  const result = ticketAnalytics([{ ...base, studentId: 'student-1', student: { course: 'Computação' }, aiSuggestion: { id: 'ai-1' }, createdAt: '2026-10-02T15:00:00Z' }], [], [], period)
+  assert.equal(result.summary.uniqueStudents, 1)
+  assert.equal(result.summary.aiAnalysedTickets, 1)
+  assert.deepEqual(result.courseDistribution, [{ name: 'Computação', value: 1 }])
+  assert.equal(result.hourlyDistribution.reduce((sum, item) => sum + item.value, 0), 1)
 })
 
 test('response time excludes private notes; unknown historical resolution is excluded from measured samples', () => {

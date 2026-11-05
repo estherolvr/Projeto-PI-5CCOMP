@@ -64,6 +64,11 @@ test('admin API consumes persisted student and ASA activity with scoped access',
       assert.equal(result.data.summary.slaAdherence, null)
       assert.equal(result.data.chartData.length, 7)
       assert.equal((await request('/metrics/overview?days=3')).status, 400)
+      const custom = await request('/metrics/overview?start=2026-10-01&end=2026-10-03')
+      assert.equal(custom.status, 200)
+      assert.equal(custom.data.chartData.length, 3)
+      assert.ok(custom.data.comparison?.summary)
+      assert.equal((await request('/metrics/overview?start=2026-10-03&end=2026-10-01')).status, 400)
     })
 
     await prisma.user.createMany({ data: [

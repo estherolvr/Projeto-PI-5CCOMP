@@ -14,6 +14,9 @@ export interface MetricTicket {
   status: string
   createdAt: Timestamp
   slaDeadline: Timestamp
+  studentId?: string
+  student?: { course: string } | null
+  aiSuggestion?: { id: string } | null
   messages?: { senderRole: string; isInternal: boolean; createdAt: Timestamp }[]
 }
 export interface StatusAudit {
@@ -33,6 +36,13 @@ export function reportPeriod(days: number, now = new Date()) {
   const today = new Date(`${localDateKey(now)}T00:00:00-03:00`)
   const start = new Date(today.getTime() - (days - 1) * 86400000)
   return { days, start, end: now, timeZone: REPORT_TIME_ZONE }
+}
+
+export function reportPeriodRange(start: Date, end: Date) {
+  const startDay = new Date(`${localDateKey(start)}T00:00:00-03:00`)
+  const endDay = new Date(`${localDateKey(end)}T23:59:59.999-03:00`)
+  const days = Math.floor((+endDay - +startDay) / 86400000) + 1
+  return { days, start: startDay, end: endDay, timeZone: REPORT_TIME_ZONE }
 }
 
 /** Accept both the old human-readable audit detail and the structured status audit. */
@@ -94,6 +104,9 @@ export function ticketAnalytics(
   const countStatus = (status: string) => cohort.filter(t => t.status === status).length
   const categoryCounts: Record<string, number> = {}
   const priorityCounts: Record<string, number> = {}
+  const courseCounts: Record<string, number> = {}
+  const studentCounts: Record<string, number> = {}
+  const hourlyCounts = Array.from({ length: 24 }, () => 0)
   const responseTimes: number[] = []
   const resolutionTimes: number[] = []
   let slaMeasured = 0
@@ -103,6 +116,10 @@ export function ticketAnalytics(
   for (const ticket of cohort) {
     categoryCounts[ticket.category] = (categoryCounts[ticket.category] || 0) + 1
     priorityCounts[ticket.priority] = (priorityCounts[ticket.priority] || 0) + 1
+    if (ticket.student?.course) courseCounts[ticket.student.course] = (courseCounts[ticket.student.course] || 0) + 1
+    if (ticket.studentId) studentCounts[ticket.studentId] = (studentCounts[ticket.studentId] || 0) + 1
+    const hour = Number(new Intl.DateTimeFormat('en-US', { timeZone: REPORT_TIME_ZONE, hour: '2-digit', hourCycle: 'h23' }).format(new Date(ticket.createdAt)))
+    if (Number.isInteger(hour)) hourlyCounts[hour]++
     const response = (ticket.messages || [])
       .filter(m => ['asa', 'admin'].includes(m.senderRole) && !m.isInternal && +new Date(m.createdAt) >= +new Date(ticket.createdAt))
       .sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt))[0]
@@ -165,6 +182,8 @@ export function ticketAnalytics(
       csat: average(feedbackRatings, 2),
       avgResponseMinutes: average(responseTimes),
       avgResolutionHours: average(resolutionTimes),
+      uniqueStudents: Object.keys(studentCounts).length,
+      aiAnalysedTickets: cohort.filter(ticket => Boolean(ticket.aiSuggestion)).length,
     },
     sampleCounts: {
       responseTimes: responseTimes.length, resolutionTimes: resolutionTimes.length,
@@ -172,13 +191,18 @@ export function ticketAnalytics(
     },
     categoryDistribution: Object.entries(categoryCounts).map(([name, value]) => ({ name, value })),
     priorityDistribution: Object.entries(priorityCounts).map(([name, value]) => ({ name, value })),
+    courseDistribution: Object.entries(courseCounts).map(([name, value]) => ({ name, value })),
+    recurringStudents: Object.values(studentCounts).filter(value => value > 1).length,
+    hourlyDistribution: hourlyCounts.map((value, hour) => ({ hour: `${String(hour).padStart(2, '0')}h`, value })),
     chartData,
   }
 }
 
 export const metricTicketSelect = {
   id: true, number: true, category: true, priority: true, status: true,
-  createdAt: true, slaDeadline: true,
+  createdAt: true, slaDeadline: true, studentId: true,
+  student: { select: { course: true } },
+  aiSuggestion: { select: { id: true } },
   messages: {
     where: { senderRole: { in: ['asa', 'admin'] as string[] }, isInternal: false },
     orderBy: { createdAt: 'asc' as const }, take: 1,

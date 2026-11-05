@@ -249,7 +249,12 @@ export const api = {
   },
 
   metrics: {
-    overview: (days?: number) => request<any>(`/metrics/overview${days ? `?days=${days}` : ''}`),
+    overview: (period?: number | { start: string; end: string }) => {
+      const query = new URLSearchParams()
+      if (typeof period === 'number') query.set('days', String(period))
+      else if (period) { query.set('start', period.start); query.set('end', period.end) }
+      return request<any>(`/metrics/overview${query.size ? `?${query}` : ''}`)
+    },
     queue: () => request<any[]>('/metrics/queue'),
   },
 
