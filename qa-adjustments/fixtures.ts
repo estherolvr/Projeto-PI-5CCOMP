@@ -21,14 +21,8 @@ async function state(browser: Browser, role: Role) {
   const page = await context.newPage()
   try {
     await page.goto('/login')
-    await page.evaluate(({ email, password }) => {
-      const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
-      for (const [selector, value] of [['input[type=email]', email], ['input[type=password]', password]]) {
-        const input = document.querySelector(selector) as HTMLInputElement
-        setter.call(input, value)
-        input.dispatchEvent(new Event('input', { bubbles: true }))
-      }
-    }, { email, password })
+    await page.locator('input[type=email]').fill(email)
+    await page.locator('input[type=password]').fill(password)
     const response = page.waitForResponse(r => new URL(r.url()).pathname === '/api/auth/login')
     await page.getByRole('button', { name: 'Entrar', exact: true }).click()
     expect((await response).status(), 'Login real deve responder HTTP 200').toBe(200)
