@@ -4,7 +4,7 @@ import {
   Calendar, LayoutDashboard, FileText, ListOrdered, Clock, Tag,
   Bot, Images, BookOpen, Database, ThumbsUp,
   Users, GraduationCap, HeadphonesIcon,
-  Mail, BarChart2, FileBarChart,
+  BarChart2, FileBarChart,
   Shield, ScrollText, Lock,
   Settings, Activity,
   ChevronLeft, ChevronRight, Bell, Sun, Moon, Search, LogOut, Menu, X
@@ -59,10 +59,6 @@ const navSections: NavSection[] = [
       { icon: GraduationCap, label: 'Alunos', to: '/admin/alunos' },
       { icon: HeadphonesIcon, label: 'Equipe ASA', to: '/admin/asa' },
     ],
-  },
-  {
-    label: 'Integrações',
-    items: [{ icon: Mail, label: 'Integrações', to: '/admin/integracoes' }],
   },
   {
     label: 'Analytics',
