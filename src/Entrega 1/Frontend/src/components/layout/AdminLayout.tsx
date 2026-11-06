@@ -175,7 +175,7 @@ export default function AdminLayout() {
       <aside
         className={cn(
           'workspace-sidebar hidden md:flex flex-col flex-shrink-0 transition-all duration-200',
-          sidebarCollapsed ? 'w-[68px]' : 'w-[268px]'
+          sidebarCollapsed ? 'is-collapsed w-[68px]' : 'w-[268px]'
         )}
       >
         {sidebarContent(sidebarCollapsed)}

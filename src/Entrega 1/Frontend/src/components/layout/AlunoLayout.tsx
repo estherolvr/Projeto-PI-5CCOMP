@@ -55,7 +55,7 @@ export default function AlunoLayout() {
   return (
     <div className="workspace-shell student-workspace-shell flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={cn('workspace-sidebar hidden md:flex flex-col flex-shrink-0 transition-all duration-200', sidebarCollapsed ? 'w-[68px]' : 'w-[260px]')}>
+      <aside className={cn('workspace-sidebar hidden md:flex flex-col flex-shrink-0 transition-all duration-200', sidebarCollapsed ? 'is-collapsed w-[68px]' : 'w-[260px]')}>
         {sidebarContent(sidebarCollapsed)}
         <button onClick={toggleSidebar} className="workspace-sidebar-toggle" aria-label={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}>
           {sidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}

@@ -159,7 +159,7 @@ export default function AsaLayout() {
       <aside
         className={cn(
           'workspace-sidebar hidden md:flex flex-col flex-shrink-0 transition-all duration-200',
-          sidebarCollapsed ? 'w-[68px]' : 'w-[260px]'
+          sidebarCollapsed ? 'is-collapsed w-[68px]' : 'w-[260px]'
         )}
       >
         {sidebarContent(sidebarCollapsed)}
