@@ -15,7 +15,7 @@ export default function StudentAcademicProfile({ studentId, onClose }: { student
     <section className="asa-academic-profile" role="dialog" aria-modal="true" aria-label="Perfil acadêmico do aluno">
       <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
         {student && <div className="academic-profile-content">
-          <header className="academic-profile-hero"><span className="academic-profile-avatar"><UserRound/></span><div><span className="academic-profile-eyebrow">ALUNO FECAP</span><h3>{student.name}</h3><p><Hash size={13}/> Registro acadêmico {student.ra}</p></div><span className={`academic-profile-status ${student.status === 'regular' ? 'is-regular' : ''}`}><BadgeCheck size={14}/>{student.status}</span></header>
+          <header className="academic-profile-hero"><span className="academic-profile-avatar"><UserRound/></span><div><span className="academic-profile-eyebrow">ALUNO FECAP</span><h3>{student.name}</h3><p><Hash size={13}/> RA: {student.ra}</p></div><span className={`academic-profile-status ${student.status === 'regular' ? 'is-regular' : ''}`}><BadgeCheck size={14}/>{student.status}</span></header>
           <dl className="academic-profile-grid">
             {[
               [GraduationCap, 'Curso', student.course],
@@ -27,7 +27,7 @@ export default function StudentAcademicProfile({ studentId, onClose }: { student
             ].map(([Icon, label, value]: any) => <div key={label}><dt><span><Icon size={15}/></span>{label}</dt><dd>{value}</dd></div>)}
           </dl>
           <section className="academic-ticket-history">
-            <header><div><span>ATENDIMENTOS</span><h3>Histórico de chamados</h3><p>Solicitações registradas por este aluno.</p></div><strong><TicketCheck size={15}/>{student.tickets?.length || 0}</strong></header>
+            <header><div><span>ATENDIMENTOS</span><h3>Histórico de chamados ({student.tickets?.length || 0})</h3><p>Solicitações registradas por este aluno.</p></div><strong aria-label={`${student.tickets?.length || 0} chamados`}><TicketCheck size={15}/>{student.tickets?.length || 0}</strong></header>
             {student.tickets?.length ? <ul>{student.tickets.map((ticket: any) => <li key={ticket.id}>
               <Link onClick={onClose} to={`/asa/chamados/${ticket.id}`}><span><small>CHAMADO #{ticket.number}</small><strong>{ticket.title}</strong><em>{ticket.status.replaceAll('_', ' ')} · {new Date(ticket.createdAt).toLocaleDateString('pt-BR')}</em></span><ArrowUpRight size={16}/></Link>
             </li>)}</ul> : <div className="academic-ticket-empty"><TicketCheck/><p>Este aluno ainda não possui chamados registrados.</p></div>}
