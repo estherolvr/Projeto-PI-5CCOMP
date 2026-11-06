@@ -760,3 +760,108 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .academic-profile-close { min-height:40px; padding:0 15px; border-radius:10px; background:#087b55; color:#fff; font-size:11px; font-weight:700; box-shadow:0 6px 16px rgba(8,123,85,.18); }
 .dark .asa-academic-profile { color:#dcece4; }.dark .academic-profile-grid { background:#182d24; border-color:#2d493b; }.dark .academic-profile-grid > div { border-color:#2d493b; }.dark .academic-profile-grid dt > span,.dark .academic-ticket-history > header strong { background:#214536; color:#7ddbb5; }.dark .academic-profile-grid dd,.dark .academic-ticket-history > header h3,.dark .academic-ticket-history li strong { color:#e0efe6; }.dark .academic-ticket-history li a,.dark .academic-ticket-empty { background:#14271e; border-color:#2d493b; }
 @media(max-width:640px) { .academic-profile-hero { align-items:flex-start; padding:18px; }.academic-profile-avatar { width:46px; height:46px; }.academic-profile-status { position:absolute; right:14px; top:14px; max-width:110px; }.academic-profile-hero > div { padding-right:70px; }.academic-profile-grid { grid-template-columns:1fr; }.academic-profile-grid > div,.academic-profile-grid > div:nth-child(odd),.academic-profile-grid > div:nth-last-child(-n+2) { border-right:0; border-bottom:1px solid #e5ece8; }.academic-profile-grid > div:last-child { border-bottom:0; }.academic-ticket-history li strong { white-space:normal; }.dark .academic-profile-grid > div { border-color:#2d493b; } }
+
+/* Responsive stability fixes: CSS only, shared by every authenticated profile. */
+.workspace-shell .workspace-topbar { position:relative; z-index:30; background:#fff; backdrop-filter:none; }
+.dark .workspace-shell .workspace-topbar { background:#13271f; backdrop-filter:none; }
+.workspace-shell main { min-height:0; overflow-x:hidden; }
+.workspace-shell .notification-center { position:relative; z-index:80; }
+.workspace-shell .notification-popover { z-index:90; isolation:isolate; }
+
+/* The legacy icon rule also matched this footer and constrained its text to 42px. */
+.asa-workspace-shell .ai-total-card > .ai-total-foot {
+  display:flex;
+  width:auto;
+  height:auto;
+  min-width:0;
+  place-items:initial;
+  justify-content:flex-start;
+  border-radius:0;
+  background:transparent;
+  color:#d2ecdf;
+  line-height:1.45;
+  white-space:normal;
+}
+.asa-workspace-shell .ai-total-card > .ai-total-foot svg { flex:none; }
+
+@media(max-width:767px) {
+  .workspace-shell { width:100%; max-width:100vw; }
+  .workspace-shell > div { min-width:0; }
+  .workspace-shell .workspace-topbar {
+    min-height:56px;
+    padding:8px 12px;
+    padding-top:max(8px,env(safe-area-inset-top));
+  }
+  .workspace-shell .workspace-topbar > div:first-child,
+  .workspace-shell .workspace-topbar > div:last-child { min-width:0; gap:6px; }
+  .workspace-shell .workspace-topbar button { min-width:40px; min-height:40px; display:inline-flex; align-items:center; justify-content:center; }
+  .workspace-shell .notification-trigger { width:40px; height:40px; }
+
+  /* Admin and ASA use the same desktop header on mobile; retain only essential actions. */
+  .admin-workspace-shell .workspace-topbar > div:last-child > div:not(.notification-center),
+  .asa-workspace-shell .workspace-topbar > div:last-child > div:not(.notification-center) { display:none; }
+  .admin-workspace-shell .workspace-topbar > div:last-child > button:last-child,
+  .asa-workspace-shell .workspace-topbar > div:last-child > button:last-child { width:40px; padding:0; gap:0; font-size:0; }
+  .admin-workspace-shell .workspace-topbar > div:last-child > button:last-child svg,
+  .asa-workspace-shell .workspace-topbar > div:last-child > button:last-child svg { width:17px; height:17px; }
+
+  .workspace-shell .workspace-sidebar.fixed {
+    width:min(84vw,300px)!important;
+    max-width:300px;
+    padding-bottom:env(safe-area-inset-bottom);
+    border-radius:0 18px 18px 0;
+    overflow:hidden;
+    touch-action:pan-y;
+  }
+  .workspace-shell .workspace-sidebar.fixed > button[aria-label='Fechar menu'] {
+    top:max(12px,env(safe-area-inset-top));
+    right:12px;
+    width:40px;
+    height:40px;
+    padding:0;
+    display:grid;
+    place-items:center;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.08);
+    color:#e8f5ef;
+  }
+  .workspace-shell .workspace-sidebar.fixed nav {
+    flex:1;
+    overflow-y:auto;
+    padding-bottom:12px;
+    scrollbar-gutter:auto;
+  }
+  .workspace-shell .workspace-sidebar.fixed nav a,
+  .workspace-shell .workspace-sidebar.fixed .workspace-nav-item { min-height:46px; margin-bottom:4px; }
+  .workspace-shell .workspace-sidebar.fixed .workspace-sidebar-footer { padding-bottom:max(12px,env(safe-area-inset-bottom)); }
+
+  /* On phones notifications become an opaque panel below the app bar. */
+  .workspace-shell .notification-popover {
+    inset:calc(48px + max(8px,env(safe-area-inset-top))) 0 0;
+    width:100%;
+    max-width:none;
+    max-height:none;
+    height:auto;
+    border-width:1px 0 0;
+    border-radius:0;
+    background:#fbfdfc;
+    box-shadow:0 18px 45px rgba(11,48,34,.2);
+  }
+  .dark .workspace-shell .notification-popover { background:#12271f; }
+  .workspace-shell .notification-popover-header { padding:16px; }
+  .workspace-shell .notification-popover-list { min-height:0; padding:10px 12px calc(14px + env(safe-area-inset-bottom)); }
+  .workspace-shell .notification-popover-item { padding:14px 12px; }
+
+  .asa-workspace-shell .ai-total-card { min-height:0; }
+  .asa-workspace-shell .ai-total-top { align-items:flex-start; }
+  .asa-workspace-shell .ai-total-top small { min-width:0; line-height:1.45; overflow-wrap:anywhere; }
+  .asa-workspace-shell .ai-total-card strong { margin-top:18px; font-size:42px; line-height:1; }
+  .asa-workspace-shell .ai-total-card > .ai-total-foot { margin-top:18px; padding-top:14px; }
+}
+
+@media(max-width:380px) {
+  .workspace-shell .workspace-sidebar.fixed { width:88vw!important; border-radius:0 14px 14px 0; }
+  .workspace-shell .workspace-topbar { padding-left:8px; padding-right:8px; }
+  .admin-workspace-shell .workspace-topbar > div:last-child,
+  .asa-workspace-shell .workspace-topbar > div:last-child { gap:3px; }
+}
