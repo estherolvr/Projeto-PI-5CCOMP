@@ -4,7 +4,11 @@ import { api } from '@/lib/api'
 import FecapLogo from '@/components/ui/FecapLogo'
 
 export default function ResetPasswordPage() {
-  const token = useMemo(() => new URLSearchParams(window.location.hash.replace(/^#/, '')).get('access_token') || '', [])
+  const token = useMemo(() => {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const query = new URLSearchParams(window.location.search)
+    return hash.get('access_token') || query.get('access_token') || ''
+  }, [])
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [message, setMessage] = useState('')

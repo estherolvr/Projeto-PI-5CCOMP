@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/app-store';
-import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft, Link2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FecapLogo from '../../components/ui/FecapLogo';
 import { api } from '../../lib/api';
@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [recovering, setRecovering] = useState(false);
   const [recoveryMessage, setRecoveryMessage] = useState('');
+  const [recoveryLink, setRecoveryLink] = useState('');
 
   const navigate = useNavigate();
   const setCurrentUser = useAppStore(state => state.setCurrentUser);
@@ -45,6 +46,20 @@ export default function LoginPage() {
     try { const result = await api.auth.recoverPassword(email.trim()); setRecoveryMessage(result.message) }
     catch (error: any) { setErrorMessage(error.message || 'Não foi possível solicitar a recuperação.') }
     finally { setRecovering(false) }
+  };
+
+  const continueRecoveryFromLink = () => {
+    setErrorMessage('');
+    try {
+      const received = new URL(recoveryLink.trim());
+      const hash = new URLSearchParams(received.hash.replace(/^#/, ''));
+      const accessToken = hash.get('access_token') || received.searchParams.get('access_token');
+      const type = hash.get('type') || received.searchParams.get('type');
+      if (!accessToken || (type && type !== 'recovery')) throw new Error('invalid')
+      navigate(`/reset-password#access_token=${encodeURIComponent(accessToken)}&type=recovery`);
+    } catch {
+      setErrorMessage('Cole o endereço completo exibido no navegador após abrir o link do e-mail.');
+    }
   };
 
   return (
@@ -202,7 +217,16 @@ export default function LoginPage() {
                 <span>{errorMessage}</span>
               </motion.div>
             )}
-            {recoveryMessage && <div role="status" className="mb-5 p-3.5 rounded-lg bg-emerald-50 border border-emerald-200 text-sm text-emerald-800">{recoveryMessage}</div>}
+            {recoveryMessage && <div role="status" className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200">
+              <p>{recoveryMessage}</p>
+              <div className="mt-3 border-t border-emerald-200 pt-3 dark:border-emerald-800">
+                <p className="text-xs leading-relaxed">Se o link abrir uma tela em <strong>localhost:3000</strong>, copie o endereço completo da barra do navegador e cole abaixo.</p>
+                <div className="mt-2 flex gap-2">
+                  <div className="relative min-w-0 flex-1"><Link2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-700 dark:text-emerald-300"/><input type="url" value={recoveryLink} onChange={event => setRecoveryLink(event.target.value)} placeholder="Cole o link de recuperação" className="h-10 w-full rounded-lg border border-emerald-300 bg-white pl-9 pr-3 text-xs text-gray-800 outline-none focus:border-emerald-600 dark:border-emerald-700 dark:bg-slate-900 dark:text-white"/></div>
+                  <button type="button" onClick={continueRecoveryFromLink} disabled={!recoveryLink.trim()} className="rounded-lg bg-emerald-700 px-3 text-xs font-semibold text-white disabled:opacity-50">Continuar</button>
+                </div>
+              </div>
+            </div>}
 
             <form onSubmit={handleLogin} className="space-y-5">
               <div className="space-y-1.5">
