@@ -76,3 +76,19 @@ test('REF-04 Métricas ASA atualizam períodos e preservam responsividade', asyn
  expect(await page.evaluate(()=>document.body.scrollWidth<=innerWidth)).toBe(true)
  await page.screenshot({path:info.outputPath('metrics-mobile.png'),fullPage:true})
 })
+
+test('REF-05 páginas ASA compartilham tipografia, margens e largura segura', async ({ session }) => {
+ const page=await session('asa')
+ const routes=['/asa','/asa/chamados','/asa/agendamentos','/asa/conversas','/asa/alunos','/asa/agente-ia','/asa/base-conhecimento','/asa/sla','/asa/metricas','/asa/relatorios','/asa/notificacoes','/asa/auditoria','/asa/perfil']
+ for(const route of routes){
+  await page.goto(route)
+  await expect(page.locator('main > *').first()).toBeVisible()
+  const style=await page.locator('main > *').first().evaluate(element=>{
+   const computed=getComputedStyle(element)
+   return {font:computed.fontFamily,paddingLeft:parseFloat(computed.paddingLeft),right:element.getBoundingClientRect().right,mainRight:element.parentElement!.getBoundingClientRect().right}
+  })
+  expect(style.font.toLowerCase(),`${route} deve usar Inter`).toContain('inter')
+  expect(style.paddingLeft,`${route} deve respeitar o recuo padrão`).toBeGreaterThanOrEqual(14)
+  expect(style.right,`${route} não deve ultrapassar o workspace`).toBeLessThanOrEqual(style.mainRight+1)
+ }
+})

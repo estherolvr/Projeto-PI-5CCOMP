@@ -276,6 +276,29 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 @media(max-width:1000px) { .workspace-shell .audit-summary { grid-template-columns:repeat(2,1fr); } }
 @media(max-width:767px) { .workspace-shell .audit-workspace { padding:18px 14px; }.workspace-shell .audit-heading { align-items:flex-start; }.workspace-shell .audit-heading > div:last-child { width:100%; }.workspace-shell .audit-summary { grid-template-columns:1fr 1fr; gap:8px; }.workspace-shell .audit-summary article { min-height:105px; padding:14px; flex-direction:column; gap:8px; }.workspace-shell .audit-summary p { display:none; }.workspace-shell .audit-filters { align-items:stretch; }.workspace-shell .audit-filters > div:first-child { align-items:stretch; flex-direction:column; }.workspace-shell .audit-filters select { width:100%; }.workspace-shell .audit-filters > div:last-child { align-self:flex-end; }.workspace-shell .audit-log-panel > .audit-timeline { padding:18px 12px 12px 36px; }.workspace-shell .audit-event { padding:14px; }.workspace-shell .audit-event > span:first-child { left:-27px; }.workspace-shell .audit-event::before { left:-22px; }.workspace-shell .audit-event-heading > span { margin-left:0; white-space:normal; }.workspace-shell .audit-event-data { grid-template-columns:1fr; } }
 
+/* Shared ASA page rhythm. Scoped to the ASA shell so public, login, Admin and Student remain untouched. */
+.asa-workspace-shell { --asa-page-gutter:clamp(24px,3vw,40px); --asa-title-size:clamp(30px,3.2vw,42px); }
+.asa-workspace-shell main { font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+.asa-workspace-shell main > * { width:100%; max-width:100%; min-width:0; font-family:inherit; }
+.asa-workspace-shell main > :not(.bi-dashboard):not(.audit-workspace):not(.asa-profile):not(.report-workspace) { padding:var(--asa-page-gutter)!important; }
+.asa-workspace-shell main :is(button,input,select,textarea,table) { font-family:inherit; }
+.asa-workspace-shell main > :is(.bi-dashboard,.audit-workspace,.asa-profile,.report-workspace) { padding-left:var(--asa-page-gutter); padding-right:var(--asa-page-gutter); }
+.asa-workspace-shell main > * > h1:first-child,
+.asa-workspace-shell main > * > header:first-child h1,
+.asa-workspace-shell main > * > div:first-child > h1:first-child { color:#10231a; font-size:var(--asa-title-size); font-weight:650; letter-spacing:-.052em; line-height:1.12; }
+.asa-workspace-shell main > * > h1:first-child + p,
+.asa-workspace-shell main > * > header:first-child h1 + p,
+.asa-workspace-shell main > * > div:first-child > h1:first-child + p { margin-top:9px; color:#6f8177; font-size:12px; line-height:1.6; }
+.asa-workspace-shell main .section-kicker { margin-bottom:14px; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:.14em; }
+.asa-workspace-shell main > * > header:first-child,
+.asa-workspace-shell main > * > .asa-dashboard-header:first-child,
+.asa-workspace-shell main > * > .student-welcome:first-child,
+.asa-workspace-shell main > * > .asa-welcome:first-child { margin-top:0; }
+.dark .asa-workspace-shell main > * > h1:first-child,
+.dark .asa-workspace-shell main > * > header:first-child h1,
+.dark .asa-workspace-shell main > * > div:first-child > h1:first-child { color:#e4f1ea; }
+@media(max-width:767px) { .asa-workspace-shell { --asa-page-gutter:18px 14px; --asa-title-size:clamp(27px,9vw,34px); }.asa-workspace-shell main > :is(.bi-dashboard,.audit-workspace,.asa-profile,.report-workspace) { padding:18px 14px; } }
+
 /* ASA command center: all figures are derived from the existing ticket response. */
 .workspace-shell .asa-command-center { width:100%; max-width:100%; min-width:0; overflow:hidden; color:#14231c; }
 .workspace-shell .asa-dashboard-header { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; padding:8px 0 24px; border-bottom:1px solid #d3e0d8; }
