@@ -16,7 +16,6 @@ model User {
   avatar      String?
   department  String?
   status      String         @default("ativo") // 'ativo' | 'inativo'
-  mustChangePassword Boolean @default(false)
   lastAccess  DateTime       @default(now())
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -35,7 +34,6 @@ model Student {
   period      String         // 'manha' | 'tarde' | 'noite'
   status      String         @default("regular") // 'regular' | 'irregular' | 'trancado'
   phone       String?
-  mustChangePassword Boolean @default(false)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 

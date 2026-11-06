@@ -10,13 +10,6 @@ export function createPostgresClient(connectionString: string): PrismaClient {
   return new PrismaClient({ adapter: new PrismaPg({ connectionString, max: 2, connectionTimeoutMillis: 10000 }) })
 }
 
-// Production reaches PostgreSQL through Hyperdrive. Keep this bootstrap
-// idempotent so a fresh Worker cannot query the new fields before they exist.
-export async function ensureFirstAccessSchema(client: PrismaClient): Promise<void> {
-  await client.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "mustChangePassword" BOOLEAN NOT NULL DEFAULT false')
-  await client.$executeRawUnsafe('ALTER TABLE "Student" ADD COLUMN IF NOT EXISTS "mustChangePassword" BOOLEAN NOT NULL DEFAULT false')
-}
-
 export function withDatabaseClient<T>(client: PrismaClient, callback: () => T): T {
   return requestDatabase.run(client, callback)
 }

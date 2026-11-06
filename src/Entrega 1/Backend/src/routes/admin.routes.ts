@@ -14,12 +14,12 @@ adminRouter.use(authenticateToken, requireRole(['admin', 'asa']))
 
 const publicUserSelect = {
   id: true, name: true, email: true, role: true, avatar: true,
-  department: true, status: true, mustChangePassword: true, lastAccess: true, createdAt: true,
+  department: true, status: true, lastAccess: true, createdAt: true,
 } as const
 
 const publicStudentSelect = {
   id: true, name: true, ra: true, email: true, course: true, semester: true,
-  period: true, status: true, phone: true, mustChangePassword: true, createdAt: true, updatedAt: true,
+  period: true, status: true, phone: true, createdAt: true, updatedAt: true,
 } as const
 
 adminRouter.get('/health', async (_req, res) => {
@@ -504,7 +504,10 @@ adminRouter.post('/students', authenticateToken, requireRole(['admin']), async (
         period: period || 'manha',
         phone: phone || null,
         status: status || 'regular',
-        mustChangePassword: true,
+      } })
+      await tx.auditEvent.create({ data: {
+        userId: req.user?.id || null, userName: req.user?.name || 'Administrador', userRole: req.user?.role || 'admin',
+        action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'Student', resourceId: created.id, severity: 'info',
       } })
       await tx.auditEvent.create({ data: {
         userId: req.user?.id || null,
@@ -519,7 +522,7 @@ adminRouter.post('/students', authenticateToken, requireRole(['admin']), async (
       return created
     })
 
-    res.status(201).json({ ...student, authProvisioning: provisionedUserId ? 'created' : 'not_required' })
+    res.status(201).json({ ...student, mustChangePassword: true, authProvisioning: provisionedUserId ? 'created' : 'not_required' })
   } catch (error: any) {
     if (provisionedUserId) await removeProvisionedUser(provisionedUserId)
     if (error instanceof SupabaseProvisioningError) return res.status(error.statusCode).json({ error: error.message })
@@ -623,8 +626,11 @@ adminRouter.post('/users', authenticateToken, requireRole(['admin']), async (req
         role: role || 'asa',
         department: department || 'Atendimento ASA',
         status: 'ativo',
-        mustChangePassword: true,
       }, select: publicUserSelect })
+      await tx.auditEvent.create({ data: {
+        userId: req.user?.id || null, userName: req.user?.name || 'Administrador', userRole: req.user?.role || 'admin',
+        action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'User', resourceId: created.id, severity: 'info',
+      } })
       await tx.auditEvent.create({ data: {
         userId: req.user?.id || null,
         userName: req.user?.name || 'Administrador',
@@ -638,7 +644,7 @@ adminRouter.post('/users', authenticateToken, requireRole(['admin']), async (req
       return created
     })
 
-    res.status(201).json({ ...user, authProvisioning: provisionedUserId ? 'created' : 'not_required' })
+    res.status(201).json({ ...user, mustChangePassword: true, authProvisioning: provisionedUserId ? 'created' : 'not_required' })
   } catch (error: any) {
     if (provisionedUserId) await removeProvisionedUser(provisionedUserId)
     if (error instanceof SupabaseProvisioningError) return res.status(error.statusCode).json({ error: error.message })

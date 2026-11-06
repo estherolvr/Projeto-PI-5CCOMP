@@ -33,13 +33,18 @@ test('first access blocks every role until the provisional password is replaced'
     import('../src/db'), import('../src/routes/auth.routes'), import('../src/middleware/auth'),
   ])
   await prisma.user.createMany({ data: [
-    { id: 'admin-first', name: 'Admin Primeiro Acesso', email: 'admin-first@test.invalid', role: 'admin', mustChangePassword: true },
-    { id: 'asa-first', name: 'ASA Primeiro Acesso', email: 'asa-first@test.invalid', role: 'asa', mustChangePassword: true },
+    { id: 'admin-first', name: 'Admin Primeiro Acesso', email: 'admin-first@test.invalid', role: 'admin' },
+    { id: 'asa-first', name: 'ASA Primeiro Acesso', email: 'asa-first@test.invalid', role: 'asa' },
   ] })
   await prisma.student.create({ data: {
     id: 'student-first', name: 'Aluno Primeiro Acesso', email: 'student-first@test.invalid', ra: 'FIRST001',
-    course: 'Administração', semester: 1, period: 'noite', mustChangePassword: true,
+    course: 'Administração', semester: 1, period: 'noite',
   } })
+  await prisma.auditEvent.createMany({ data: [
+    { userName: 'Sistema', userRole: 'admin', action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'User', resourceId: 'admin-first' },
+    { userName: 'Sistema', userRole: 'admin', action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'User', resourceId: 'asa-first' },
+    { userName: 'Sistema', userRole: 'admin', action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'Student', resourceId: 'student-first' },
+  ] })
 
   const providerRequests: Array<{ authorization: string | null; password: string }> = []
   const originalFetch = globalThis.fetch

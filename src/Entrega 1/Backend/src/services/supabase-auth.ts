@@ -37,9 +37,13 @@ export async function findInstitutionalUser(email: string) {
   const employee = await prisma.user.findUnique({ where: { email: cleanEmail } })
   if (employee && employee.status === 'ativo' && ['asa', 'admin'].includes(employee.role)) {
     const { password, ...profile } = employee
-    return profile
+    const pending = await prisma.auditEvent.findFirst({ where: { action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'User', resourceId: employee.id }, select: { id: true } })
+    return { ...profile, mustChangePassword: Boolean(pending) }
   }
   const student = await prisma.student.findUnique({ where: { email: cleanEmail } })
-  if (student) return { ...student, role: 'aluno' }
+  if (student) {
+    const pending = await prisma.auditEvent.findFirst({ where: { action: 'PRIMEIRO_ACESSO_PENDENTE', resource: 'Student', resourceId: student.id }, select: { id: true } })
+    return { ...student, role: 'aluno', mustChangePassword: Boolean(pending) }
+  }
   throw new InstitutionalAccessError()
 }

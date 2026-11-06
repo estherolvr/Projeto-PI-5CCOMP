@@ -85,11 +85,8 @@ authRouter.post('/complete-first-access', authenticateToken, async (req: Authent
     })
 
     await prisma.$transaction(async tx => {
-      if (req.user!.role === 'aluno') {
-        await tx.student.update({ where: { id: req.user!.id }, data: { mustChangePassword: false } })
-      } else {
-        await tx.user.update({ where: { id: req.user!.id }, data: { mustChangePassword: false } })
-      }
+      const resource = req.user!.role === 'aluno' ? 'Student' : 'User'
+      await tx.auditEvent.deleteMany({ where: { action: 'PRIMEIRO_ACESSO_PENDENTE', resource, resourceId: req.user!.id } })
       await tx.auditEvent.create({ data: {
         userId: req.user!.id,
         userName: req.user!.name,
@@ -137,7 +134,7 @@ authRouter.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) 
           period: student?.period,
           status: student?.status,
           phone: student?.phone,
-          mustChangePassword: student?.mustChangePassword,
+          mustChangePassword: req.user.mustChangePassword,
         },
       })
     }
@@ -159,7 +156,7 @@ authRouter.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) 
         department: user.department,
         avatar: user.avatar,
         status: user.status,
-        mustChangePassword: user.mustChangePassword,
+        mustChangePassword: req.user.mustChangePassword,
       },
     })
   } catch (error) {
