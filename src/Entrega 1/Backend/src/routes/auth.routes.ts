@@ -5,6 +5,19 @@ import { AuthenticatedRequest, authenticateToken } from '../middleware/auth'
 
 export const authRouter = Router()
 
+const productionAppUrl = 'https://alvaro-ai.joao-fsantana.workers.dev/'
+
+function passwordRecoveryRedirect() {
+  try {
+    const configured = new URL(process.env.AUTH_REDIRECT_URL || productionAppUrl)
+    const localHost = ['localhost', '127.0.0.1', '::1'].includes(configured.hostname)
+    if (process.env.NODE_ENV === 'production' && localHost) return new URL('/reset-password', productionAppUrl).toString()
+    return new URL('/reset-password', configured).toString()
+  } catch {
+    return new URL('/reset-password', productionAppUrl).toString()
+  }
+}
+
 authRouter.post('/login', async (req, res) => {
   const { email, password } = req.body
   if (typeof email !== 'string' || !email.trim()) return res.status(400).json({ error: 'Email institucional é obrigatório' })
@@ -32,9 +45,7 @@ authRouter.post('/recover-password', async (req, res) => {
   if (!email) return res.status(400).json({ error: 'Informe o e-mail institucional.' })
   if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) return res.status(503).json({ error: 'Serviço de autenticação indisponível.' })
   try {
-    const configuredRedirect = process.env.AUTH_REDIRECT_URL || 'https://alvaro-ai.joao-fsantana.workers.dev/'
-    const redirectTo = new URL('/reset-password', configuredRedirect).toString()
-    await supabaseRequest('recover', { method: 'POST', body: JSON.stringify({ email, redirect_to: redirectTo }) })
+    await supabaseRequest('recover', { method: 'POST', body: JSON.stringify({ email, redirect_to: passwordRecoveryRedirect() }) })
     return res.json({ message: 'Se o e-mail estiver cadastrado, você receberá as instruções para redefinir a senha.' })
   } catch (error) {
     if (error instanceof AuthenticationServiceError && [429, 503].includes(error.statusCode)) return res.status(error.statusCode).json({ error: error.message })
