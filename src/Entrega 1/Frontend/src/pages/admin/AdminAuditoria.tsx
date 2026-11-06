@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  Download, Filter, Eye, List, Search, RefreshCw, Shield, AlertCircle
+  Download, Eye, List, Search, RefreshCw, Shield, AlertTriangle, Activity, CheckCircle2
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
@@ -39,6 +39,12 @@ export default function AdminAuditoria() {
     const matchesSeverity = severityFilter === 'todos' || log.severity === severityFilter
     return matchesSearch && matchesSeverity
   })
+  const severityCounts = {
+    total: logs.length,
+    info: logs.filter(log => log.severity === 'info').length,
+    warning: logs.filter(log => log.severity === 'warning').length,
+    critical: logs.filter(log => log.severity === 'critical').length,
+  }
 
   const handleExportCSV = () => {
     if (filteredLogs.length === 0) {
@@ -52,9 +58,10 @@ export default function AdminAuditoria() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="audit-workspace space-y-6">
+      <header className="audit-heading flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
+          <div className="section-kicker"><Shield size={15}/> GOVERNANÇA E CONFORMIDADE</div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">
             Trilha de Auditoria & Governança
           </h1>
@@ -80,9 +87,16 @@ export default function AdminAuditoria() {
             Exportar CSV
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
+      <section className="audit-summary" aria-label="Resumo da auditoria">
+        <article><span className="audit-summary-icon blue"><Activity/></span><div><small>EVENTOS CARREGADOS</small><strong>{severityCounts.total}</strong><p>Últimos registros disponíveis</p></div></article>
+        <article><span className="audit-summary-icon green"><CheckCircle2/></span><div><small>INFORMATIVOS</small><strong>{severityCounts.info}</strong><p>Operações regulares</p></div></article>
+        <article><span className="audit-summary-icon amber"><AlertTriangle/></span><div><small>AVISOS</small><strong>{severityCounts.warning}</strong><p>Requerem acompanhamento</p></div></article>
+        <article><span className="audit-summary-icon red"><Shield/></span><div><small>CRÍTICOS</small><strong>{severityCounts.critical}</strong><p>Eventos de maior impacto</p></div></article>
+      </section>
+
+      <div className="audit-filters bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-4 flex flex-col sm:flex-row gap-4 justify-between items-center">
         <div className="flex flex-1 gap-3 items-center w-full sm:w-auto">
           <div className="relative max-w-sm w-full">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -125,7 +139,7 @@ export default function AdminAuditoria() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
+      <div className="audit-log-panel bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm p-6">
         {loading ? (
           <div className="py-12 text-center text-sm text-gray-500">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-brand-600 mb-2" />
@@ -140,9 +154,9 @@ export default function AdminAuditoria() {
             <p className="text-xs text-gray-400 mt-1">Ações executadas no sistema serão auditadas e listadas aqui.</p>
           </div>
         ) : view === 'timeline' ? (
-          <div className="relative border-l border-gray-200 dark:border-slate-700 ml-4 space-y-6 pb-2">
+          <div className="audit-timeline relative border-l border-gray-200 dark:border-slate-700 ml-4 space-y-6 pb-2">
             {filteredLogs.map((ev) => (
-              <div key={ev.id} className="relative pl-6 sm:pl-8">
+              <article key={ev.id} className="audit-event relative pl-6 sm:pl-8">
                 <span
                   className={cn('absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full ring-4 ring-white dark:ring-slate-800', {
                     'bg-blue-500': ev.severity === 'info',
@@ -150,7 +164,7 @@ export default function AdminAuditoria() {
                     'bg-red-500': ev.severity === 'critical',
                   })}
                 />
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 mb-1">
+                <div className="audit-event-heading flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 mb-1">
                   <h3 className="font-bold text-gray-900 dark:text-slate-100 font-mono text-sm">
                     {ev.action}
                   </h3>
@@ -158,10 +172,11 @@ export default function AdminAuditoria() {
                     {new Date(ev.createdAt).toLocaleString('pt-BR')} • <strong className="text-gray-700 dark:text-slate-300">{ev.userName}</strong> ({ev.userRole})
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-slate-300 font-mono bg-gray-50 dark:bg-slate-900/60 p-2 rounded-lg border border-gray-100 dark:border-slate-800 inline-block mt-1">
-                  Recurso: {ev.resource} ({ev.resourceId}) {ev.details ? `· Detalhes: ${ev.details}` : ''}
-                </p>
-              </div>
+                <div className="audit-event-data">
+                  <span><small>RECURSO</small><strong>{ev.resource}</strong><code>{ev.resourceId}</code></span>
+                  {ev.details && <p><small>DETALHES DO EVENTO</small><code>{ev.details}</code></p>}
+                </div>
+              </article>
             ))}
           </div>
         ) : (
