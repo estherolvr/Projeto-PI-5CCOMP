@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import {
   Home, MessageSquare, FileText, User, Bell, LogOut, Sun, Moon,
-  Menu, X, FileCheck, CalendarDays, HelpCircle, Sparkles
+  Menu, X, FileCheck, CalendarDays, Sparkles, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import { useAppStore } from '../../store/app-store'
 import Avatar from '../ui/Avatar'
@@ -24,69 +24,42 @@ const navItems = [
 
 
 export default function AlunoLayout() {
-  const { theme, toggleTheme, currentUser, logout } = useAppStore()
+  const { theme, toggleTheme, sidebarCollapsed, toggleSidebar, currentUser, logout } = useAppStore()
   const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate()
+
+  const sidebarContent = (collapsed = false) => (
+    <>
+      <div className={cn('workspace-sidebar-brand border-b flex-shrink-0', collapsed ? 'px-3 py-4' : 'px-5 py-4')}>
+        {!collapsed && <div className="h-0.5 w-full asa-accent-bar rounded-full mb-3 opacity-80" />}
+        <div className={cn('flex items-center', collapsed ? 'justify-center' : 'gap-2.5')}>
+          <FecapLogo variant="white" size={collapsed ? 30 : 32} />
+          {!collapsed && <div><span className="font-bold tracking-tight">Álvaro AI</span><p className="text-[11px] leading-tight">Portal do Aluno</p></div>}
+        </div>
+      </div>
+      <nav className={cn('workspace-sidebar-nav flex-1 overflow-y-auto py-4 scrollbar-thin', collapsed ? 'px-2' : 'px-3')}>
+        {navItems.map(({ icon: Icon, label, to }) => (
+          <NavLink key={to} to={to} end={to === '/aluno'} title={collapsed ? label : undefined}
+            className={({ isActive }) => cn('workspace-nav-item flex items-center rounded-xl text-sm font-medium transition-all duration-200', collapsed ? 'justify-center px-2 py-2.5' : 'gap-3 px-3 py-2.5', isActive && 'is-active')}>
+            <Icon className="w-4 h-4 flex-shrink-0" />{!collapsed && <span>{label}</span>}
+          </NavLink>
+        ))}
+      </nav>
+      {!collapsed && <div className="workspace-sidebar-footer px-3 py-3 border-t space-y-1 flex-shrink-0">
+        <button onClick={toggleTheme} className="workspace-nav-action"><span>{theme === 'dark' ? <Sun /> : <Moon />}</span>{theme === 'dark' ? 'Modo claro' : 'Modo escuro'}</button>
+        <button onClick={() => { logout(); navigate('/login', { replace: true }) }} className="workspace-nav-action"><span><LogOut /></span>Sair</button>
+      </div>}
+    </>
+  )
 
   return (
     <div className="workspace-shell student-workspace-shell flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-60 bg-white dark:bg-slate-800 border-r border-gray-100 dark:border-slate-700 flex-shrink-0">
-        {/* Logo */}
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700">
-          {/* Barra accent ASA */}
-          <div className="h-0.5 w-full asa-accent-bar rounded-full mb-3 opacity-80" />
-          <div className="flex items-center gap-2.5">
-            <FecapLogo variant="white" size={32} />
-            <div>
-              <span className="font-bold text-gray-900 dark:text-white tracking-tight">Álvaro AI</span>
-              <p className="text-[10px] text-gray-500 dark:text-slate-400 leading-tight">Portal do Aluno</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {navItems.map(({ icon: Icon, label, to }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/aluno'}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150',
-                  isActive
-                    ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400'
-                    : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 hover:text-gray-900 dark:hover:text-slate-200'
-                )
-              }
-            >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-
-        {/* Footer */}
-        <div className="px-3 py-4 border-t border-gray-100 dark:border-slate-700 space-y-1">
-          <button
-            onClick={toggleTheme}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors"
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-          </button>
-          <button
-            onClick={() => {
-              logout()
-              navigate('/login', { replace: true })
-            }}
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Sair
-          </button>
-        </div>
+      <aside className={cn('workspace-sidebar hidden md:flex flex-col flex-shrink-0 transition-all duration-200', sidebarCollapsed ? 'w-[68px]' : 'w-[260px]')}>
+        {sidebarContent(sidebarCollapsed)}
+        <button onClick={toggleSidebar} className="workspace-sidebar-toggle" aria-label={sidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}>
+          {sidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
+        </button>
       </aside>
 
       {/* Mobile menu */}
@@ -105,40 +78,14 @@ export default function AlunoLayout() {
               animate={{ x: 0 }}
               exit={{ x: -240 }}
               transition={{ duration: 0.2 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-60 bg-white dark:bg-slate-800 flex flex-col md:hidden shadow-xl"
+              className="workspace-sidebar fixed left-0 top-0 bottom-0 z-50 w-64 flex flex-col md:hidden shadow-xl"
             >
-              <div className="px-6 py-5 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">A</span>
-                  </div>
-                  <span className="font-bold text-gray-900 dark:text-white text-lg">Álvaro AI</span>
-                </div>
-                <button onClick={() => setMobileOpen(false)} className="p-1 rounded-lg text-gray-400 hover:text-gray-600">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              <nav className="flex-1 px-3 py-4 space-y-0.5">
-                {navItems.map(({ icon: Icon, label, to }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    end={to === '/aluno'}
-                    onClick={() => setMobileOpen(false)}
-                    className={({ isActive }) =>
-                      cn(
-                        'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-                        isActive
-                          ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400'
-                          : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700/50'
-                      )
-                    }
-                  >
-                    <Icon className="w-4 h-4" />
-                    {label}
-                  </NavLink>
-                ))}
-              </nav>
+              <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="absolute right-3 top-4 z-10 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex flex-1 min-h-0 flex-col" onClick={(event) => {
+                if ((event.target as HTMLElement).closest('a')) setMobileOpen(false)
+              }}>{sidebarContent(false)}</div>
             </motion.aside>
           </>
         )}
@@ -147,7 +94,7 @@ export default function AlunoLayout() {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Mobile header */}
-        <header className="md:hidden flex items-center justify-between px-4 py-3 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
+        <header className="workspace-topbar md:hidden flex items-center justify-between px-4 py-3">
           <button onClick={() => setMobileOpen(true)} className="p-1.5 rounded-lg text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700">
             <Menu className="w-5 h-5" />
           </button>
@@ -168,7 +115,7 @@ export default function AlunoLayout() {
         </header>
 
         {/* Desktop header */}
-        <header className="hidden md:flex items-center justify-between px-6 py-4 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
+        <header className="workspace-topbar hidden md:flex items-center justify-between px-7 py-3.5">
           <div />
           <div className="flex items-center gap-3">
             <UserNotifications />

@@ -461,3 +461,51 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .dark .student-workspace-shell main { background:#10231a; }.dark .student-workspace-shell :is(.student-standard-header h1,.student-metric-grid strong,.student-section-heading h2,.student-service-grid strong,.student-panel h2,.student-recent-list strong,.student-profile-identity h2,.student-profile-details dd,.student-profile-contact h2,.student-document-list h2) { color:#e3f0e9; }.dark .student-workspace-shell :is(.student-metric-grid article,.student-service-grid>a,.student-panel,.student-profile-card,.student-profile-contact,.student-profile-security>*,.student-profile-links>*,.student-document-list article) { background:#182d24; border-color:#2d493b; }.dark .student-workspace-shell .student-profile-details,.dark .student-workspace-shell .student-profile-details>div { border-color:#2d493b; }.dark .student-workspace-shell .student-profile-avatar { border-color:#182d24; }.dark .student-workspace-shell .student-chat-workspace>div:first-child { background:#14271e; }
 @media(max-width:1100px) { .student-workspace-shell .student-service-grid { grid-template-columns:repeat(2,1fr); }.student-workspace-shell .student-profile-details { grid-template-columns:repeat(2,1fr); }.student-workspace-shell .student-profile-details > div:nth-child(2) { border-right:0; }.student-workspace-shell .student-profile-details > div:nth-child(-n+2) { border-bottom:1px solid #e5ece8; } }
 @media(max-width:767px) { .student-workspace-shell { --student-gutter:18px 14px; --student-title:clamp(27px,9vw,34px); }.student-workspace-shell .student-standard-header { align-items:flex-start; flex-direction:column; }.student-workspace-shell .student-header-badge { display:none; }.student-workspace-shell .student-metric-grid { grid-template-columns:1fr; }.student-workspace-shell .student-service-grid,.student-workspace-shell .student-overview-grid { grid-template-columns:1fr; }.student-workspace-shell .student-profile-details { grid-template-columns:1fr; }.student-workspace-shell .student-profile-details > div { border-right:0; border-bottom:1px solid #e5ece8; }.student-workspace-shell .student-profile-contact form { grid-template-columns:1fr; }.student-workspace-shell .student-document-help { align-items:flex-start; flex-direction:column; }.student-workspace-shell .student-document-list article { grid-template-columns:36px minmax(0,1fr); }.student-workspace-shell .student-document-list button { grid-column:1/-1; justify-content:center; }.student-workspace-shell main:has(.student-chat-workspace) { padding:0; }.student-workspace-shell .student-chat-workspace { height:calc(100vh - 3.6rem)!important; min-height:0; border:0; border-radius:0; }.student-workspace-shell .student-chat-workspace > div:first-child { width:100%; } }
+
+/* Shared application navigation — consistent across Admin, ASA and Student. */
+.workspace-shell { --nav-surface:#fbfdfc; --nav-border:#dce7e2; --nav-text:#52685d; --nav-heading:#17271f; --nav-active:#e3f4eb; --nav-accent:#087b55; }
+.workspace-shell .workspace-sidebar { position:relative; z-index:20; background:linear-gradient(180deg,#fff 0%,var(--nav-surface) 100%); border-right:1px solid var(--nav-border); box-shadow:8px 0 30px rgba(20,61,43,.035); color:var(--nav-text); }
+.workspace-shell .workspace-sidebar-brand { border-color:var(--nav-border); }
+.workspace-shell .workspace-sidebar-brand span { color:var(--nav-heading); }
+.workspace-shell .workspace-sidebar-brand p { color:#74877d; }
+.workspace-shell .workspace-sidebar nav { scrollbar-gutter:stable; }
+.workspace-shell .workspace-sidebar nav a { border:1px solid transparent; border-radius:11px; }
+.workspace-shell .workspace-sidebar nav a:hover { background:#f0f6f3; border-color:#e2ece7; color:#17392b; }
+.workspace-shell .workspace-sidebar nav a[aria-current='page'] { background:var(--nav-active); border-color:#c8e3d5; color:var(--nav-accent); box-shadow:inset 3px 0 0 var(--nav-accent); }
+.workspace-shell .workspace-nav-item { margin-bottom:3px; color:var(--nav-text); }
+.workspace-shell .workspace-nav-item:hover { background:#f0f6f3; border-color:#e2ece7; color:#17392b; }
+.workspace-shell .workspace-nav-item.is-active { background:var(--nav-active); border-color:#c8e3d5; color:var(--nav-accent); box-shadow:inset 3px 0 0 var(--nav-accent); }
+.workspace-shell .workspace-sidebar-footer { border-color:var(--nav-border); }
+.workspace-shell .workspace-nav-action { display:flex; width:100%; align-items:center; gap:10px; padding:8px 10px; border:1px solid transparent; border-radius:10px; color:var(--nav-text); font-size:13px; transition:.18s ease; }
+.workspace-shell .workspace-nav-action:hover { background:#eef6f2; border-color:#dbe9e2; color:#153a2b; }
+.workspace-shell .workspace-nav-action > span { display:grid; width:24px; height:24px; place-items:center; }
+.workspace-shell .workspace-nav-action svg { width:16px; height:16px; }
+.workspace-shell .workspace-sidebar-toggle { display:flex; min-height:44px; align-items:center; justify-content:center; border-top:1px solid var(--nav-border); color:#789086; transition:background .18s ease,color .18s ease; }
+.workspace-shell .workspace-sidebar-toggle:hover { background:#edf6f1; color:var(--nav-accent); }
+.workspace-shell .workspace-sidebar-toggle svg { width:17px; height:17px; }
+.workspace-shell .workspace-topbar { min-height:62px; background:rgba(255,255,255,.94); border-bottom:1px solid var(--nav-border); box-shadow:0 5px 20px rgba(20,61,43,.025); backdrop-filter:blur(14px); }
+.workspace-shell .workspace-topbar > div:last-child { padding-right:4px; }
+
+/* Dark mode uses one calm, legible surface system throughout authenticated areas. */
+.dark .workspace-shell { --nav-surface:#10231c; --nav-border:#29483a; --nav-text:#b7c9c0; --nav-heading:#f0f7f3; --nav-active:#1d4936; --nav-accent:#69d5aa; color-scheme:dark; }
+.dark .workspace-shell { background:#0d1b16!important; }
+.dark .workspace-shell .workspace-sidebar { background:linear-gradient(180deg,#14271f 0%,#102019 100%); border-color:var(--nav-border); box-shadow:10px 0 35px rgba(0,0,0,.14); }
+.dark .workspace-shell .workspace-sidebar nav a:hover,.dark .workspace-shell .workspace-nav-item:hover { background:#1a3328; border-color:#2b4a3c; color:#e6f2ec; }
+.dark .workspace-shell .workspace-sidebar nav a[aria-current='page'],.dark .workspace-shell .workspace-nav-item.is-active { background:#1d4936; border-color:#32654e; color:#91e7c3; box-shadow:inset 3px 0 0 #52c996; }
+.dark .workspace-shell .workspace-nav-action:hover,.dark .workspace-shell .workspace-sidebar-toggle:hover { background:#1a3328; border-color:#2e5040; color:#91e7c3; }
+.dark .workspace-shell .workspace-topbar { background:rgba(19,39,31,.96); border-color:var(--nav-border); box-shadow:0 5px 22px rgba(0,0,0,.12); }
+.dark .workspace-shell main { background:radial-gradient(circle at 87% 2%,#17392c 0,transparent 27%),#0f211a!important; color:#dce9e2; }
+.dark .workspace-shell main :is(.bg-white,.bg-gray-50,.bg-gray-100) { background-color:#182d24!important; }
+.dark .workspace-shell main :is(.border-gray-100,.border-gray-200,.border-gray-300) { border-color:#315043!important; }
+.dark .workspace-shell main :is(.text-gray-900,.text-gray-800,.text-gray-700) { color:#e5f0ea!important; }
+.dark .workspace-shell main :is(.text-gray-600,.text-gray-500,.text-gray-400) { color:#a9beb3!important; }
+.dark .workspace-shell main :is(input,textarea,select) { background-color:#12261e; border-color:#365748; color:#e3eee8; }
+.dark .workspace-shell main :is(input,textarea)::placeholder { color:#789286; opacity:1; }
+.dark .workspace-shell main :is(.shadow-sm,.shadow-card,.shadow-md,.shadow-lg) { box-shadow:0 10px 28px rgba(0,0,0,.16)!important; }
+.dark .workspace-shell main :is(.bg-brand-50,.bg-green-50,.bg-emerald-50) { background-color:#193c2c!important; }
+.dark .workspace-shell main :is(.text-brand-600,.text-brand-700,.text-green-600,.text-green-700,.text-emerald-600,.text-emerald-700) { color:#74dab1!important; }
+.dark .student-workspace-shell .student-service-grid>a:hover { background:#203a2f; border-color:#4a765f; box-shadow:0 13px 30px rgba(0,0,0,.18); }
+@media(max-width:767px) {
+  .workspace-shell .workspace-topbar { min-height:56px; }
+  .workspace-shell .workspace-sidebar { box-shadow:18px 0 50px rgba(0,0,0,.22); }
+}

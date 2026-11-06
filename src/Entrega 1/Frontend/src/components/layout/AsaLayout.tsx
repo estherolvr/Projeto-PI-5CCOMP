@@ -158,15 +158,15 @@ export default function AsaLayout() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          'hidden md:flex flex-col bg-white dark:bg-slate-800 border-r border-gray-100 dark:border-slate-700 flex-shrink-0 transition-all duration-200',
-          sidebarCollapsed ? 'w-[60px]' : 'w-[260px]'
+          'workspace-sidebar hidden md:flex flex-col flex-shrink-0 transition-all duration-200',
+          sidebarCollapsed ? 'w-[68px]' : 'w-[260px]'
         )}
       >
         {sidebarContent(sidebarCollapsed)}
         {/* Collapse toggle */}
         <button
           onClick={toggleSidebar}
-          className="border-t border-gray-100 dark:border-slate-700 px-3 py-3 flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 transition-colors"
+          className="workspace-sidebar-toggle"
         >
           {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -188,20 +188,14 @@ export default function AsaLayout() {
               animate={{ x: 0 }}
               exit={{ x: -260 }}
               transition={{ duration: 0.2 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-64 bg-white dark:bg-slate-800 flex flex-col md:hidden shadow-xl"
+              className="workspace-sidebar fixed left-0 top-0 bottom-0 z-50 w-64 flex flex-col md:hidden shadow-xl"
             >
-              <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">A</span>
-                  </div>
-                  <span className="font-bold text-gray-900 dark:text-white">Álvaro AI</span>
-                </div>
-                <button onClick={() => setMobileOpen(false)} className="p-1 rounded-lg text-gray-400 hover:text-gray-600">
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-              {sidebarContent(false)}
+              <button onClick={() => setMobileOpen(false)} aria-label="Fechar menu" className="absolute right-3 top-4 z-10 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+              <div className="flex flex-1 min-h-0 flex-col" onClick={(event) => {
+                if ((event.target as HTMLElement).closest('a')) setMobileOpen(false)
+              }}>{sidebarContent(false)}</div>
             </motion.aside>
           </>
         )}
@@ -209,7 +203,7 @@ export default function AsaLayout() {
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="flex items-center justify-between px-4 md:px-6 py-3.5 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700 flex-shrink-0">
+        <header className="workspace-topbar flex items-center justify-between px-4 md:px-7 py-3.5 flex-shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}

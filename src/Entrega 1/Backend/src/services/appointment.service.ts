@@ -318,7 +318,12 @@ export class AppointmentService {
     // dia/horário entre instâncias do Worker. SQLite é usado apenas nos testes locais.
     const appointment = await prisma.$transaction(async tx => {
       if (process.env.NODE_ENV === 'production') {
-        await tx.$queryRawUnsafe('SELECT pg_advisory_xact_lock(hashtext($1))', `appointment:${data.date}`)
+        // The lock function returns PostgreSQL `void`, which Prisma cannot deserialize.
+        // Keep the transaction-scoped lock while exposing only a supported integer column.
+        await tx.$queryRawUnsafe(
+          'SELECT 1::integer AS locked FROM (SELECT pg_advisory_xact_lock(hashtext($1))) AS appointment_lock',
+          `appointment:${data.date}`,
+        )
       }
       const activeStatuses = ['agendado', 'confirmado', 'em_atendimento']
       const existingStudentAppOnDate = await tx.appointment.findFirst({
