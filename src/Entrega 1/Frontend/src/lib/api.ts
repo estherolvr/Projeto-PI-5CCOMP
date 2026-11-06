@@ -100,6 +100,10 @@ async function downloadFile(endpoint: string): Promise<void> {
 }
 
 export const api = {
+  documents: {
+    issueEnrollmentDeclaration: () => request<any>('/documents/enrollment-declaration', { method:'POST' }),
+    verify: (token:string) => request<any>(`/documents/verify?token=${encodeURIComponent(token)}`),
+  },
   banners: {
     list: () => request<any[]>('/banners'),
   },

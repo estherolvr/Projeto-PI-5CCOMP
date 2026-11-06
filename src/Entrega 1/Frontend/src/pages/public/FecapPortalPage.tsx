@@ -141,7 +141,7 @@ export default function FecapPortalPage() {
       tag: 'Digital',
       category: 'Secretaria',
       desc: 'Solicite e emita declarações de matrícula, históricos, atestados de frequência e passe escolar.',
-      fullDesc: 'A Secretaria Virtual permite a emissão instantânea de documentos oficiais com assinatura digital e QR Code autenticado pelo MEC. Sem filas e disponível 24 horas por dia através da plataforma iÁlvaro.',
+      fullDesc: 'A Secretaria Virtual permite a emissão instantânea de documentos acadêmicos com assinatura digital e QR Code para validação de autenticidade. Sem filas e disponível 24 horas por dia através da plataforma iÁlvaro.',
       sla: 'Imediato (1-Click)',
       requirements: ['Matrícula ativa no semestre corrente', 'Acesso ao login institucional Alvarista'],
       ctaText: 'Emitir Documento no iÁlvaro',

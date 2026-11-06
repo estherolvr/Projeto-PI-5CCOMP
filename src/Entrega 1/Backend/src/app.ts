@@ -12,6 +12,7 @@ import { adminRouter } from './routes/admin.routes'
 import { appointmentRouter } from './routes/appointment.routes'
 import { notificationsRouter } from './routes/notifications.routes'
 import { bannerRouter } from './routes/banner.routes'
+import { documentRouter } from './routes/document.routes'
 
 dotenv.config()
 
@@ -49,6 +50,7 @@ app.use('/api/admin', adminRouter)
 app.use('/api/appointments', appointmentRouter)
 app.use('/api/notifications', notificationsRouter)
 app.use('/api/banners', bannerRouter)
+app.use('/api/documents', documentRouter)
 
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
