@@ -283,8 +283,8 @@ export const api = {
     updatePrompt: (id: string, data: any) =>
       request<any>(`/admin/prompts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
     getBanners: () => request<any[]>('/admin/banners'),
-    createBanner: (data: any) => request<any>('/admin/banners', { method: 'POST', body: JSON.stringify(data) }),
-    updateBanner: (id: string, data: any) => request<any>(`/admin/banners/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    createBanner: (data: FormData) => request<any>('/admin/banners', { method: 'POST', body: data }),
+    updateBanner: (id: string, data: FormData) => request<any>(`/admin/banners/${id}`, { method: 'PUT', body: data }),
     deleteBanner: (id: string) => request<void>(`/admin/banners/${id}`, { method: 'DELETE' }),
     getIntegrations: () => request<any[]>('/admin/integrations'),
 getUsers: (role?: string) => {

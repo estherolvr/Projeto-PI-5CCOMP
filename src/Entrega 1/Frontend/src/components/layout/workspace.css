@@ -516,8 +516,9 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .dark .workspace-shell :is(.admin-banner-secondary,.admin-banner-icon) { background:#13261e; border-color:#355244; color:#d8ebe1; }
 
 .student-workspace-shell .student-banner-slider { position:relative; min-height:210px; overflow:hidden; border:1px solid #d5e3dc; border-radius:19px; background:#173d2d; box-shadow:0 12px 34px rgba(18,62,43,.1); }
-.student-workspace-shell .student-banner-slider>a { position:absolute; inset:0; display:block; color:#fff; }
-.student-workspace-shell .student-banner-slider img { width:100%; height:100%; object-fit:cover; }
+.student-workspace-shell .student-banner-track { display:flex; width:100%; height:100%; min-height:210px; transition:transform .7s cubic-bezier(.22,.61,.36,1); will-change:transform; }
+.student-workspace-shell .student-banner-track>a { position:relative; display:block; flex:0 0 100%; min-width:100%; min-height:210px; color:#fff; }
+.student-workspace-shell .student-banner-slider img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .student-workspace-shell .student-banner-overlay { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:28px clamp(26px,5vw,64px); background:linear-gradient(90deg,rgba(5,29,20,.9),rgba(7,39,27,.56) 48%,rgba(7,39,27,.08)); }
 .student-workspace-shell .student-banner-overlay small { color:#7ee1ba; font-size:10px; font-style:normal; font-weight:750; letter-spacing:.16em; }
 .student-workspace-shell .student-banner-overlay strong { max-width:720px; margin-top:7px; font-size:clamp(24px,3vw,38px); line-height:1.05; letter-spacing:-.035em; }
@@ -528,6 +529,7 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .student-workspace-shell .student-banner-dots { position:absolute; z-index:2; right:20px; bottom:17px; display:flex; gap:6px; }
 .student-workspace-shell .student-banner-dots button { width:7px; height:7px; border-radius:99px; background:rgba(255,255,255,.55); transition:width .18s ease,background .18s ease; }.student-workspace-shell .student-banner-dots button.active { width:22px; background:#fff; }
 .dark .student-workspace-shell .student-banner-slider { border-color:#355244; box-shadow:0 14px 35px rgba(0,0,0,.24); }
+.workspace-shell .admin-banner-upload { display:flex; align-items:center; gap:10px; min-height:66px; margin-top:21px; padding:10px 14px; border:1px dashed #a8cbbb; border-radius:12px; background:#f3faf6; color:#087f59; cursor:pointer; }.workspace-shell .admin-banner-upload span,.workspace-shell .admin-banner-upload small { display:block; }.workspace-shell .admin-banner-upload small { margin-top:2px; color:#799087; font-size:10px; }.workspace-shell .admin-banner-upload input { position:absolute; width:1px; height:1px; opacity:0; }.workspace-shell .admin-banner-preview { position:relative; aspect-ratio:16/5; overflow:hidden; border:1px solid #d5e3dc; border-radius:13px; background:#13261e; }.workspace-shell .admin-banner-preview img { width:100%; height:100%; object-fit:cover; }.dark .workspace-shell .admin-banner-upload { background:#13261e; border-color:#426451; color:#74d9b2; }
 
 /* Conversation rows must not inherit the generic dark card surface. */
 .dark .asa-workspace-shell .conversation-history .conversation-message,.dark .asa-workspace-shell .conversation-history .conversation-message.from-student { background:transparent!important; border:0!important; box-shadow:none!important; }

@@ -7,6 +7,7 @@ import { prisma } from '../db'
 import { AuthenticatedRequest, authenticateToken, requireRole } from '../middleware/auth'
 import { assignedSlaPolicies, evaluateTicketSla, validateSlaRule } from '../services/ticket-sla'
 import { createInstitutionalUser, findProvisionedUserByEmail, removeProvisionedUser, requiresSupabaseProvisioning, SupabaseProvisioningError } from '../services/supabase-admin'
+import { receiveBannerImage, removeBannerImage, storeBannerImage, validateBannerImage } from '../services/banner-images'
 
 export const adminRouter = Router()
 adminRouter.use(authenticateToken, requireRole(['admin', 'asa']))
@@ -186,63 +187,83 @@ function publicHttpsUrl(value: unknown, field: string) {
   }
 }
 
+type BannerContent = { imageUrl?: string; imageKey?: string; linkUrl: string; sortOrder?: number; focalX?: number; focalY?: number }
+const bannerPosition = (value: unknown) => Math.min(100, Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 50))
+const bannerPayload = (record: { id:string; name:string; description:string; content:string; status:string; updatedAt:Date }) => {
+  const content = JSON.parse(record.content) as BannerContent
+  return { id:record.id, title:record.name, description:record.description||null, imageUrl:content.imageKey ? `/api/banners/${record.id}/image` : content.imageUrl, linkUrl:content.linkUrl, sortOrder:content.sortOrder||0, focalX:content.focalX??50, focalY:content.focalY??50, active:record.status==='ativo', updatedAt:record.updatedAt }
+}
+
 // Banners shown on the authenticated student home.
 adminRouter.get('/banners', authenticateToken, requireRole(['admin']), async (_req, res) => {
   try {
     const records = await prisma.aIPrompt.findMany({ where: { version: 'home-banner-v1' }, orderBy: { createdAt: 'desc' } })
-    const banners = records.map(record => {
-      const content = JSON.parse(record.content) as { imageUrl: string; linkUrl: string; sortOrder?: number }
-      return { id: record.id, title: record.name, description: record.description || null, imageUrl: content.imageUrl, linkUrl: content.linkUrl, sortOrder: content.sortOrder || 0, active: record.status === 'ativo', updatedAt: record.updatedAt }
-    }).sort((a, b) => a.sortOrder - b.sortOrder)
+    const banners = records.map(bannerPayload).sort((a, b) => a.sortOrder - b.sortOrder)
     res.json(banners)
   } catch {
     res.status(500).json({ error: 'Erro ao buscar banners da Home.' })
   }
 })
 
-adminRouter.post('/banners', authenticateToken, requireRole(['admin']), async (req, res) => {
+adminRouter.post('/banners', authenticateToken, requireRole(['admin']), receiveBannerImage, async (req, res) => {
+  let imageKey: string | undefined
   try {
     const title = String(req.body.title || '').trim()
     if (!title) return res.status(400).json({ error: 'Informe o título do banner.' })
-    const imageUrl = publicHttpsUrl(req.body.imageUrl, 'A imagem')
+    validateBannerImage(req.file)
+    const imageUrl = req.file ? undefined : publicHttpsUrl(req.body.imageUrl, 'A imagem')
+    if (req.file) imageKey = await storeBannerImage(req.file)
     const linkUrl = publicHttpsUrl(req.body.linkUrl, 'O link de destino')
     const sortOrder = Number.isInteger(Number(req.body.sortOrder)) ? Number(req.body.sortOrder) : 0
+    const focalX = bannerPosition(req.body.focalX), focalY = bannerPosition(req.body.focalY)
     const record = await prisma.aIPrompt.create({ data: {
       name: title,
       description: String(req.body.description || '').trim(),
-      content: JSON.stringify({ imageUrl, linkUrl, sortOrder }),
+      content: JSON.stringify({ imageUrl, imageKey, linkUrl, sortOrder, focalX, focalY }),
       version: 'home-banner-v1',
-      status: req.body.active !== false ? 'ativo' : 'inativo',
+      status: String(req.body.active) !== 'false' ? 'ativo' : 'inativo',
       author: 'Administração',
     } })
-    res.status(201).json({ id: record.id, title: record.name, description: record.description || null, imageUrl, linkUrl, sortOrder, active: record.status === 'ativo', updatedAt: record.updatedAt })
+    res.status(201).json(bannerPayload(record))
   } catch (error) {
+    await removeBannerImage(imageKey)
     res.status(400).json({ error: error instanceof Error ? error.message : 'Não foi possível criar o banner.' })
   }
 })
 
-adminRouter.put('/banners/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
+adminRouter.put('/banners/:id', authenticateToken, requireRole(['admin']), receiveBannerImage, async (req, res) => {
+  let newImageKey: string | undefined
   try {
     const title = String(req.body.title || '').trim()
     if (!title) return res.status(400).json({ error: 'Informe o título do banner.' })
-    const imageUrl = publicHttpsUrl(req.body.imageUrl, 'A imagem')
+    const previous = await prisma.aIPrompt.findUniqueOrThrow({ where: { id: String(req.params.id), version:'home-banner-v1' } })
+    const previousContent = JSON.parse(previous.content) as BannerContent
+    validateBannerImage(req.file)
+    const imageUrl = req.file ? undefined : (String(req.body.imageUrl||'').startsWith('/api/banners/') && previousContent.imageKey ? undefined : publicHttpsUrl(req.body.imageUrl, 'A imagem'))
+    if (req.file) newImageKey = await storeBannerImage(req.file)
+    const imageKey = newImageKey || (imageUrl ? undefined : previousContent.imageKey)
     const linkUrl = publicHttpsUrl(req.body.linkUrl, 'O link de destino')
     const sortOrder = Number.isInteger(Number(req.body.sortOrder)) ? Number(req.body.sortOrder) : 0
+    const focalX = bannerPosition(req.body.focalX), focalY = bannerPosition(req.body.focalY)
     const record = await prisma.aIPrompt.update({ where: { id: String(req.params.id), version: 'home-banner-v1' }, data: {
       name: title,
       description: String(req.body.description || '').trim(),
-      content: JSON.stringify({ imageUrl, linkUrl, sortOrder }),
-      status: req.body.active !== false ? 'ativo' : 'inativo',
+      content: JSON.stringify({ imageUrl, imageKey, linkUrl, sortOrder, focalX, focalY }),
+      status: String(req.body.active) !== 'false' ? 'ativo' : 'inativo',
     } })
-    res.json({ id: record.id, title: record.name, description: record.description || null, imageUrl, linkUrl, sortOrder, active: record.status === 'ativo', updatedAt: record.updatedAt })
+    if (newImageKey && previousContent.imageKey) await removeBannerImage(previousContent.imageKey)
+    if (imageUrl && previousContent.imageKey) await removeBannerImage(previousContent.imageKey)
+    res.json(bannerPayload(record))
   } catch (error: any) {
+    await removeBannerImage(newImageKey)
     res.status(error?.code === 'P2025' ? 404 : 400).json({ error: error?.code === 'P2025' ? 'Banner não encontrado.' : error instanceof Error ? error.message : 'Não foi possível atualizar o banner.' })
   }
 })
 
 adminRouter.delete('/banners/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {
-    await prisma.aIPrompt.delete({ where: { id: String(req.params.id), version: 'home-banner-v1' } })
+    const record = await prisma.aIPrompt.delete({ where: { id: String(req.params.id), version: 'home-banner-v1' } })
+    await removeBannerImage((JSON.parse(record.content) as BannerContent).imageKey)
     res.status(204).end()
   } catch (error: any) {
     res.status(error?.code === 'P2025' ? 404 : 500).json({ error: error?.code === 'P2025' ? 'Banner não encontrado.' : 'Não foi possível excluir o banner.' })

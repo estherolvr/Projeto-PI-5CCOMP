@@ -7,7 +7,7 @@ import { DataState } from '@/components/common/DataState'
 import { useAppStore } from '@/store/app-store'
 import StatusBadge from '@/components/ui/StatusBadge'
 
-interface HomeBanner { id: string; title: string; description: string | null; imageUrl: string; linkUrl: string; sortOrder: number }
+interface HomeBanner { id:string; title:string; description:string|null; imageUrl:string; linkUrl:string; sortOrder:number; focalX:number; focalY:number }
 
 export default function AlunoDashboard() {
   const user = useAppStore(state => state.currentUser)
@@ -47,7 +47,7 @@ export default function AlunoDashboard() {
     <header className="student-standard-header"><div><div className="section-kicker"><Activity size={15}/> PORTAL DO ALUNO</div><h1>Olá, {user?.name?.split(' ')[0] || 'Aluno'}</h1><p>Acompanhe seus atendimentos, compromissos e conversas com a equipe.</p></div><span className="student-header-badge"><Headphones size={15}/> Atendimento acadêmico</span></header>
     <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
       {banners.length > 0 && <section className="student-banner-slider" aria-label="Destaques da Home">
-        <a href={banners[activeBanner].linkUrl} target="_blank" rel="noreferrer" aria-label={`${banners[activeBanner].title}. Abrir link`}><img src={banners[activeBanner].imageUrl} alt=""/><span className="student-banner-overlay"><small>DESTAQUE</small><strong>{banners[activeBanner].title}</strong>{banners[activeBanner].description && <p>{banners[activeBanner].description}</p>}<em>Saiba mais <ExternalLink size={14}/></em></span></a>
+        <div className="student-banner-track" style={{transform:`translateX(-${activeBanner*100}%)`}}>{banners.map(banner=><a key={banner.id} href={banner.linkUrl} target="_blank" rel="noreferrer" aria-label={`${banner.title}. Abrir link`}><img src={banner.imageUrl} alt="" style={{objectPosition:`${banner.focalX??50}% ${banner.focalY??50}%`}}/><span className="student-banner-overlay"><small>DESTAQUE</small><strong>{banner.title}</strong>{banner.description&&<p>{banner.description}</p>}<em>Saiba mais <ExternalLink size={14}/></em></span></a>)}</div>
         {banners.length > 1 && <><button type="button" className="student-banner-previous" onClick={() => moveBanner(-1)} aria-label="Banner anterior"><ChevronLeft/></button><button type="button" className="student-banner-next" onClick={() => moveBanner(1)} aria-label="Próximo banner"><ChevronRight/></button><div className="student-banner-dots">{banners.map((banner, index) => <button key={banner.id} type="button" className={index === activeBanner ? 'active' : ''} onClick={() => setActiveBanner(index)} aria-label={`Exibir banner ${index + 1}`}/>)}</div></>}
       </section>}
       <section className="student-metric-grid" aria-label="Resumo dos atendimentos">{metrics.map(({ label, value, icon: Icon, tone }) => <article key={label}><span className={`student-metric-icon ${tone}`}><Icon/></span><div><p>{label}</p><strong>{value}</strong><small>Registros atuais</small></div></article>)}</section>
