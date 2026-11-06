@@ -91,4 +91,14 @@ test('REF-05 páginas ASA compartilham tipografia, margens e largura segura', as
   expect(style.paddingLeft,`${route} deve respeitar o recuo padrão`).toBeGreaterThanOrEqual(14)
   expect(style.right,`${route} não deve ultrapassar o workspace`).toBeLessThanOrEqual(style.mainRight+1)
  }
+ const standardized=['/asa/chamados','/asa/agendamentos','/asa/conversas','/asa/alunos','/asa/agente-ia','/asa/base-conhecimento','/asa/sla','/asa/relatorios','/asa/notificacoes','/asa/perfil']
+ for(const route of standardized){
+  await page.goto(route)
+  const header=page.locator('.asa-standard-header').first()
+  await expect(header,`${route} deve usar o cabeçalho ASA compartilhado`).toBeVisible()
+  const title=header.locator('h1').first()
+  const style=await title.evaluate(element=>{ const value=getComputedStyle(element); return {size:parseFloat(value.fontSize),weight:Number(value.fontWeight),spacing:value.letterSpacing} })
+  expect(style.size,`${route} deve usar a escala de título padronizada`).toBeGreaterThanOrEqual(30)
+  expect(style.weight,`${route} deve usar o mesmo peso tipográfico`).toBeGreaterThanOrEqual(600)
+ }
 })

@@ -47,7 +47,7 @@ export default function AsaDashboard() {
   const attention = [...operation.breached, ...operation.risk, ...operation.urgent.filter(ticket => ticket.slaStatus === 'ok')].filter((ticket, index, list) => list.findIndex(item => item.id === ticket.id) === index).slice(0, 5)
 
   return <div className="asa-command-center p-4 md:p-8 space-y-6 max-w-[1480px] mx-auto">
-    <header className="asa-dashboard-header"><div><div className="workspace-eyebrow"><Headphones size={15} /> ÁREA DO SUCESSO ALVARISTA</div><h1>Olá, {user?.name?.split(' ')[0] || 'Atendente'}</h1><p>Visão operacional dos atendimentos registrados no sistema.</p></div><div className="asa-header-actions"><span>{new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).format(new Date())}</span><button onClick={() => void query.refresh()}><RefreshCw size={15} /> Atualizar dados</button></div></header>
+    <header className="asa-dashboard-header asa-standard-header"><div><div className="workspace-eyebrow"><Headphones size={15} /> ÁREA DO SUCESSO ALVARISTA</div><h1>Olá, {user?.name?.split(' ')[0] || 'Atendente'}</h1><p>Visão operacional dos atendimentos registrados no sistema.</p></div><div className="asa-header-actions"><span>{new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' }).format(new Date())}</span><button onClick={() => void query.refresh()}><RefreshCw size={15} /> Atualizar dados</button></div></header>
     <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
       <section aria-label="Indicadores principais" className="asa-metric-grid">{metrics.map(metric => <MetricCard key={metric.label} {...metric} />)}</section>
       <div className="asa-insight-grid">

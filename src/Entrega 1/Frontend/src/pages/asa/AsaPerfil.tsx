@@ -13,7 +13,7 @@ export default function AsaPerfil() {
   const user = query.data?.user
   const department = user?.department || 'Atendimento'
   return <div className="asa-profile">
-    <header className="asa-profile-heading">
+    <header className="asa-profile-heading asa-standard-header">
       <div><div className="section-kicker"><UserRound size={15}/> CONTA INSTITUCIONAL</div><h1>Minha conta</h1><p>Consulte seus dados profissionais e gerencie a segurança do acesso.</p></div>
       <span><ShieldCheck size={17}/> Acesso protegido</span>
     </header>

@@ -299,6 +299,20 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .dark .asa-workspace-shell main > * > div:first-child > h1:first-child { color:#e4f1ea; }
 @media(max-width:767px) { .asa-workspace-shell { --asa-page-gutter:18px 14px; --asa-title-size:clamp(27px,9vw,34px); }.asa-workspace-shell main > :is(.bi-dashboard,.audit-workspace,.asa-profile,.report-workspace) { padding:18px 14px; } }
 
+/* One visual header language for every operational ASA screen. */
+.asa-workspace-shell .asa-standard-page { width:100%; max-width:100%; min-width:0; padding:var(--asa-page-gutter); }
+.asa-workspace-shell .asa-standard-header { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin:0; padding:0 0 24px; border-bottom:1px solid #d5e2da; }
+.asa-workspace-shell .asa-standard-header > div:first-child { min-width:0; }
+.asa-workspace-shell .asa-standard-header h1 { margin:0; color:#10231a; font-size:var(--asa-title-size)!important; font-weight:650!important; letter-spacing:-.052em!important; line-height:1.08!important; }
+.asa-workspace-shell .asa-standard-header h1 svg { width:.72em; height:.72em; color:#087b55; }
+.asa-workspace-shell .asa-standard-header p { max-width:720px; margin-top:9px!important; color:#6f8177!important; font-size:12px!important; line-height:1.6; }
+.asa-workspace-shell .asa-standard-header .section-kicker { display:flex; align-items:center; gap:7px; margin:0 0 14px; color:#176c50; }
+.asa-workspace-shell .asa-standard-action { display:flex; flex:none; align-items:center; gap:8px; min-height:40px; padding:9px 14px; border:1px solid #c9ddd1; border-radius:10px; background:#fff; color:#087b55; font-size:12px; font-weight:650; }
+.asa-workspace-shell .asa-header-meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px; margin-top:11px; color:#718278; font-size:11px; }
+.asa-workspace-shell .asa-header-meta span { display:flex; align-items:center; gap:4px; }.asa-workspace-shell .asa-header-meta strong { color:#263a30; }.asa-workspace-shell .asa-header-meta .asa-header-alert { color:#b44b4b; }
+.dark .asa-workspace-shell .asa-standard-header { border-color:#2d493b; }.dark .asa-workspace-shell .asa-standard-header h1 { color:#e4f1ea; }.dark .asa-workspace-shell .asa-standard-action { background:#182d24; border-color:#3a5748; color:#7ed5b2; }
+@media(max-width:767px) { .asa-workspace-shell .asa-standard-header { align-items:flex-start; flex-direction:column; gap:16px; padding-bottom:20px; }.asa-workspace-shell .asa-standard-header > :last-child:not(:first-child) { align-self:stretch; }.asa-workspace-shell .asa-standard-action { justify-content:center; }.asa-workspace-shell .asa-header-meta { gap:7px 12px; } }
+
 /* ASA command center: all figures are derived from the existing ticket response. */
 .workspace-shell .asa-command-center { width:100%; max-width:100%; min-width:0; overflow:hidden; color:#14231c; }
 .workspace-shell .asa-dashboard-header { display:flex; align-items:flex-end; justify-content:space-between; gap:28px; padding:8px 0 24px; border-bottom:1px solid #d3e0d8; }

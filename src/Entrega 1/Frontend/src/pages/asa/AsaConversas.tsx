@@ -44,8 +44,8 @@ export default function AsaConversas() {
     catch (error) { setDownloadError(error instanceof Error ? error.message : 'Não foi possível baixar o anexo.') }
   }
 
-  return <div className="conversation-workspace p-4 md:p-8 space-y-5">
-    <header className="conversation-page-heading"><div><div className="section-kicker"><MessagesSquare size={16}/> CENTRAL DE ATENDIMENTO</div><h1>Conversas com o assistente</h1><p>Acompanhe as interações entre alunos e Álvaro AI.</p></div><span className="conversation-count">{rows.length} conversas</span></header>
+  return <div className="conversation-workspace asa-standard-page space-y-6">
+    <header className="conversation-page-heading asa-standard-header"><div><div className="section-kicker"><MessagesSquare size={16}/> CENTRAL DE ATENDIMENTO</div><h1>Conversas com o assistente</h1><p>Acompanhe as interações entre alunos e Álvaro AI.</p></div><span className="conversation-count">{rows.length} conversas</span></header>
     <div className="conversation-filters">
       <label className="conversation-search"><Search size={18}/><input aria-label="Buscar conversa" value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar por aluno, RA ou assunto"/>{search && <button aria-label="Limpar busca" onClick={() => setSearch('')}><X size={15}/></button>}</label>
       <label className="conversation-period"><SlidersHorizontal size={16}/><span>Período</span><select aria-label="Filtrar conversas por período" value={period} onChange={event => setPeriod(event.target.value)}><option value="all">Todo o histórico</option><option value="30d">Últimos 30 dias</option><option value="7d">Últimos 7 dias</option></select></label>

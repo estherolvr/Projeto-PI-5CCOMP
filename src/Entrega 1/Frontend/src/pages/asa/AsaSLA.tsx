@@ -10,7 +10,7 @@ export default function AsaSLA() {
     const [rules, tickets] = await Promise.all([api.admin.getSLARules(), api.admin.getSLAMonitor()])
     return { rules, tickets }
   })
-  return <div className="p-4 md:p-6 space-y-5"><div className="flex items-center justify-between gap-3"><div><h1 className="text-2xl font-bold dark:text-white">Acompanhamento de SLA</h1><p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Prazos de resposta e resolução. Atualização automática a cada 30 segundos.</p></div><button aria-label="Atualizar SLA" onClick={() => void q.refresh()} className="rounded-lg border p-2 dark:border-slate-700 dark:text-slate-200"><RefreshCw size={18} /></button></div>
+  return <div className="asa-standard-page space-y-6"><header className="asa-standard-header"><div><div className="section-kicker">GESTÃO DE PRAZOS</div><h1>Acompanhamento de SLA</h1><p>Prazos de resposta e resolução. Atualização automática a cada 30 segundos.</p></div><button aria-label="Atualizar SLA" onClick={() => void q.refresh()} className="asa-standard-action"><RefreshCw size={18} /> Atualizar</button></header>
     <DataState loading={q.loading} error={q.error} onRetry={q.refresh}>{q.data && <>
       <SlaMonitoring tickets={q.data.tickets} role="asa" />
       <h2 className="font-semibold dark:text-white">Regras cadastradas pela administração</h2>

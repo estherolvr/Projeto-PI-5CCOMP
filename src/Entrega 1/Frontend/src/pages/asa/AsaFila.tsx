@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Download, X, Clock, RefreshCw, AlertTriangle, UserCheck } from 'lucide-react';
+import { Search, Filter, Download, X, Clock, RefreshCw, AlertTriangle, UserCheck, ListChecks } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { formatRelative } from '../../lib/utils';
@@ -106,20 +106,14 @@ export default function AsaFila() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-6 max-w-[1600px] mx-auto space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="asa-standard-page space-y-6">
       {apiError && <div role="alert" className="p-4 text-red-600"><p>{apiError}</p><button onClick={()=>window.location.reload()} className="underline">Tentar novamente</button></div>}
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="asa-standard-header">
         <div>
+          <div className="section-kicker"><ListChecks size={15} /> OPERAÇÃO DE ATENDIMENTO</div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-slate-100">{historyMode ? 'Histórico de Chamados ASA' : 'Fila de Atendimento ASA'}</h1>
-            <button
-              onClick={fetchQueue}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-brand-600 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-              title="Atualizar fila"
-            >
-              <RefreshCw size={16} className={isLoading ? "animate-spin text-brand-600" : ""} />
-            </button>
           </div>
           <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-gray-500 dark:text-slate-400">
             <span>{historyMode ? 'Total registrado' : 'Total na fila'}: <strong className="text-gray-900 dark:text-white">{totalCount}</strong></span>
@@ -133,7 +127,8 @@ export default function AsaFila() {
             </span>
           </div>
         </div>
-      </div>
+        <button onClick={fetchQueue} className="asa-standard-action" title="Atualizar fila"><RefreshCw size={16} className={isLoading ? "animate-spin" : ""} /> Atualizar</button>
+      </header>
 
       <div className="flex gap-2" aria-label="Consulta de chamados">
         {[{ history: false, label: 'Fila ativa' }, { history: true, label: 'Histórico completo' }].map(option => <button key={option.label} type="button" aria-pressed={historyMode === option.history} onClick={() => { if (historyMode === option.history) return; requestVersion.current++; setTickets([]); setSelectedStatus('todos'); setSearchParams(option.history ? { view: 'history' } : {}); }} className={`px-4 py-2 rounded-lg text-sm font-medium ${historyMode === option.history ? 'bg-brand-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-300'}`}>{option.label}</button>)}

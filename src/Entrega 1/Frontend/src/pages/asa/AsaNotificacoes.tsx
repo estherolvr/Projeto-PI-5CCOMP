@@ -13,11 +13,11 @@ export default function AsaNotificacoes() {
   async function open(notification: UserNotification) {
     if (await query.read(notification)) navigate(notification.link)
   }
-  return <div className="notification-workspace max-w-5xl mx-auto p-4 md:p-8 space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div><div className="section-kicker"><BellRing size={16}/> CENTRAL DE ATUALIZAÇÕES</div><h1 className="text-2xl font-bold dark:text-white">Notificações</h1><p className="text-sm text-gray-500 mt-1">Chamados, respostas, agendamentos e prazos. Até 100 notificações recentes.</p></div>
-      <button type="button" onClick={() => void query.refresh()} className="flex items-center gap-2 text-sm text-brand-600"><RefreshCw className="w-4 h-4" />Atualizar</button>
-    </div>
+  return <div className="notification-workspace asa-standard-page space-y-6">
+    <header className="asa-standard-header">
+      <div><div className="section-kicker"><BellRing size={16}/> CENTRAL DE ATUALIZAÇÕES</div><h1>Notificações</h1><p>Chamados, respostas, agendamentos e prazos. Até 100 notificações recentes.</p></div>
+      <button type="button" onClick={() => void query.refresh()} className="asa-standard-action"><RefreshCw className="w-4 h-4" />Atualizar</button>
+    </header>
     <div className="notification-tabs flex gap-3 text-sm">
       <button type="button" aria-pressed={filter === 'all'} onClick={() => setFilter('all')} className={filter === 'all' ? 'font-semibold text-brand-600 underline' : 'text-gray-500'}>Todas</button>
       <button type="button" aria-pressed={filter === 'unread'} onClick={() => setFilter('unread')} className={filter === 'unread' ? 'font-semibold text-brand-600 underline' : 'text-gray-500'}>Não lidas ({query.unread})</button>

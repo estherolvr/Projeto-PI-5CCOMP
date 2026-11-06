@@ -142,11 +142,12 @@ export default function AsaBaseConhecimento() {
   const totalViews = documents.reduce((acc, d) => acc + (d.views || 0), 0);
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="asa-standard-page space-y-6">
       {loadError && <div role="alert" className="p-4 rounded-lg bg-red-50 text-red-700"><p>{loadError}</p><button className="underline mt-2" onClick={()=>void fetchDocuments()}>Tentar novamente</button></div>}
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <header className="asa-standard-header">
         <div>
+          <div className="section-kicker"><BrainCircuit size={15} /> INTELIGÊNCIA INSTITUCIONAL</div>
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Base de Conhecimento RAG</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300 border border-brand-200 dark:border-brand-800 flex items-center gap-1">
@@ -172,7 +173,7 @@ export default function AsaBaseConhecimento() {
             <Plus size={16} /> Novo Artigo
           </button>
         </div>
-      </div>
+      </header>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

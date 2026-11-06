@@ -326,10 +326,10 @@ export default function AsaAgendamentos() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="asa-standard-page space-y-6">
       {calendarError && <div role="alert" className="p-4 text-red-600"><p>{calendarError}</p><button onClick={()=>window.location.reload()} className="underline">Tentar novamente</button></div>}
       {/* Top Banner & Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="asa-standard-header">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-2xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 px-2.5 py-0.5 rounded-full">
@@ -378,7 +378,7 @@ export default function AsaAgendamentos() {
             <RefreshCw size={15} />
           </Button>
         </div>
-      </div>
+      </header>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
