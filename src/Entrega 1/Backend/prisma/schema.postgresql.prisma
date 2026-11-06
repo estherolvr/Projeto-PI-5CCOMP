@@ -206,6 +206,20 @@ model AIPrompt {
   updatedAt   DateTime @updatedAt
 }
 
+model HomeBanner {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String
+  linkUrl     String
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active, sortOrder])
+}
+
 model Integration {
   id          String   @id @default(uuid())
   name        String

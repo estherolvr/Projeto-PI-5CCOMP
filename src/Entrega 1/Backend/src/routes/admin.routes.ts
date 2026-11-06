@@ -176,6 +176,70 @@ adminRouter.put('/prompts/:id', authenticateToken, requireRole(['admin']), async
   }
 })
 
+function publicHttpsUrl(value: unknown, field: string) {
+  try {
+    const url = new URL(String(value || '').trim())
+    if (url.protocol !== 'https:') throw new Error()
+    return url.toString()
+  } catch {
+    throw new Error(`${field} deve ser uma URL HTTPS válida.`)
+  }
+}
+
+// Banners shown on the authenticated student home.
+adminRouter.get('/banners', authenticateToken, requireRole(['admin']), async (_req, res) => {
+  try {
+    res.json(await prisma.homeBanner.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }] }))
+  } catch {
+    res.status(500).json({ error: 'Erro ao buscar banners da Home.' })
+  }
+})
+
+adminRouter.post('/banners', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const title = String(req.body.title || '').trim()
+    if (!title) return res.status(400).json({ error: 'Informe o título do banner.' })
+    const banner = await prisma.homeBanner.create({ data: {
+      title,
+      description: String(req.body.description || '').trim() || null,
+      imageUrl: publicHttpsUrl(req.body.imageUrl, 'A imagem'),
+      linkUrl: publicHttpsUrl(req.body.linkUrl, 'O link de destino'),
+      sortOrder: Number.isInteger(Number(req.body.sortOrder)) ? Number(req.body.sortOrder) : 0,
+      active: req.body.active !== false,
+    } })
+    res.status(201).json(banner)
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : 'Não foi possível criar o banner.' })
+  }
+})
+
+adminRouter.put('/banners/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    const title = String(req.body.title || '').trim()
+    if (!title) return res.status(400).json({ error: 'Informe o título do banner.' })
+    const banner = await prisma.homeBanner.update({ where: { id: String(req.params.id) }, data: {
+      title,
+      description: String(req.body.description || '').trim() || null,
+      imageUrl: publicHttpsUrl(req.body.imageUrl, 'A imagem'),
+      linkUrl: publicHttpsUrl(req.body.linkUrl, 'O link de destino'),
+      sortOrder: Number.isInteger(Number(req.body.sortOrder)) ? Number(req.body.sortOrder) : 0,
+      active: req.body.active !== false,
+    } })
+    res.json(banner)
+  } catch (error: any) {
+    res.status(error?.code === 'P2025' ? 404 : 400).json({ error: error?.code === 'P2025' ? 'Banner não encontrado.' : error instanceof Error ? error.message : 'Não foi possível atualizar o banner.' })
+  }
+})
+
+adminRouter.delete('/banners/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
+  try {
+    await prisma.homeBanner.delete({ where: { id: String(req.params.id) } })
+    res.status(204).end()
+  } catch (error: any) {
+    res.status(error?.code === 'P2025' ? 404 : 500).json({ error: error?.code === 'P2025' ? 'Banner não encontrado.' : 'Não foi possível excluir o banner.' })
+  }
+})
+
 // Integrations
 adminRouter.get('/integrations', authenticateToken, requireRole(['admin']), async (req, res) => {
   try {

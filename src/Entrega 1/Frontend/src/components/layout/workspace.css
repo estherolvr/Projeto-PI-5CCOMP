@@ -505,6 +505,34 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .dark .workspace-shell main :is(.bg-brand-50,.bg-green-50,.bg-emerald-50) { background-color:#193c2c!important; }
 .dark .workspace-shell main :is(.text-brand-600,.text-brand-700,.text-green-600,.text-green-700,.text-emerald-600,.text-emerald-700) { color:#74dab1!important; }
 .dark .student-workspace-shell .student-service-grid>a:hover { background:#203a2f; border-color:#4a765f; box-shadow:0 13px 30px rgba(0,0,0,.18); }
+
+/* Banner management and student Home highlights */
+.workspace-shell .admin-banner-primary,.workspace-shell .admin-banner-secondary,.workspace-shell .admin-banner-icon { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1px solid transparent; transition:background .18s ease,border-color .18s ease,transform .18s ease; }
+.workspace-shell .admin-banner-primary { min-height:40px; padding:0 16px; border-radius:11px; background:#087f59; color:#fff; font-size:13px; font-weight:650; }
+.workspace-shell .admin-banner-primary:hover { background:#066b4b; transform:translateY(-1px); }
+.workspace-shell .admin-banner-secondary { min-height:40px; padding:0 14px; border-radius:11px; border-color:#d5e2db; background:#fff; color:#365046; font-size:13px; font-weight:600; }
+.workspace-shell .admin-banner-icon { width:34px; height:34px; border-radius:9px; border-color:#dbe5df; color:#41705d; }
+.workspace-shell .admin-banner-icon:hover { background:#ecf7f1; border-color:#acd4c0; }.workspace-shell .admin-banner-icon.danger { color:#c44040; }
+.dark .workspace-shell :is(.admin-banner-secondary,.admin-banner-icon) { background:#13261e; border-color:#355244; color:#d8ebe1; }
+
+.student-workspace-shell .student-banner-slider { position:relative; min-height:210px; overflow:hidden; border:1px solid #d5e3dc; border-radius:19px; background:#173d2d; box-shadow:0 12px 34px rgba(18,62,43,.1); }
+.student-workspace-shell .student-banner-slider>a { position:absolute; inset:0; display:block; color:#fff; }
+.student-workspace-shell .student-banner-slider img { width:100%; height:100%; object-fit:cover; }
+.student-workspace-shell .student-banner-overlay { position:absolute; inset:0; display:flex; flex-direction:column; justify-content:flex-end; padding:28px clamp(26px,5vw,64px); background:linear-gradient(90deg,rgba(5,29,20,.9),rgba(7,39,27,.56) 48%,rgba(7,39,27,.08)); }
+.student-workspace-shell .student-banner-overlay small { color:#7ee1ba; font-size:10px; font-style:normal; font-weight:750; letter-spacing:.16em; }
+.student-workspace-shell .student-banner-overlay strong { max-width:720px; margin-top:7px; font-size:clamp(24px,3vw,38px); line-height:1.05; letter-spacing:-.035em; }
+.student-workspace-shell .student-banner-overlay p { max-width:650px; margin-top:8px; color:#dcebe4; font-size:13px; }
+.student-workspace-shell .student-banner-overlay em { display:flex; align-items:center; gap:6px; margin-top:14px; font-size:12px; font-style:normal; font-weight:650; }
+.student-workspace-shell :is(.student-banner-previous,.student-banner-next) { position:absolute; top:50%; z-index:2; display:grid; width:38px; height:38px; place-items:center; border:1px solid rgba(255,255,255,.34); border-radius:50%; background:rgba(7,38,27,.58); color:#fff; transform:translateY(-50%); backdrop-filter:blur(8px); }
+.student-workspace-shell .student-banner-previous { left:14px; }.student-workspace-shell .student-banner-next { right:14px; }
+.student-workspace-shell .student-banner-dots { position:absolute; z-index:2; right:20px; bottom:17px; display:flex; gap:6px; }
+.student-workspace-shell .student-banner-dots button { width:7px; height:7px; border-radius:99px; background:rgba(255,255,255,.55); transition:width .18s ease,background .18s ease; }.student-workspace-shell .student-banner-dots button.active { width:22px; background:#fff; }
+.dark .student-workspace-shell .student-banner-slider { border-color:#355244; box-shadow:0 14px 35px rgba(0,0,0,.24); }
+
+/* Conversation rows must not inherit the generic dark card surface. */
+.dark .asa-workspace-shell .conversation-history .conversation-message,.dark .asa-workspace-shell .conversation-history .conversation-message.from-student { background:transparent!important; border:0!important; box-shadow:none!important; }
+
+@media(max-width:767px) { .student-workspace-shell .student-banner-slider { min-height:230px; }.student-workspace-shell .student-banner-overlay { padding:25px 52px 34px; }.student-workspace-shell .student-banner-overlay p { display:-webkit-box; overflow:hidden; -webkit-box-orient:vertical; -webkit-line-clamp:2; } }
 @media(max-width:767px) {
   .workspace-shell .workspace-topbar { min-height:56px; }
   .workspace-shell .workspace-sidebar { box-shadow:18px 0 50px rgba(0,0,0,.22); }

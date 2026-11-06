@@ -53,7 +53,6 @@ const AdminFeedback = lazy(() => import('./pages/admin/AdminFeedback'))
 const AdminUsuarios = lazy(() => import('./pages/admin/AdminUsuarios'))
 const AdminAlunos = lazy(() => import('./pages/admin/AdminAlunos'))
 const AdminEquipeASA = lazy(() => import('./pages/admin/AdminEquipeASA'))
-const AdminPermissoes = lazy(() => import('./pages/admin/AdminPermissoes'))
 const AdminIntegracoes = lazy(() => import('./pages/admin/AdminIntegracoes'))
 const AdminMetricas = lazy(() => import('./pages/admin/AdminMetricas'))
 const AdminRelatorios = lazy(() => import('./pages/admin/AdminRelatorios'))
@@ -169,7 +168,7 @@ function App() {
               <Route path="usuarios" element={<AdminUsuarios />} />
               <Route path="alunos" element={<AdminAlunos />} />
               <Route path="asa" element={<AdminEquipeASA />} />
-              <Route path="permissoes" element={<AdminPermissoes />} />
+              <Route path="permissoes" element={<Navigate to="/admin/usuarios" replace />} />
               <Route path="integracoes" element={<AdminIntegracoes />} />
               <Route path="metricas" element={<AdminMetricas />} />
               <Route path="relatorios" element={<AdminRelatorios />} />

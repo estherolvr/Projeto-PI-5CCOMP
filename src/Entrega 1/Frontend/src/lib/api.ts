@@ -65,6 +65,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     throw new Error(errorData.error || errorData.message || statusMsg)
   }
 
+  if (response.status === 204) return undefined as T
   return response.json()
 }
 
@@ -99,6 +100,9 @@ async function downloadFile(endpoint: string): Promise<void> {
 }
 
 export const api = {
+  banners: {
+    list: () => request<any[]>('/banners'),
+  },
   notifications: {
     readAll: () => request<{readAt:string}>('/notifications/read-all', { method: 'PATCH' }),
     list: () => request<UserNotification[]>('/notifications'),
@@ -278,6 +282,10 @@ export const api = {
     getPrompts: () => request<any[]>('/admin/prompts'),
     updatePrompt: (id: string, data: any) =>
       request<any>(`/admin/prompts/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    getBanners: () => request<any[]>('/admin/banners'),
+    createBanner: (data: any) => request<any>('/admin/banners', { method: 'POST', body: JSON.stringify(data) }),
+    updateBanner: (id: string, data: any) => request<any>(`/admin/banners/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+    deleteBanner: (id: string) => request<void>(`/admin/banners/${id}`, { method: 'DELETE' }),
     getIntegrations: () => request<any[]>('/admin/integrations'),
 getUsers: (role?: string) => {
       const qs = role ? `?role=${role}` : ''

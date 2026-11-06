@@ -2,8 +2,8 @@ import './workspace.css'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
   Calendar, LayoutDashboard, FileText, ListOrdered, Clock, Tag,
-  Bot, FileCode2, BookOpen, Database, ThumbsUp,
-  Users, GraduationCap, HeadphonesIcon, Key,
+  Bot, Images, BookOpen, Database, ThumbsUp,
+  Users, GraduationCap, HeadphonesIcon,
   Mail, BarChart2, FileBarChart,
   Shield, ScrollText, Lock,
   Settings, Activity,
@@ -46,7 +46,7 @@ const navSections: NavSection[] = [
     label: 'Inteligência',
     items: [
       { icon: Bot, label: 'Agente IA', to: '/admin/agente-ia' },
-      { icon: FileCode2, label: 'Prompts', to: '/admin/prompts' },
+      { icon: Images, label: 'Banners da Home', to: '/admin/prompts' },
       { icon: BookOpen, label: 'Base de Conhecimento', to: '/admin/base-conhecimento' },
       { icon: Database, label: 'RAG', to: '/admin/rag' },
       { icon: ThumbsUp, label: 'Feedback IA', to: '/admin/feedback' },
@@ -58,7 +58,6 @@ const navSections: NavSection[] = [
       { icon: Users, label: 'Usuários', to: '/admin/usuarios' },
       { icon: GraduationCap, label: 'Alunos', to: '/admin/alunos' },
       { icon: HeadphonesIcon, label: 'Equipe ASA', to: '/admin/asa' },
-      { icon: Key, label: 'Permissões', to: '/admin/permissoes' },
     ],
   },
   {
