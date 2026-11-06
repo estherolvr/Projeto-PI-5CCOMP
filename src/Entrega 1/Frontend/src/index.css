@@ -53,6 +53,62 @@
   }
 }
 
+/* Public home mascot: persistent, accessible shortcut to the iÁlvaro login. */
+@keyframes ialvaro-mascot-float {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(1deg); }
+}
+
+.ialvaro-floating-mascot {
+  position: fixed;
+  right: clamp(14px, 2.4vw, 34px);
+  bottom: 22px;
+  z-index: 40;
+  display: grid;
+  width: clamp(116px, 10vw, 164px);
+  place-items: center;
+  border: 0;
+  background: transparent;
+  filter: drop-shadow(0 18px 18px rgba(0, 47, 31, .2));
+  cursor: pointer;
+  transition: filter .2s ease;
+}
+
+.ialvaro-floating-mascot.with-cookie-banner { bottom: 88px; }
+.ialvaro-floating-mascot img { display: block; width: 100%; height: auto; animation: ialvaro-mascot-float 3.6s ease-in-out infinite; }
+.ialvaro-floating-mascot span {
+  position: absolute;
+  right: 82%;
+  top: 14%;
+  width: max-content;
+  max-width: 170px;
+  padding: 9px 12px;
+  border: 1px solid #cce5d8;
+  border-radius: 12px 12px 3px 12px;
+  background: rgba(255, 255, 255, .96);
+  color: #075c40;
+  box-shadow: 0 8px 24px rgba(0, 51, 34, .12);
+  font-size: 11px;
+  font-weight: 750;
+  opacity: 0;
+  transform: translateX(8px) scale(.96);
+  transition: opacity .18s ease, transform .18s ease;
+  pointer-events: none;
+}
+.ialvaro-floating-mascot:hover { filter: drop-shadow(0 20px 22px rgba(0, 71, 46, .3)); }
+.ialvaro-floating-mascot:hover span,.ialvaro-floating-mascot:focus-visible span { opacity: 1; transform: translateX(0) scale(1); }
+.ialvaro-floating-mascot:focus-visible { outline: 3px solid #00a86b; outline-offset: 5px; border-radius: 38%; }
+
+@media (max-width: 640px) {
+  .ialvaro-floating-mascot { right: 6px; bottom: 12px; width: 92px; }
+  .ialvaro-floating-mascot.with-cookie-banner { bottom: 148px; }
+  .ialvaro-floating-mascot span { right: 74%; top: 9%; font-size: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ialvaro-floating-mascot img { animation: none; }
+}
+
 @layer components {
   /* ── Scrollbar ───────────────────────────────── */
   .scrollbar-thin {

@@ -306,11 +306,9 @@ export default function FecapPortalPage() {
       <header className="border-b border-gray-100 bg-white sticky top-0 z-30 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between gap-6">
           {/* FECAP Logo */}
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <span className="text-2xl sm:text-3xl font-black text-[#006633] tracking-tighter uppercase font-sans">
-              FECAP
-            </span>
-          </div>
+          <button className="flex items-center" onClick={() => navigate('/')} aria-label="Ir para o início">
+            <img src="/fecap-wordmark.webp" alt="FECAP" className="h-8 w-auto sm:h-10" />
+          </button>
 
           {/* Nav Links */}
           <nav className="hidden lg:flex items-center gap-3.5 text-xs font-semibold text-gray-700">
@@ -739,6 +737,18 @@ export default function FecapPortalPage() {
           </button>
         </div>
       </Modal>
+
+      {/* Mascote iÁlvaro: atalho persistente para autenticação */}
+      <button
+        type="button"
+        onClick={() => navigate('/login')}
+        className={`ialvaro-floating-mascot ${cookieAccepted ? '' : 'with-cookie-banner'}`}
+        aria-label="Entrar no iÁlvaro"
+        title="Entrar no iÁlvaro"
+      >
+        <span>Entrar no iÁlvaro</span>
+        <img src="/ialvaro-mascot.webp" alt="" aria-hidden="true" />
+      </button>
 
       {/* ── Cookie Notice Bar ── */}
       {!cookieAccepted && (
