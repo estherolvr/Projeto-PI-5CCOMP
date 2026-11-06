@@ -387,7 +387,7 @@ export default function AlunoChat() {
                 <button type="button" aria-label={`Remover ${file.name}`} disabled={isTyping} onClick={() => setSelectedFiles(files => files.filter((_, i) => i !== index))}><X size={14}/></button>
               </span>)}
             </div>}
-            <div className="flex gap-2 overflow-x-auto pb-2.5 hide-scrollbar">
+            <div className="student-chat-suggestions flex gap-2 overflow-x-auto hide-scrollbar">
               {suggestions.map((s, i) => (
                 <button
                   key={i}
@@ -399,12 +399,12 @@ export default function AlunoChat() {
               ))}
             </div>
             
-            <div className="relative flex items-end gap-2 bg-gray-50 dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 p-2 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 transition-all">
+            <div className="student-chat-composer relative flex gap-2 bg-gray-50 dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 transition-all">
               <input ref={fileInputRef} type="file" hidden multiple aria-label="Arquivos do chat"
                 onChange={event => { handleFiles(event.target.files); event.target.value = ''; }}/>
               <button type="button" aria-label="Anexar arquivo ao chat" title="Anexar qualquer tipo de arquivo (até 3 arquivos, 5 MB cada, 10 MB no total)"
                 disabled={!activeConvId || isLoadingConv || isTyping} onClick={() => fileInputRef.current?.click()}
-                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl shrink-0 disabled:opacity-50">
+                className="student-chat-attach text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl shrink-0 disabled:opacity-50">
                 <Paperclip size={18} />
               </button>
               
@@ -419,7 +419,7 @@ export default function AlunoChat() {
                   }
                 }}
                 placeholder="Pergunte sobre notas, matrículas, bolsas, TCC ou regras institucionais..."
-                className="w-full max-h-32 min-h-[44px] bg-transparent border-0 focus:ring-0 resize-none py-2 text-sm text-gray-900 dark:text-white outline-none"
+                className="student-chat-message-input w-full max-h-32 bg-transparent border-0 focus:ring-0 resize-none text-sm text-gray-900 dark:text-white outline-none"
                 rows={1}
               />
               
@@ -427,13 +427,13 @@ export default function AlunoChat() {
                 onClick={() => handleSend(inputValue)}
                 aria-label="Enviar mensagem"
                 disabled={(!inputValue.trim() && !selectedFiles.length) || isTyping || isLoadingConv || !activeConvId}
-                className="p-2.5 bg-brand-600 text-white rounded-xl shrink-0 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-xs"
+                className="student-chat-send bg-brand-600 text-white rounded-xl shrink-0 hover:bg-brand-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer shadow-xs"
               >
                 <Send size={16} />
               </button>
             </div>
             
-            <div className="text-center mt-2">
+            <div className="student-chat-helper text-center">
               <span className="text-[10px] text-gray-400">
                 Aceita qualquer tipo de arquivo · até 3 arquivos, 5 MB cada e 10 MB no total. A IA lê texto e PDFs pesquisáveis; outros formatos ficam anexados para download.
               </span>
