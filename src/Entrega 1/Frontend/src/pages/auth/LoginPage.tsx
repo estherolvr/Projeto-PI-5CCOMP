@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../../store/app-store';
-import { Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 import FecapLogo from '../../components/ui/FecapLogo';
 import { api } from '../../lib/api';
@@ -155,7 +155,16 @@ export default function LoginPage() {
       </div>
 
       {/* ── RIGHT SIDE — Formulário ── */}
-      <div className="w-full lg:w-1/2 flex flex-col p-8 sm:p-12 lg:p-20 bg-white dark:bg-slate-900 justify-center">
+      <div className="relative w-full lg:w-1/2 flex flex-col p-8 sm:p-12 lg:p-20 bg-white dark:bg-slate-900 justify-center">
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          className="absolute left-6 top-6 sm:left-10 sm:top-8 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-brand-700 dark:hover:text-emerald-300 transition-colors"
+          aria-label="Voltar para a página inicial"
+        >
+          <ArrowLeft size={17} />
+          Voltar para o portal
+        </button>
         <div className="w-full max-w-sm mx-auto">
 
           {/* Mobile Logo */}

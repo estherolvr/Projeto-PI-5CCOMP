@@ -509,3 +509,44 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
   .workspace-shell .workspace-topbar { min-height:56px; }
   .workspace-shell .workspace-sidebar { box-shadow:18px 0 50px rgba(0,0,0,.22); }
 }
+
+/* Institutional green navigation is retained in both color schemes. */
+.workspace-shell .workspace-sidebar,
+.dark .workspace-shell .workspace-sidebar { background:radial-gradient(circle at 105% 8%,rgba(29,169,117,.24),transparent 34%),linear-gradient(180deg,#07513e 0%,#063e31 54%,#052f27 100%); border-color:#1b6550; box-shadow:10px 0 34px rgba(3,39,29,.13); color:#d9eee5; }
+.workspace-shell .workspace-sidebar-brand,
+.workspace-shell .workspace-sidebar-footer,
+.workspace-shell .workspace-sidebar-toggle { border-color:rgba(188,231,213,.15); }
+.workspace-shell .workspace-sidebar-brand span { color:#fff; }
+.workspace-shell .workspace-sidebar-brand p { color:#9ed0bc; }
+.workspace-shell .workspace-sidebar nav p { color:#8dc4ae!important; }
+.workspace-shell .workspace-sidebar nav a,
+.workspace-shell .workspace-nav-item { color:#d7ebe2; }
+.workspace-shell .workspace-sidebar nav a:hover,
+.workspace-shell .workspace-nav-item:hover,
+.dark .workspace-shell .workspace-sidebar nav a:hover,
+.dark .workspace-shell .workspace-nav-item:hover { background:rgba(255,255,255,.075); border-color:rgba(188,231,213,.12); color:#fff; }
+.workspace-shell .workspace-sidebar nav a[aria-current='page'],
+.workspace-shell .workspace-nav-item.is-active,
+.dark .workspace-shell .workspace-sidebar nav a[aria-current='page'],
+.dark .workspace-shell .workspace-nav-item.is-active { background:linear-gradient(90deg,#d9f5e8,#c8ecdc); border-color:#dff8ed; color:#07583f; box-shadow:inset 3px 0 0 #39b982,0 5px 15px rgba(0,0,0,.08); }
+.workspace-shell .workspace-nav-action { color:#d7ebe2; }
+.workspace-shell .workspace-nav-action:hover,
+.dark .workspace-shell .workspace-nav-action:hover,
+.workspace-shell .workspace-sidebar-toggle:hover,
+.dark .workspace-shell .workspace-sidebar-toggle:hover { background:rgba(255,255,255,.075); border-color:rgba(188,231,213,.15); color:#fff; }
+.workspace-shell .workspace-sidebar-toggle { color:#a8d4c2; }
+
+/* Student assistant dark theme: remove the remaining light conversation surfaces. */
+.dark .student-workspace-shell .student-chat-workspace { background:#10251c!important; border-color:#315343; color:#dcebe4; }
+.dark .student-workspace-shell .student-chat-workspace > div:last-child { background:#10251c; }
+.dark .student-workspace-shell .student-chat-workspace > div:first-child { background:linear-gradient(180deg,#153126,#10271f); border-color:#315343; }
+.dark .student-workspace-shell .student-chat-workspace > div:first-child > div:nth-child(2) button { background:#18382b; border-color:#3b6b55; color:#8fe0bd; }
+.dark .student-workspace-shell .student-chat-workspace > div:first-child > div:last-child button { border-color:#315343; }
+.dark .student-workspace-shell .student-chat-workspace > div:first-child > div:last-child button:hover { background:#1c3d2f; }
+.dark .student-workspace-shell .student-chat-workspace > div:first-child > div:last-child button.bg-brand-50 { background:#205039!important; border-color:#4c8b6d!important; box-shadow:inset 3px 0 #69d5aa; }
+.dark .student-workspace-shell .student-chat-workspace > div:last-child > div:first-child { background:rgba(15,35,28,.96); border-color:#315343; }
+.dark .student-workspace-shell .student-chat-workspace > div:last-child > div:nth-last-child(2) { background:radial-gradient(circle at 80% 10%,#17392c 0,transparent 35%),#10251c!important; }
+.dark .student-workspace-shell .student-chat-workspace > div:last-child > div:last-child { background:#122b21!important; border-color:#315343; }
+.dark .student-workspace-shell .student-chat-workspace > div:last-child > div:last-child > div > div:last-of-type { background:#0e241b!important; border-color:#3a5c4d; }
+.dark .student-workspace-shell .student-chat-workspace :is(.bg-gray-50,.bg-slate-800) { background-color:#18352a!important; }
+.dark .student-workspace-shell .student-chat-workspace .text-gray-400 { color:#91aa9e!important; }
