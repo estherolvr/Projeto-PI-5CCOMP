@@ -103,9 +103,17 @@ chatRouter.get('/conversations/:id', authenticateToken, async (req: Authenticate
 
     if (req.user?.role === 'aluno' && conversation.studentId !== req.user.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
 
+    const feedbacks = req.user?.role === 'aluno' ? await prisma.aIFeedback.findMany({
+      where: { studentId: req.user.id, conversationId: id, messageId: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      select: { messageId: true, type: true, comment: true, createdAt: true },
+    }) : []
+    const feedbackByMessage = new Map<string, typeof feedbacks[number]>()
+    for (const feedback of feedbacks) if (feedback.messageId && !feedbackByMessage.has(feedback.messageId)) feedbackByMessage.set(feedback.messageId, feedback)
+
     res.json({
       ...conversation,
-      messages: conversation.messages.map(publicChatMessage),
+      messages: conversation.messages.map(message => ({ ...publicChatMessage(message), feedback: feedbackByMessage.get(message.id) || null })),
     })
   } catch (error) {
     console.error('Erro ao buscar conversa:', error)
@@ -236,39 +244,41 @@ chatRouter.get('/conversations/:id/r2-snapshot', authenticateToken, async (req: 
 
 
 // Send feedback on AI response
-chatRouter.post('/feedback', authenticateToken, async (req: AuthenticatedRequest, res) => {
+chatRouter.post('/feedback', authenticateToken, requireRole(['aluno']), async (req: AuthenticatedRequest, res) => {
   try {
-    const { conversationId, messageId, type, snippet, comment, rating } = req.body
-    if (!type || !snippet) {
-      return res.status(400).json({ error: 'Tipo e snippet da resposta são obrigatórios' })
+    const conversationId = typeof req.body?.conversationId === 'string' ? req.body.conversationId : ''
+    const messageId = typeof req.body?.messageId === 'string' ? req.body.messageId : ''
+    const type = req.body?.type
+    const comment = typeof req.body?.comment === 'string' ? req.body.comment.trim() : ''
+    if (!conversationId) return res.status(400).json({ error: 'A conversa é obrigatória.' })
+    if (comment.length > 1000) return res.status(400).json({ error: 'O comentário deve ter no máximo 1000 caracteres.' })
+
+    const conversation = await prisma.conversation.findUnique({ where: { id: conversationId }, select: { studentId: true } })
+    if (!conversation || conversation.studentId !== req.user!.id) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
+    if (!messageId || !['positive', 'negative'].includes(type)) {
+      return res.status(400).json({ error: 'Resposta e avaliação são obrigatórias.' })
     }
+    const message = await prisma.chatMessage.findFirst({ where: { id: messageId, conversationId, role: 'assistant' }, select: { id: true, content: true } })
+    if (!message) return res.status(404).json({ error: 'Resposta do assistente não encontrada.' })
+    const student = await prisma.student.findUnique({ where: { id: req.user!.id }, select: { name: true } })
+    if (!student) return res.status(404).json({ error: 'Cadastro de aluno não encontrado.' })
 
-    let studentId = req.user?.id || null
-    let studentName = req.user?.name || 'Aluno FECAP'
-
-    if (conversationId && !await prisma.conversation.findFirst({ where: { id: conversationId, ...(req.user?.role === 'aluno' ? { studentId: req.user.id } : {}) } })) return res.status(403).json({ error: 'Você não tem acesso a esta conversa.' })
-
-    if (studentId) {
-      const student = await prisma.student.findUnique({ where: { id: studentId } })
-      if (!student) {
-        studentId = null
-      }
+    const existing = await prisma.aIFeedback.findFirst({ where: { studentId: req.user!.id, messageId }, orderBy: { createdAt: 'desc' } })
+    const data = {
+      studentId: req.user!.id,
+      studentName: student.name,
+      conversationId,
+      messageId,
+      type,
+      snippet: message.content.slice(0, 1200),
+      comment: comment || null,
+      rating: type === 'positive' ? 5 : 1,
     }
+    const feedback = existing
+      ? await prisma.aIFeedback.update({ where: { id: existing.id }, data })
+      : await prisma.aIFeedback.create({ data })
 
-    const feedback = await prisma.aIFeedback.create({
-      data: {
-        studentId,
-        studentName,
-        conversationId: conversationId || null,
-        messageId: messageId || null,
-        type: type === 'negative' ? 'negative' : 'positive',
-        snippet: String(snippet).slice(0, 300),
-        comment: comment ? String(comment).slice(0, 500) : null,
-        rating: typeof rating === 'number' ? rating : (type === 'positive' ? 5 : 2),
-      },
-    })
-
-    res.status(201).json(feedback)
+    res.status(existing ? 200 : 201).json(feedback)
   } catch (error: any) {
     console.error('Erro ao salvar feedback:', error)
     res.status(500).json({ error: 'Erro ao registrar feedback' })

@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   ThumbsUp,
   ThumbsDown,
   MessageSquare,
   Search,
-  Filter,
   RefreshCw,
-  Star,
-  User,
-  Sparkles,
-  AlertCircle
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
@@ -26,6 +21,7 @@ interface FeedbackItem {
   comment?: string
   rating?: number
   createdAt: string
+  student?: { id: string; name: string; ra: string; email: string } | null
 }
 
 export default function AdminFeedback() {
@@ -117,7 +113,7 @@ export default function AdminFeedback() {
           </p>
           <p className="text-sm font-medium text-gray-600 dark:text-slate-300 mt-1">Total de Avaliações Registradas</p>
           <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
-            Persistidas na base SQLite
+            Persistidas no banco de dados da aplicação
           </p>
         </div>
       </div>
@@ -219,6 +215,7 @@ export default function AdminFeedback() {
                         <h4 className="font-semibold text-sm text-gray-900 dark:text-slate-100">
                           {item.studentName}
                         </h4>
+                        {item.student && <span className="text-[10px] text-gray-400">RA {item.student.ra}</span>}
                         <span
                           className={cn(
                             'px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider',
@@ -238,7 +235,7 @@ export default function AdminFeedback() {
 
                     <div className="bg-gray-50 dark:bg-slate-900/80 rounded-lg p-3 mb-2 border border-gray-100 dark:border-slate-800 text-xs">
                       <span className="text-gray-400 font-medium block mb-1">
-                        Interação / Pergunta do Aluno:
+                        Resposta avaliada do assistente:
                       </span>
                       <p className="text-gray-800 dark:text-slate-200 font-mono text-[11px] leading-relaxed">
                         "{item.snippet}"
@@ -246,8 +243,9 @@ export default function AdminFeedback() {
                     </div>
 
                     {item.comment && (
-                      <div className="bg-blue-50/60 dark:bg-blue-950/20 p-3 rounded-lg border-l-4 border-blue-500 text-xs text-gray-800 dark:text-slate-200 italic">
-                        "{item.comment}"
+                      <div className="bg-blue-50/60 dark:bg-blue-950/20 p-3 rounded-lg border-l-4 border-blue-500 text-xs text-gray-800 dark:text-slate-200">
+                        <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-blue-700 dark:text-blue-300">Comentário do aluno</span>
+                        <span className="italic">"{item.comment}"</span>
                       </div>
                     )}
                   </div>

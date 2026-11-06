@@ -811,12 +811,13 @@ adminRouter.get('/ai-analysis/history', authenticateToken, requireRole(['admin',
 
 
 // AI Feedback Overview (Real Data from AIFeedback table)
-adminRouter.get('/feedback', authenticateToken, requireRole(['admin', 'asa']), async (req, res) => {
+adminRouter.get('/feedback', authenticateToken, requireRole(['admin']), async (_req, res) => {
   try {
     const [feedbacks, positiveCount, negativeCount, totalCount] = await Promise.all([
       prisma.aIFeedback.findMany({
         orderBy: { createdAt: 'desc' },
         take: 100,
+        include: { student: { select: { id: true, name: true, ra: true, email: true } } },
       }),
       prisma.aIFeedback.count({ where: { type: 'positive' } }),
       prisma.aIFeedback.count({ where: { type: 'negative' } }),

@@ -200,9 +200,7 @@ export const api = {
       conversationId?: string
       messageId?: string
       type: 'positive' | 'negative'
-      snippet: string
       comment?: string
-      rating?: number
     }) =>
       request<any>('/chat/feedback', {
         method: 'POST',
@@ -387,6 +385,7 @@ getUsers: (role?: string) => {
           comment?: string
           rating?: number
           createdAt: string
+          student?: { id: string; name: string; ra: string; email: string } | null
         }>
       }>('/admin/feedback'),
     markAllNotificationsRead: () => request<{count:number}>('/admin/notifications/read-all', {method:'PATCH'}),

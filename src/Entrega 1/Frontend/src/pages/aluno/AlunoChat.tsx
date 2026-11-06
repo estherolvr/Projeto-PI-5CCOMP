@@ -24,29 +24,62 @@ export default function AlunoChat() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSidebar, setShowSidebar] = useState(false); // Mobile
   const [evaluatedMessages, setEvaluatedMessages] = useState<Record<string, 'positive' | 'negative'>>({});
+  const [feedbackDraft, setFeedbackDraft] = useState<{ messageId: string; type: 'positive' | 'negative'; comment: string } | null>(null);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState<string | null>(null);
+  const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
 
   const handleFeedback = async (msg: any, type: 'positive' | 'negative') => {
-    if (evaluatedMessages[msg.id]) return;
+    const previous = evaluatedMessages[msg.id];
     setEvaluatedMessages(prev => ({ ...prev, [msg.id]: type }));
+    setFeedbackDraft({ messageId: msg.id, type, comment: msg.feedback?.comment || '' });
+    setFeedbackSubmitting(msg.id);
+    setFeedbackSuccess(null);
     try {
-      await api.chat.sendFeedback({
+      const feedback = await api.chat.sendFeedback({
         conversationId: activeConvId,
         messageId: msg.id,
         type,
-        snippet: (msg.content || '').slice(0, 200),
-        comment: type === 'positive' ? 'Aluno avaliou resposta como útil.' : 'Aluno avaliou que a resposta precisa de ajustes.',
+        comment: msg.feedback?.comment || undefined,
       });
+      setMessages(current => current.map(message => message.id === msg.id ? { ...message, feedback } : message));
+      setFeedbackSuccess(msg.id);
     } catch (e) {
-      setEvaluatedMessages(prev => {const next={...prev};delete next[msg.id];return next});
+      setEvaluatedMessages(prev => { const next={...prev}; if (previous) next[msg.id]=previous; else delete next[msg.id]; return next });
+      setFeedbackDraft(null);
       setLoadError(e instanceof Error ? e.message : 'Não foi possível registrar a avaliação.');
+    } finally {
+      setFeedbackSubmitting(null);
     }
+  };
+
+  const submitFeedbackComment = async () => {
+    if (!feedbackDraft) return;
+    setFeedbackSubmitting(feedbackDraft.messageId); setFeedbackSuccess(null);
+    try {
+      const feedback = await api.chat.sendFeedback({
+        conversationId: activeConvId,
+        messageId: feedbackDraft.messageId,
+        type: feedbackDraft.type,
+        comment: feedbackDraft.comment,
+      });
+      setMessages(current => current.map(message => message.id === feedbackDraft.messageId ? { ...message, feedback } : message));
+      setFeedbackSuccess(feedbackDraft.messageId);
+      setFeedbackDraft(null);
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : 'Não foi possível enviar o comentário.');
+    } finally { setFeedbackSubmitting(null); }
   };
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const loadConversation = async (convId: string) => {
     setIsLoadingConv(true); setLoadError(null); setActiveConvId(''); setMessages([]); setSelectedFiles([]);
-    try { const conv = await api.chat.getConversation(convId); setActiveConvId(conv.id); setMessages(conv.messages || []); }
+    try {
+      const conv = await api.chat.getConversation(convId);
+      setActiveConvId(conv.id); setMessages(conv.messages || []);
+      setEvaluatedMessages(Object.fromEntries((conv.messages || []).filter((message: any) => message.feedback?.type).map((message: any) => [message.id, message.feedback.type])));
+      setFeedbackDraft(null); setFeedbackSuccess(null);
+    }
     catch (error) { setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar a conversa.'); }
     finally { setIsLoadingConv(false); }
   };
@@ -354,6 +387,40 @@ export default function AlunoChat() {
                             {act.label}
                           </button>
                         ))}
+                      </div>
+                    )}
+
+                    {!isUser && msg.role === 'assistant' && (
+                      <div className="mt-1">
+                        <div className="flex items-center gap-2 text-[11px] text-gray-500 dark:text-slate-400">
+                          <span>Esta resposta foi útil?</span>
+                          <button type="button" onClick={() => void handleFeedback(msg, 'positive')} disabled={feedbackSubmitting === msg.id}
+                            aria-label="Avaliar resposta como útil" title="Resposta útil"
+                            className={cn('grid h-8 w-8 place-items-center rounded-lg border transition-colors disabled:opacity-50', evaluatedMessages[msg.id] === 'positive' ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300' : 'border-gray-200 text-gray-500 hover:border-emerald-400 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-400')}>
+                            {feedbackSubmitting === msg.id && feedbackDraft?.type === 'positive' ? <Loader2 size={14} className="animate-spin"/> : <ThumbsUp size={14}/>}
+                          </button>
+                          <button type="button" onClick={() => void handleFeedback(msg, 'negative')} disabled={feedbackSubmitting === msg.id}
+                            aria-label="Avaliar resposta como não útil" title="Resposta não útil"
+                            className={cn('grid h-8 w-8 place-items-center rounded-lg border transition-colors disabled:opacity-50', evaluatedMessages[msg.id] === 'negative' ? 'border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300' : 'border-gray-200 text-gray-500 hover:border-rose-400 hover:text-rose-600 dark:border-slate-700 dark:text-slate-400')}>
+                            {feedbackSubmitting === msg.id && feedbackDraft?.type === 'negative' ? <Loader2 size={14} className="animate-spin"/> : <ThumbsDown size={14}/>}
+                          </button>
+                          {feedbackSuccess === msg.id && !feedbackDraft && <span className="text-emerald-600 dark:text-emerald-400">Avaliação enviada.</span>}
+                        </div>
+
+                        <AnimatePresence>
+                          {feedbackDraft?.messageId === msg.id && feedbackSubmitting !== msg.id && (
+                            <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:'auto'}} exit={{opacity:0,height:0}}
+                              className="mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+                              <div className="flex items-start justify-between gap-3">
+                                <div><p className="text-xs font-semibold text-gray-800 dark:text-slate-100">{feedbackDraft.type === 'positive' ? 'Que bom que esta resposta foi útil!' : 'Como podemos melhorar esta resposta?'}</p><p className="mt-0.5 text-[11px] text-gray-500 dark:text-slate-400">{feedbackDraft.type === 'positive' ? 'O que você mais gostou?' : 'Conte para nós o que não funcionou.'} Comentário opcional.</p></div>
+                                <button type="button" onClick={() => setFeedbackDraft(null)} aria-label="Fechar comentário" className="text-gray-400 hover:text-gray-700 dark:hover:text-slate-200"><X size={15}/></button>
+                              </div>
+                              <textarea value={feedbackDraft.comment} maxLength={1000} rows={3} onChange={event => setFeedbackDraft(draft => draft ? {...draft,comment:event.target.value} : draft)}
+                                placeholder="Escreva seu comentário..." className="mt-3 w-full resize-none rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-800 outline-none focus:border-brand-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"/>
+                              <div className="mt-2 flex items-center justify-between"><span className="text-[10px] text-gray-400">{feedbackDraft.comment.length}/1000</span><button type="button" onClick={() => void submitFeedbackComment()} className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700">Enviar comentário</button></div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     )}
                   </div>
