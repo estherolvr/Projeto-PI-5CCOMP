@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ShieldCheck } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAdminQuery } from '@/lib/use-admin-query'
 import { AdminDataState } from '@/components/admin/AdminDataState'
@@ -10,7 +11,7 @@ export default function AdminSeguranca() {
   })
   const securityEvents = query.data?.logs.filter(log => /USUARIO|login|auth|permission/i.test(log.action)) || []
   return <div className="space-y-6">
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Segurança e Controle de Acesso</h1>
+    <header><div><div className="section-kicker"><ShieldCheck size={15}/> SEGURANÇA E GOVERNANÇA</div><h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Segurança e Controle de Acesso</h1><p>Monitore contas, acessos e eventos administrativos sensíveis.</p></div></header>
     <AdminDataState loading={query.loading} error={query.error} onRetry={query.refresh}>
       <div className="grid sm:grid-cols-3 gap-4">
         {[

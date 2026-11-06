@@ -94,6 +94,7 @@ export default function AdminCommandCenter() {
       {/* Top Header */}
       <div className="workspace-hero flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
+          <div className="workspace-eyebrow"><Activity size={15}/> VISÃO GERAL ADMINISTRATIVA</div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Central de Controle</h1>
             <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">

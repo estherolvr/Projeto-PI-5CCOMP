@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Settings } from 'lucide-react'
 import { useAppStore } from '@/store/app-store'
 import { api } from '@/lib/api'
 import { useAdminQuery } from '@/lib/use-admin-query'
@@ -9,7 +10,7 @@ export default function AdminConfiguracoes() {
   const { theme, setTheme } = useAppStore()
   const query = useAdminQuery(api.auth.me)
   return <div className="space-y-6">
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Configurações</h1>
+    <header><div><div className="section-kicker"><Settings size={15}/> PREFERÊNCIAS DO SISTEMA</div><h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">Configurações</h1><p>Gerencie a aparência, a conta conectada e as preferências administrativas.</p></div></header>
     <section className="p-6 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl space-y-4">
       <h2 className="font-semibold dark:text-slate-100">Aparência</h2>
       <label className="flex gap-4 items-center text-sm dark:text-slate-300">Tema neste navegador

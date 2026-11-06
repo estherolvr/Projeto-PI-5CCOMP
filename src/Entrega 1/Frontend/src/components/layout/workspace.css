@@ -320,6 +320,46 @@ body:has(.workspace-shell) [role='dialog'] :is(input, textarea, select) { border
 .dark .asa-workspace-shell .asa-standard-header { border-color:#2d493b; }.dark .asa-workspace-shell .asa-standard-header h1 { color:#e4f1ea; }.dark .asa-workspace-shell .asa-standard-action { background:#182d24; border-color:#3a5748; color:#7ed5b2; }
 @media(max-width:767px) { .asa-workspace-shell .asa-standard-header { align-items:flex-start; flex-direction:column; gap:16px; padding-bottom:20px; }.asa-workspace-shell .asa-standard-header > :last-child:not(:first-child) { align-self:stretch; }.asa-workspace-shell .asa-standard-action { justify-content:center; }.asa-workspace-shell .asa-header-meta { gap:7px 12px; } }
 
+/* One page rhythm for every administration screen. */
+.admin-workspace-shell { --admin-page-gutter:clamp(24px,3vw,40px); --admin-title-size:clamp(30px,3.2vw,42px); }
+.admin-workspace-shell main { font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+.admin-workspace-shell main > * { width:100%; max-width:100%; min-width:0; font-family:inherit; }
+.admin-workspace-shell main > :not(.bi-dashboard):not(.audit-workspace):not(.report-workspace) { padding:var(--admin-page-gutter)!important; }
+.admin-workspace-shell main > :is(.bi-dashboard,.audit-workspace,.report-workspace) { padding-left:var(--admin-page-gutter); padding-right:var(--admin-page-gutter); }
+.admin-workspace-shell main :is(button,input,select,textarea,table) { font-family:inherit; }
+.admin-workspace-shell main > * > h1:first-child,
+.admin-workspace-shell main > * > header:first-child h1,
+.admin-workspace-shell main > * > div:first-child:not(.workspace-hero) h1 { margin:0; color:#10231a; font-size:var(--admin-title-size)!important; font-weight:650!important; letter-spacing:-.052em!important; line-height:1.08!important; }
+.admin-workspace-shell main > * > h1:first-child + p,
+.admin-workspace-shell main > * > header:first-child h1 + p,
+.admin-workspace-shell main > * > div:first-child:not(.workspace-hero) h1 + p { max-width:720px; margin-top:9px!important; color:#6f8177!important; font-size:12px!important; line-height:1.6; }
+.admin-workspace-shell main > * > header:first-child,
+.admin-workspace-shell main > * > div:first-child:not(.workspace-hero):has(h1) { display:flex; align-items:flex-end; justify-content:space-between; gap:24px; margin:0; padding-bottom:24px; border-bottom:1px solid #d5e2da; }
+.admin-workspace-shell main > * > :is(header,div):first-child:not(.workspace-hero):has(h1):not(:has(.section-kicker)) { position:relative; padding-top:29px; }
+.admin-workspace-shell main > * > :is(header,div):first-child:not(.workspace-hero):has(h1):not(:has(.section-kicker))::before { content:'GESTÃO ADMINISTRATIVA'; position:absolute; top:0; left:0; color:#176c50; font-size:9px; font-weight:700; letter-spacing:.14em; line-height:15px; }
+.admin-workspace-shell main > * > h1:first-child { padding-bottom:24px; border-bottom:1px solid #d5e2da; }
+.admin-workspace-shell main .section-kicker { margin:0 0 14px; color:#176c50; font-family:inherit; font-size:9px; font-weight:700; letter-spacing:.14em; }
+.admin-workspace-shell main > * > :is(header,div):first-child:not(.workspace-hero) :is(button,a):has(svg) { min-height:40px; align-items:center; }
+.admin-workspace-shell main > * > :is(header,div):first-child:not(.workspace-hero) > div:last-child { flex-wrap:wrap; }
+.admin-workspace-shell main > * > :is(header,div):first-child:not(.workspace-hero) + * { margin-top:0; }
+.admin-workspace-shell .report-header-actions { display:flex; align-items:center; gap:9px; }
+.admin-workspace-shell .report-header-actions select { min-height:40px; padding:9px 34px 9px 13px; border:1px solid #c9ddd1; border-radius:10px; background:#fff; color:#315448; font-size:11px; }
+.admin-workspace-shell .asa-standard-action { display:flex; flex:none; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:9px 14px; border:1px solid #c9ddd1; border-radius:10px; background:#fff; color:#087b55; font-size:12px; font-weight:650; }
+.dark .admin-workspace-shell main > * > h1:first-child,
+.dark .admin-workspace-shell main > * > header:first-child h1,
+.dark .admin-workspace-shell main > * > div:first-child:not(.workspace-hero) h1 { color:#e4f1ea; }
+.dark .admin-workspace-shell main > * > header:first-child,
+.dark .admin-workspace-shell main > * > div:first-child:not(.workspace-hero):has(h1),
+.dark .admin-workspace-shell main > * > h1:first-child { border-color:#2d493b; }
+.dark .admin-workspace-shell .report-header-actions select,.dark .admin-workspace-shell .asa-standard-action { background:#182d24; border-color:#3a5748; color:#7ed5b2; }
+@media(max-width:767px) {
+ .admin-workspace-shell { --admin-page-gutter:18px 14px; --admin-title-size:clamp(27px,9vw,34px); }
+ .admin-workspace-shell main > :is(.bi-dashboard,.audit-workspace,.report-workspace) { padding:18px 14px; }
+ .admin-workspace-shell main > * > header:first-child,
+ .admin-workspace-shell main > * > div:first-child:not(.workspace-hero):has(h1) { align-items:flex-start; flex-direction:column; gap:16px; padding-bottom:20px; }
+ .admin-workspace-shell main > * > :is(header,div):first-child:not(.workspace-hero) > :last-child:not(:first-child) { width:100%; }
+}
+
 /* Reports, SLA and AI follow the same editorial system used by Metrics and Audit. */
 .asa-workspace-shell .report-header-actions { display:flex; align-items:center; gap:9px; }
 .asa-workspace-shell .report-header-actions select { min-height:40px; padding:9px 34px 9px 13px; border:1px solid #c9ddd1; border-radius:10px; background:#fff; color:#315448; font-size:11px; }
