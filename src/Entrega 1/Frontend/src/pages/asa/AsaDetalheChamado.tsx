@@ -299,7 +299,7 @@ export default function AsaDetalheChamado() {
                     >
                       <div className="flex items-center justify-between gap-4 mb-1.5 text-[10px] text-gray-400">
                         <span className="font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300">
-                          {m.role === 'user' ? 'Aluno (no Chatbot)' : 'Álvaro AI (Resposta RAG)'}
+                          {m.role === 'user' ? 'Aluno (no Chatbot)' : 'iÁlvaro (Resposta RAG)'}
                         </span>
                         <span>{formatRelative(m.timestamp)}</span>
                       </div>
@@ -321,7 +321,7 @@ export default function AsaDetalheChamado() {
                 <div className="flex items-center gap-2 mb-1 px-1">
                   <span className="text-xs font-medium text-gray-700 dark:text-slate-300 flex items-center gap-1.5">
                     {isInternal && <Lock size={12} className="text-amber-600" />}
-                    {isAI ? 'Álvaro AI (Agente Automático)' : msg.senderName}
+                    {isAI ? 'iÁlvaro (Agente Automático)' : msg.senderName}
                   </span>
                   <span className="text-xs text-gray-400">{formatDateTime(msg.createdAt || msg.timestamp)}</span>
                 </div>
@@ -413,7 +413,7 @@ export default function AsaDetalheChamado() {
         <div className="p-4 border-b border-gray-100 dark:border-slate-700 bg-brand-50/50 dark:bg-brand-900/10">
           <div className="flex items-center gap-2 text-brand-700 dark:text-brand-400 font-semibold text-sm">
             <BrainCircuit className="w-5 h-5" />
-            Análise Preditiva Álvaro AI
+            Análise Preditiva iÁlvaro
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-auto"></span>
           </div>
         </div>

@@ -130,7 +130,7 @@ export class AppointmentService {
     return [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//FECAP//Alvaro AI - Atendimento Presencial ASA//PT-BR',
+      'PRODID:-//FECAP//iÁlvaro - Atendimento Presencial ASA//PT-BR',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',

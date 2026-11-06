@@ -2,7 +2,7 @@
   "name": "projeto5-fecap",
   "private": true,
   "version": "1.0.0",
-  "description": "Álvaro AI — Projeto Interdisciplinar FECAP",
+  "description": "iÁlvaro — Projeto Interdisciplinar FECAP",
   "scripts": {
     "build": "cd \"src/Entrega 1/Frontend\" && npm install && npm run build && cd ../../.. && node -e \"const fs=require('fs'); fs.cpSync('src/Entrega 1/Frontend/dist', 'dist', {recursive: true});\"",
     "install:backend": "cd \"src/Entrega 1/Backend\" && npm install",

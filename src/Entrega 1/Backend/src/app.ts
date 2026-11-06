@@ -29,10 +29,10 @@ app.use(express.urlencoded({ limit: '25mb', extended: true }))
 app.get('/api/health', async (req: Request, res: Response) => {
   try {
     await prisma.$queryRaw`SELECT 1`
-    res.json({ status: 'ok', database: 'connected', system: 'Álvaro AI API Backend', timestamp: new Date().toISOString(), version: '1.0.0' })
+    res.json({ status: 'ok', database: 'connected', system: 'iÁlvaro API Backend', timestamp: new Date().toISOString(), version: '1.0.0' })
   } catch (error: any) {
     console.error('DATABASE_HEALTH_FAILURE', { name: error.name, code: error.code, cause: error.meta?.driverAdapterError?.cause?.kind, message: String(error.message).replace(/postgres(?:ql)?:\/\/[^\s]+/g, '[database URL]').slice(-500) })
-    res.status(503).json({ status: 'degraded', database: 'unavailable', system: 'Álvaro AI API Backend', timestamp: new Date().toISOString() })
+    res.status(503).json({ status: 'degraded', database: 'unavailable', system: 'iÁlvaro API Backend', timestamp: new Date().toISOString() })
   }
 })
 

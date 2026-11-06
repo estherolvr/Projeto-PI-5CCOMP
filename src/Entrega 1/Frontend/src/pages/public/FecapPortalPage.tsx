@@ -141,10 +141,10 @@ export default function FecapPortalPage() {
       tag: 'Digital',
       category: 'Secretaria',
       desc: 'Solicite e emita declarações de matrícula, históricos, atestados de frequência e passe escolar.',
-      fullDesc: 'A Secretaria Virtual permite a emissão instantânea de documentos oficiais com assinatura digital e QR Code autenticado pelo MEC. Sem filas e disponível 24 horas por dia através da plataforma Álvaro AI.',
+      fullDesc: 'A Secretaria Virtual permite a emissão instantânea de documentos oficiais com assinatura digital e QR Code autenticado pelo MEC. Sem filas e disponível 24 horas por dia através da plataforma iÁlvaro.',
       sla: 'Imediato (1-Click)',
       requirements: ['Matrícula ativa no semestre corrente', 'Acesso ao login institucional Alvarista'],
-      ctaText: 'Emitir Documento no Álvaro AI',
+      ctaText: 'Emitir Documento no iÁlvaro',
       ctaRoute: '/aluno/documentos'
     },
     {
@@ -167,8 +167,8 @@ export default function FecapPortalPage() {
       desc: 'Abertura de requerimentos de aproveitamento de estudos, dispensa de disciplinas e revisões.',
       fullDesc: 'Canal oficial para envio de requerimentos acadêmicos estruturados. Cada solicitação gera um protocolo formal (#1052) com acompanhamento passo a passo e prazo de SLA garantido.',
       sla: '1 a 3 dias úteis conforme categoria',
-      requirements: ['Preenchimento do formulário no Álvaro AI', 'Anexação de ementas/comprovantes quando necessário'],
-      ctaText: 'Abrir Chamado no Álvaro AI',
+      requirements: ['Preenchimento do formulário no iÁlvaro', 'Anexação de ementas/comprovantes quando necessário'],
+      ctaText: 'Abrir Chamado no iÁlvaro',
       ctaRoute: '/aluno/chamados/novo'
     },
     {
@@ -192,28 +192,28 @@ export default function FecapPortalPage() {
       fullDesc: 'Apoio na inserção no mercado de trabalho, assinatura e validação jurídica de Termos de Compromisso de Estágio (TCE), banco de vagas e eventos de conexão com empresas parceiras.',
       sla: '48 horas úteis para validação de TCE',
       requirements: ['Termo de Compromisso assinado pela empresa', 'Plano de atividades de estágio'],
-      ctaText: 'Acessar Carreiras no Álvaro AI',
+      ctaText: 'Acessar Carreiras no iÁlvaro',
       ctaRoute: '/aluno/chat?cat=estagio'
     },
     {
       id: 'sup-asaia',
-      title: 'Suporte Inteligente Álvaro AI (IA 24/7)',
+      title: 'Suporte Inteligente iÁlvaro (IA 24/7)',
       tag: '24 Horas',
       category: 'Inteligência Artificial',
       desc: 'Tire qualquer dúvida acadêmica a qualquer hora do dia ou da noite em segundos com nossa IA.',
       fullDesc: 'Assistente virtual treinado nas normas regimentais, calendários acadêmicos, diretrizes de cursos e processos da FECAP. Respostas precisas com encaminhamento automático para atendimento humano quando necessário.',
       sla: 'Respostas em tempo real (< 2 segundos)',
       requirements: ['Disponível para todos os estudantes e comunidade'],
-      ctaText: 'Conversar com a Álvaro AI',
+      ctaText: 'Conversar com a iÁlvaro',
       ctaRoute: '/login'
     }
   ]
 
   const faqs = [
     { q: 'O que é o ASA (Área do Sucesso Alvarista)?', a: 'O ASA é o núcleo central de atendimento e acolhimento da FECAP, responsável por apoiar o estudante em todas as etapas de sua vida acadêmica: matrícula, finanças, carreira, suporte pedagógico e serviços de secretaria.' },
-    { q: 'Como a plataforma Álvaro AI me ajuda no dia a dia?', a: 'O Álvaro AI integra um agente conversacional com Inteligência Artificial capaz de responder dúvidas regimentais, emitir declarações de matrícula com validação digital em 1 clique, agendar atendimentos presenciais e monitorar o status dos seus chamados em tempo real.' },
+    { q: 'Como a plataforma iÁlvaro me ajuda no dia a dia?', a: 'O iÁlvaro integra um agente conversacional com Inteligência Artificial capaz de responder dúvidas regimentais, emitir declarações de matrícula com validação digital em 1 clique, agendar atendimentos presenciais e monitorar o status dos seus chamados em tempo real.' },
     { q: 'Onde fica localizado o atendimento presencial do ASA?', a: 'No Campus Liberdade da FECAP (Av. da Liberdade, 532), no Bloco B - Térreo. O horário de funcionamento é de segunda a sexta-feira, das 08h às 21h.' },
-    { q: 'Como faço para falar com um atendente humano se a IA não resolver minha dúvida?', a: 'Basta clicar na opção "Falar com atendente" dentro do chat da Álvaro AI ou abrir um chamado formal. Seu caso será direcionado imediatamente para a fila de um especialista do ASA com protocolo registrado.' },
+    { q: 'Como faço para falar com um atendente humano se a IA não resolver minha dúvida?', a: 'Basta clicar na opção "Falar com atendente" dentro do chat da iÁlvaro ou abrir um chamado formal. Seu caso será direcionado imediatamente para a fila de um especialista do ASA com protocolo registrado.' },
   ]
 
   return (
@@ -240,7 +240,7 @@ export default function FecapPortalPage() {
             </a>
           </div>
 
-          {/* Right Links & Portal Button & Álvaro AI CTA */}
+          {/* Right Links & Portal Button & iÁlvaro CTA */}
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 font-medium text-white/90">
             <div className="flex items-center gap-1 cursor-pointer hover:text-white">
               <span>🇧🇷 Português</span>
@@ -289,14 +289,14 @@ export default function FecapPortalPage() {
               <span>PORTAL DO ALUNO</span>
             </button>
 
-            {/* ── Álvaro AI BUTTON (Redirects to Login / Álvaro AI Platform) ── */}
+            {/* ── iÁlvaro BUTTON (Redirects to Login / iÁlvaro Platform) ── */}
             <button
               onClick={() => navigate('/login')}
               className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500 hover:bg-emerald-400 text-[#003822] font-black text-xs transition-all shadow-md transform hover:scale-105 active:scale-95"
-              title="Acessar plataforma de atendimento Álvaro AI"
+              title="Acessar plataforma de atendimento iÁlvaro"
             >
               <Sparkles size={14} />
-              <span>Álvaro AI</span>
+              <span>iÁlvaro</span>
             </button>
           </div>
         </div>
@@ -347,7 +347,7 @@ export default function FecapPortalPage() {
         <span className="mx-2">»</span>
         <span className="hover:text-gray-700 cursor-pointer">Plataformas Digitais</span>
         <span className="mx-2">»</span>
-        <strong className="text-gray-800">Acesso ao Portal do Aluno & Álvaro AI</strong>
+        <strong className="text-gray-800">Acesso ao Portal do Aluno & iÁlvaro</strong>
       </div>
 
       {/* ── Tabs: QUEM SOMOS / CESTA DE SERVIÇOS (Centered) ── */}
@@ -380,7 +380,7 @@ export default function FecapPortalPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-8 flex-1 w-full space-y-12 pb-16">
         {activeTab === 'cesta-servicos' && (
           <div className="space-y-10">
-            {/* ── Highlight Card: Álvaro AI Platform ── */}
+            {/* ── Highlight Card: iÁlvaro Platform ── */}
             <div className="rounded-3xl bg-gradient-to-br from-[#003822] via-[#004d2f] to-[#002618] text-white p-8 sm:p-10 shadow-xl relative overflow-hidden border border-emerald-500/20">
               <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
               <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
@@ -391,7 +391,7 @@ export default function FecapPortalPage() {
                   </div>
 
                   <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-                    Conheça o <span className="text-emerald-400">Álvaro AI</span> — O seu assistente acadêmico 24/7
+                    Conheça o <span className="text-emerald-400">iÁlvaro</span> — O seu assistente acadêmico 24/7
                   </h2>
 
                   <p className="text-emerald-100/80 text-sm sm:text-base leading-relaxed">
@@ -423,7 +423,7 @@ export default function FecapPortalPage() {
                     onClick={() => navigate('/login')}
                     className="px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-[#003822] font-black text-sm sm:text-base transition-all shadow-lg flex items-center justify-center gap-3 transform hover:scale-105 active:scale-95"
                   >
-                    <span>Acessar o Álvaro AI</span>
+                    <span>Acessar o iÁlvaro</span>
                     <ArrowRight size={18} />
                   </button>
                   <a
@@ -498,7 +498,7 @@ export default function FecapPortalPage() {
                 O <strong>ASA (Área do Sucesso Alvarista)</strong> é o setor da FECAP responsável por acolher, orientar e potencializar a jornada acadêmica e profissional de cada estudante desde o momento do ingresso até a colação de grau.
               </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Com uma equipe multidisciplinar formada por especialistas em atendimento universitário, psicopedagogos, analistas financeiros e consultores de carreira, unimos o <strong>calor humano Alvarista</strong> à eficiência do <strong>Álvaro AI</strong> para garantir que você tenha respostas rápidas e suporte integral.
+                Com uma equipe multidisciplinar formada por especialistas em atendimento universitário, psicopedagogos, analistas financeiros e consultores de carreira, unimos o <strong>calor humano Alvarista</strong> à eficiência do <strong>iÁlvaro</strong> para garantir que você tenha respostas rápidas e suporte integral.
               </p>
 
               <div className="grid sm:grid-cols-3 gap-4 pt-4">
@@ -524,7 +524,7 @@ export default function FecapPortalPage() {
             <div className="bg-white rounded-3xl border border-gray-200 p-8 sm:p-10 shadow-sm space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-bold text-gray-900 border-l-4 border-[#006633] pl-3">
-                  Perguntas Frequentes sobre o ASA e o Álvaro AI
+                  Perguntas Frequentes sobre o ASA e o iÁlvaro
                 </h3>
               </div>
 
@@ -566,7 +566,7 @@ export default function FecapPortalPage() {
             <span>Fundação Escola de Comércio Álvares Penteado</span>
           </div>
           <p className="text-2xs text-center sm:text-right">
-            © 2026 FECAP. Todos os direitos reservados. Plataforma Álvaro AI integrada.
+            © 2026 FECAP. Todos os direitos reservados. Plataforma iÁlvaro integrada.
           </p>
         </div>
       </footer>
@@ -592,7 +592,7 @@ export default function FecapPortalPage() {
                 navigate(route)
               }}
             >
-              {selectedService?.ctaText || 'Acessar no Álvaro AI'}
+              {selectedService?.ctaText || 'Acessar no iÁlvaro'}
             </Button>
           </>
         }
@@ -698,7 +698,7 @@ export default function FecapPortalPage() {
             </div>
           </a>
 
-          {/* Option 2: Álvaro AI Platform */}
+          {/* Option 2: iÁlvaro Platform */}
           <button
             onClick={() => {
               setShowPortalAlunoModal(false)
@@ -711,7 +711,7 @@ export default function FecapPortalPage() {
             </div>
             <div className="space-y-1 flex-1">
               <div className="flex items-center justify-between">
-                <h4 className="font-bold text-gray-900 text-sm">Plataforma Álvaro AI (Atendimento IA)</h4>
+                <h4 className="font-bold text-gray-900 text-sm">Plataforma iÁlvaro (Atendimento IA)</h4>
                 <Badge variant="brand">IA 24/7</Badge>
               </div>
               <p className="text-xs text-gray-500 leading-relaxed">
@@ -732,7 +732,7 @@ export default function FecapPortalPage() {
               <Users size={16} />
             </div>
             <div className="flex-1 text-xs">
-              <span className="font-semibold text-gray-800 block">Demonstração Visual do Portal Álvaro AI</span>
+              <span className="font-semibold text-gray-800 block">Demonstração Visual do Portal iÁlvaro</span>
               <span className="text-gray-500 text-2xs">Navegue pelas telas do estudante</span>
             </div>
             <ArrowRight size={14} className="text-gray-400" />

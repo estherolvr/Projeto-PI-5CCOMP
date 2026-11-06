@@ -58,7 +58,7 @@ export default function AdminFeedback() {
             </span>
           </div>
           <p className="text-sm text-gray-500 dark:text-slate-400">
-            Métricas de satisfação e comentários coletados diretamente das respostas do Álvaro AI no chat.
+            Métricas de satisfação e comentários coletados diretamente das respostas do iÁlvaro no chat.
           </p>
         </div>
 

@@ -136,20 +136,31 @@
     @apply text-brand-600 dark:text-brand-400;
   }
 
-  /* ── Logo ASAIA (gradiente ASA) ─────────────── */
+  /* ── Logo iÁlvaro (gradiente ASA) ───────────── */
   .logo-gradient {
     background: linear-gradient(135deg, #007A4D 0%, #00A878 100%);
   }
 
   /* ── ASA accent strip (roxo + amarelo) ────── */
   .asa-accent-bar {
-    background: linear-gradient(90deg, #7B3FBE 0%, #F5C000 50%, #007A4D 100%);
+    position: relative;
+    height: 4px !important;
+    overflow: hidden;
+    background: linear-gradient(105deg, #7B3FBE 0%, #a35ed6 22%, #F5C000 49%, #41c79b 72%, #007A4D 100%);
+    background-size: 180% 100%;
+    box-shadow: 0 3px 12px rgba(55, 171, 126, .28);
+    animation: accent-flow 7s ease-in-out infinite alternate;
   }
 
   /* ── Login hero gradient (igual ao banner ASA) */
   .login-hero {
     background: linear-gradient(155deg, #002618 0%, #004432 40%, #007A4D 100%);
   }
+}
+
+@keyframes accent-flow {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
 }
 
 @layer utilities {

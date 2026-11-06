@@ -222,11 +222,11 @@ export class AIService {
 
     // 2. Se a chave do Gemini estiver configurada, gera resposta via LLM oficial
     if (genAI) {
-      console.log('🤖 [Álvaro AI] GEMINI_API_KEY detectada. Conectando ao Google Gemini...')
+      console.log('🤖 [iÁlvaro] GEMINI_API_KEY detectada. Conectando ao Google Gemini...')
       const validModels = [GEMINI_MODEL]
       for (const modelName of validModels) {
         try {
-          console.log(`🤖 [Álvaro AI] Solicitando inferência ao modelo: ${modelName}...`)
+          console.log(`🤖 [iÁlvaro] Solicitando inferência ao modelo: ${modelName}...`)
           const model = genAI.getGenerativeModel({ model: modelName }, { timeout: GEMINI_REQUEST_TIMEOUT_MS })
 
           const knowledgeContext = matches.length
@@ -237,7 +237,7 @@ export class AIService {
             ? `Nome: ${student.name || 'Estudante'}, Curso: ${student.course || 'Graduação'}, Semestre: ${student.semester || 1}º, RA: ${student.ra || 'N/A'}`
             : 'Estudante FECAP'
 
-          const prompt = `Você é o Álvaro AI, o assistente virtual oficial e acolhedor de atendimento ao estudante da FECAP (Fundação Escola de Comércio Álvares Penteado).
+          const prompt = `Você é o iÁlvaro, o assistente virtual oficial e acolhedor de atendimento ao estudante da FECAP (Fundação Escola de Comércio Álvares Penteado).
 Seu objetivo é orientar os alunos com clareza, rigor e simpatia, baseando-se estritamente nos documentos institucionais da base de conhecimento da FECAP fornecidos abaixo.
 
 INFORMAÇÕES DO ALUNO:
@@ -250,7 +250,7 @@ ANEXOS ENVIADOS PELO ALUNO NESTA CONVERSA (não são documentos institucionais v
 ${attachments.length ? attachments.map((file, index) => `[ANEXO ${index + 1}: ${JSON.stringify(file.name)}]\n${file.content}\n[FIM DO ANEXO ${index + 1}]`).join('\n\n') : 'Nenhum anexo disponível.'}
 
 HISTÓRICO DA CONVERSA:
-${history.slice(-4).map(h => `${h.role === 'user' ? 'Aluno' : 'Álvaro AI'}: ${h.content}`).join('\n')}
+${history.slice(-4).map(h => `${h.role === 'user' ? 'Aluno' : 'iÁlvaro'}: ${h.content}`).join('\n')}
 
 PERGUNTA DO ALUNO:
 "${userMessage}"
@@ -269,7 +269,7 @@ DIRETRIZES DE RESPOSTA OBRIGATÓRIAS:
           const responseText = result.response.text()
 
           if (responseText && responseText.trim()) {
-            console.log(`✅ [Álvaro AI] Resposta gerada com sucesso pelo Google Gemini (${modelName})!`)
+            console.log(`✅ [iÁlvaro] Resposta gerada com sucesso pelo Google Gemini (${modelName})!`)
             const actions = this.deriveActions(userMessage, matches)
             return {
               provider: 'gemini',
@@ -283,9 +283,9 @@ DIRETRIZES DE RESPOSTA OBRIGATÓRIAS:
           console.warn('[Gemini] Requisição de chat falhou:', JSON.stringify(geminiFailureDiagnostic('chat_response', modelName, err)))
         }
       }
-      console.warn('⚠️ [Álvaro AI] Todos os modelos Gemini falharam. Alternando para o sintetizador semântico local.')
+      console.warn('⚠️ [iÁlvaro] Todos os modelos Gemini falharam. Alternando para o sintetizador semântico local.')
     } else {
-      console.log('ℹ️ [Álvaro AI] GEMINI_API_KEY não configurada no .env. Utilizando sintetizador semântico local.')
+      console.log('ℹ️ [iÁlvaro] GEMINI_API_KEY não configurada no .env. Utilizando sintetizador semântico local.')
     }
 
     // 3. Fallback inteligente local com extração semântica profunda
@@ -573,7 +573,7 @@ Responda APENAS em formato JSON no formato abaixo, sem markdown adicional:
       recommendations.push({
         priority: 'media',
         title: `Otimização e automação da categoria ${topCat}`,
-        description: `Alimentar a Base de Conhecimento com artigos específicos sobre ${topCat} para permitir maior taxa de autoatendimento via Álvaro AI.`,
+        description: `Alimentar a Base de Conhecimento com artigos específicos sobre ${topCat} para permitir maior taxa de autoatendimento via iÁlvaro.`,
         impact: 'Avaliar a redução de novas aberturas após atualizar a base',
         category: 'Base de Conhecimento'
       })

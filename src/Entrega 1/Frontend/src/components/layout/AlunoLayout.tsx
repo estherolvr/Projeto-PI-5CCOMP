@@ -34,7 +34,7 @@ export default function AlunoLayout() {
         {!collapsed && <div className="h-0.5 w-full asa-accent-bar rounded-full mb-3 opacity-80" />}
         <div className={cn('flex items-center', collapsed ? 'justify-center' : 'gap-2.5')}>
           <FecapLogo variant="white" size={collapsed ? 30 : 32} />
-          {!collapsed && <div><span className="font-bold tracking-tight">Álvaro AI</span><p className="text-[11px] leading-tight">Portal do Aluno</p></div>}
+          {!collapsed && <div><span className="font-bold tracking-tight">iÁlvaro</span><p className="text-[11px] leading-tight">Portal do Aluno</p></div>}
         </div>
       </div>
       <nav className={cn('workspace-sidebar-nav flex-1 overflow-y-auto py-4 scrollbar-thin', collapsed ? 'px-2' : 'px-3')}>
@@ -100,7 +100,7 @@ export default function AlunoLayout() {
           </button>
           <div className="flex items-center gap-2">
             <FecapLogo size={28} />
-            <span className="font-bold text-gray-900 dark:text-white">Álvaro AI</span>
+            <span className="font-bold text-gray-900 dark:text-white">iÁlvaro</span>
           </div>
           <div className="flex items-center gap-1"><UserNotifications /><button
             onClick={() => {

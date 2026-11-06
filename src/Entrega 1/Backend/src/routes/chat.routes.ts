@@ -54,11 +54,11 @@ chatRouter.post('/conversations', authenticateToken, requireRole(['aluno']), asy
     const conversation = await prisma.conversation.create({
       data: {
         studentId,
-        title: title || 'Nova Conversa com Álvaro AI',
+        title: title || 'Nova Conversa com iÁlvaro',
         messages: {
           create: {
             role: 'assistant',
-            content: 'Olá! Sou o Álvaro AI, o assistente inteligente da Central de Atendimento ao Aluno da FECAP. Como posso te orientar hoje?',
+            content: 'Olá! Sou o iÁlvaro, o assistente inteligente da Central de Atendimento ao Aluno da FECAP. Como posso te orientar hoje?',
             actions: JSON.stringify([
               { label: 'Documentos & Atestados', action: 'documentos' },
               { label: 'Financeiro & Boletos', action: 'financeiro' },

@@ -103,7 +103,7 @@ export default function AdminLayout() {
           <FecapLogo variant="white" size={32} />
           {!collapsed && (
             <div>
-              <span className="font-bold text-gray-900 dark:text-white tracking-tight">Álvaro AI</span>
+              <span className="font-bold text-gray-900 dark:text-white tracking-tight">iÁlvaro</span>
               <p className="text-[11px] text-gray-500 dark:text-slate-400 leading-tight">Administração</p>
             </div>
           )}

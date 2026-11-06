@@ -21,7 +21,7 @@ export default function ResetPasswordPage() {
   }
   return <main className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center p-5">
     <section className="w-full max-w-md bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl p-7 shadow-sm">
-      <div className="flex items-center gap-3 mb-6"><FecapLogo size={38}/><strong className="text-xl dark:text-white">Álvaro AI</strong></div>
+      <div className="flex items-center gap-3 mb-6"><FecapLogo size={38}/><strong className="text-xl dark:text-white">iÁlvaro</strong></div>
       <h1 className="text-2xl font-bold dark:text-white">Definir nova senha</h1>
       <p className="text-sm text-gray-500 mt-1 mb-6">Escolha uma senha com pelo menos 8 caracteres.</p>
       {message ? <div className="space-y-4"><p role="status" className="p-3 bg-emerald-50 text-emerald-800 rounded-lg">{message}</p><Link className="block text-center bg-brand-600 text-white rounded-lg py-2.5" to="/login">Entrar</Link></div> :

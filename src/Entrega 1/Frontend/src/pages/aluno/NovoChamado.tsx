@@ -142,7 +142,7 @@ export default function NovoChamado() {
                   )}
                 >
                   <span className="font-bold text-[10px] uppercase block mb-0.5 text-gray-400">
-                    {m.role === 'user' ? 'Você' : 'Álvaro AI'}
+                    {m.role === 'user' ? 'Você' : 'iÁlvaro'}
                   </span>
                   <div className="line-clamp-3">{m.content}</div>
                 </div>

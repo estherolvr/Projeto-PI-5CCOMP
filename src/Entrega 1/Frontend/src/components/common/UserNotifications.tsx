@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, X } from 'lucide-react'
+import { Bell, X, CheckCheck, ExternalLink, CircleAlert } from 'lucide-react'
 import { api, type UserNotification } from '@/lib/api'
 import { useApiQuery } from '@/lib/use-api-query'
 import { DataState } from './DataState'
@@ -47,19 +47,20 @@ export function NotificationItems({ items, busy, onRead, onOpen }: {
   onRead: (notification: UserNotification) => Promise<unknown>
   onOpen: (notification: UserNotification) => Promise<unknown>
 }) {
-  return <>{items.map(item => <article key={item.id} className="border-t dark:border-slate-700 py-3">
-    <div className="flex items-start gap-2">
-      {!item.read && <span aria-label="Não lida" className="mt-1.5 w-2 h-2 shrink-0 rounded-full bg-brand-600" />}
-      <h3 className="font-medium text-sm dark:text-slate-200">{item.title}</h3>
-      {item.priority === 'high' && <span className="text-xs text-red-600 ml-auto">Atenção</span>}
+  return <div className="notification-popover-list">{items.map(item => <article key={item.id} className="notification-popover-item" data-read={item.read}>
+    <div className="notification-popover-item-heading">
+      <span className="notification-item-icon">{item.priority === 'high' ? <CircleAlert /> : <Bell />}</span>
+      <h3>{item.title}</h3>
+      {!item.read && <span aria-label="Não lida" className="notification-unread-dot" />}
+      {item.priority === 'high' && <span className="notification-priority">Atenção</span>}
     </div>
-    <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 break-words">{item.message}</p>
-    <time className="block text-xs text-gray-400 mt-1" dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString('pt-BR')}</time>
-    <div className="flex flex-wrap gap-4 mt-2 text-xs">
-      <button type="button" disabled={busy !== null} onClick={() => void onOpen(item)} className="text-brand-600 underline disabled:opacity-50">Abrir solicitação</button>
-      {!item.read ? <button type="button" disabled={busy !== null} onClick={() => void onRead(item)} className="text-brand-600 underline disabled:opacity-50">{busy === item.id ? 'Salvando…' : 'Marcar como lida'}</button> : <span className="text-gray-400">{busy === item.id || busy === 'all' ? 'Salvando…' : 'Lida'}</span>}
+    <p>{item.message}</p>
+    <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString('pt-BR')}</time>
+    <div className="notification-item-actions">
+      <button type="button" disabled={busy !== null} onClick={() => void onOpen(item)}><ExternalLink /> Abrir solicitação</button>
+      {!item.read ? <button type="button" disabled={busy !== null} onClick={() => void onRead(item)}><CheckCheck /> {busy === item.id ? 'Salvando…' : 'Marcar como lida'}</button> : <span><CheckCheck /> {busy === item.id || busy === 'all' ? 'Salvando…' : 'Lida'}</span>}
     </div>
-  </article>)}</>
+  </article>)}</div>
 }
 
 export default function UserNotifications() {
@@ -78,17 +79,17 @@ export default function UserNotifications() {
   async function openNotification(notification: UserNotification) {
     if (await query.read(notification)) { setOpen(false); navigate(notification.link) }
   }
-  return <div className="relative" ref={wrapper}>
-    <button type="button" aria-label="Notificações" aria-expanded={open} onClick={() => { setOpen(!open); if (!open) void query.refresh() }} className="relative p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700">
+  return <div className="relative notification-center" ref={wrapper}>
+    <button type="button" aria-label="Notificações" aria-expanded={open} onClick={() => { setOpen(!open); if (!open) void query.refresh() }} className="notification-trigger">
       <Bell className="w-5 h-5" />
-      {query.unread > 0 && <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-[10px] px-1">{query.unread}</span>}
+      {query.unread > 0 && <span className="notification-counter">{query.unread > 99 ? '99+' : query.unread}</span>}
     </button>
-    {open && <section role="dialog" aria-label="Notificações recentes" className="fixed right-4 top-16 z-50 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-auto bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl shadow-xl p-4">
-      <div className="flex justify-between mb-3"><h2 className="font-semibold dark:text-slate-100">Notificações recentes</h2><button type="button" aria-label="Fechar notificações" onClick={() => setOpen(false)}><X className="w-4 h-4" /></button></div>
-      <button type="button" disabled={!query.unread || query.busy !== null} onClick={() => void query.readAll()} className="text-xs text-brand-600 underline disabled:opacity-50 mb-2">{query.busy === 'all' ? 'Salvando…' : 'Marcar todas como lidas'}</button>
-      {query.actionError && <p role="alert" className="text-sm text-red-600">{query.actionError}</p>}
+    {open && <section role="dialog" aria-label="Notificações recentes" className="notification-popover">
+      <header className="notification-popover-header"><div><span>Central de atualizações</span><h2>Notificações</h2></div><button type="button" aria-label="Fechar notificações" onClick={() => setOpen(false)}><X /></button></header>
+      <div className="notification-popover-toolbar"><span>{query.unread ? `${query.unread} ${query.unread === 1 ? 'não lida' : 'não lidas'}` : 'Tudo em dia'}</span><button type="button" disabled={!query.unread || query.busy !== null} onClick={() => void query.readAll()}><CheckCheck />{query.busy === 'all' ? 'Salvando…' : 'Ler todas'}</button></div>
+      {query.actionError && <p role="alert" className="notification-popover-error">{query.actionError}</p>}
       <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
-        {!query.data?.length ? <p className="text-sm text-gray-500 py-4">Nenhuma notificação por enquanto.</p> : <NotificationItems items={query.data} busy={query.busy} onRead={query.read} onOpen={openNotification} />}
+        {!query.data?.length ? <div className="notification-empty"><Bell/><strong>Nenhuma atualização</strong><p>Suas novas notificações aparecerão aqui.</p></div> : <NotificationItems items={query.data} busy={query.busy} onRead={query.read} onOpen={openNotification} />}
       </DataState>
     </section>}
   </div>

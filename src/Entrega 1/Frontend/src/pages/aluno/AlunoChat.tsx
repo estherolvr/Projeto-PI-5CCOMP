@@ -83,7 +83,7 @@ export default function AlunoChat() {
     if (isTyping) return;
     try {
       setIsLoadingConv(true); setLoadError(null); setSelectedFiles([]);
-      const newConv = await api.chat.createConversation('Nova Conversa com Álvaro AI');
+      const newConv = await api.chat.createConversation('Nova Conversa com iÁlvaro');
       const updatedList = [newConv, ...conversations];
       setConversations(updatedList);
 
@@ -171,7 +171,7 @@ export default function AlunoChat() {
     if (!messages || messages.length === 0) return;
     const activeConv = conversations.find(c => c.id === activeConvId);
     const exportData = {
-      title: activeConv?.title || 'Conversa Álvaro AI',
+      title: activeConv?.title || 'Conversa iÁlvaro',
       conversationId: activeConvId,
       exportedAt: new Date().toISOString(),
       source: 'Histórico consultado na API',
@@ -254,7 +254,7 @@ export default function AlunoChat() {
                 activeConvId === conv.id && "bg-brand-50 dark:bg-brand-900/15 border-l-4 border-l-brand-600"
               )}
             >
-              <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate">{conv.title || 'Atendimento Álvaro AI'}</h3>
+              <h3 className="font-medium text-sm text-gray-900 dark:text-white truncate">{conv.title || 'Atendimento iÁlvaro'}</h3>
               <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 line-clamp-1">{conv.lastMessage || 'Conversa iniciada'}</p>
               <p className="text-[10px] text-gray-400 mt-1.5">{formatRelative(conv.lastMessageTime || conv.updatedAt || conv.createdAt)}</p>
             </button>
@@ -272,7 +272,7 @@ export default function AlunoChat() {
             </button>
             <div>
               <h2 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white truncate max-w-xs sm:max-w-md">
-                {activeConv?.title || 'Álvaro AI · Atendimento Inteligente'}
+                {activeConv?.title || 'iÁlvaro · Atendimento Inteligente'}
               </h2>
               <p className="text-[11px] text-gray-400">Orientações com base nos documentos disponíveis</p>
             </div>
@@ -341,7 +341,7 @@ export default function AlunoChat() {
                         <Download size={14}/><span className="break-all">{file.name}</span><span>{Math.ceil(file.size / 1024)} KB</span>
                       </button>)}
                     </div>}
-                    {msg.attachments?.some((file: any) => file.readable === false) && <p className="text-[11px] text-gray-500 dark:text-slate-400">Um ou mais arquivos estão anexados para download, mas o Álvaro AI não conseguiu interpretar seu conteúdo.</p>}
+                    {msg.attachments?.some((file: any) => file.readable === false) && <p className="text-[11px] text-gray-500 dark:text-slate-400">Um ou mais arquivos estão anexados para download, mas o iÁlvaro não conseguiu interpretar seu conteúdo.</p>}
 
                     {msg.actions && Array.isArray(msg.actions) && msg.actions.length > 0 && (
                       <div className="flex flex-wrap gap-2 mt-1">

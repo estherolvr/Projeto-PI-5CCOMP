@@ -125,7 +125,7 @@ export default function AsaBaseConhecimento() {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Deseja realmente remover este documento da Base de Conhecimento do Álvaro AI?')) return;
+    if (!confirm('Deseja realmente remover este documento da Base de Conhecimento do iÁlvaro?')) return;
     try {
 
       await api.kb.delete(id);
@@ -155,7 +155,7 @@ export default function AsaBaseConhecimento() {
             </span>
           </div>
           <p className="text-gray-500 text-xs sm:text-sm mt-1">
-            Suba documentos institucionais (PDFs, Manuais, Editais) para o Álvaro AI responder com fidelidade aos alunos.
+            Suba documentos institucionais (PDFs, Manuais, Editais) para o iÁlvaro responder com fidelidade aos alunos.
           </p>
         </div>
 
@@ -450,7 +450,7 @@ export default function AsaBaseConhecimento() {
                     disabled={isSubmitting || !uploadFile}
                     className="px-4 py-2 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white text-xs font-semibold rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    {isSubmitting ? 'Processando RAG...' : 'Indexar no Álvaro AI'} <Sparkles size={14} />
+                    {isSubmitting ? 'Processando RAG...' : 'Indexar no iÁlvaro'} <Sparkles size={14} />
                   </button>
                 </div>
               </form>

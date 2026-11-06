@@ -111,7 +111,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-3.5 mb-12">
             <FecapLogo variant="white" size={48} />
             <div>
-              <span className="text-3xl font-black tracking-tight text-white">Álvaro AI</span>
+              <span className="text-3xl font-black tracking-tight text-white">iÁlvaro</span>
               <p className="text-xs tracking-widest uppercase font-semibold" style={{ color: '#00A878' }}>
                 Área do Sucesso do Aluno · Inteligência Artificial
               </p>
@@ -176,7 +176,7 @@ export default function LoginPage() {
             </div>
             <div className="flex items-center gap-2.5">
               <FecapLogo size={36} />
-              <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">Álvaro AI</span>
+              <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">iÁlvaro</span>
             </div>
           </div>
 
@@ -186,7 +186,7 @@ export default function LoginPage() {
             transition={{ duration: 0.45 }}
           >
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              Bem-vindo ao Álvaro AI
+              Bem-vindo ao iÁlvaro
             </h2>
             <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">
               Faça login com seu e-mail institucional.
