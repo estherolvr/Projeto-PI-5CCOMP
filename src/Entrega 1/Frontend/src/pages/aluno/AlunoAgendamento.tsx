@@ -279,7 +279,7 @@ export default function AlunoAgendamento() {
   }
 
   return (
-    <div className="student-form max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className="student-form student-standard-page student-appointments space-y-10">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">

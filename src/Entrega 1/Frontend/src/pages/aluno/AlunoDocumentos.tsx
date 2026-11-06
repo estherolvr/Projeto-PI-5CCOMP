@@ -1,13 +1,20 @@
+import { Download, FileText } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '@/lib/api'
 import { useApiQuery } from '@/lib/use-api-query'
 import { DataState } from '@/components/common/DataState'
 import { useAppStore } from '@/store/app-store'
-export default function AlunoDocumentos(){
- const user=useAppStore(s=>s.currentUser)
- const q=useApiQuery(()=>user?.id?api.students.documents(user.id):Promise.reject(new Error('Faça login para consultar seus documentos.')),[user?.id])
- const [error,setError]=useState<string|null>(null);const [busy,setBusy]=useState<string|null>(null)
- async function download(doc:any){setBusy(doc.id);setError(null);try{if(doc.url.startsWith('https://')){window.open(doc.url,'_blank','noopener,noreferrer');return}const response=await fetch(doc.url,{headers:{Authorization:`Bearer ${localStorage.getItem('asaia_auth_token')||''}`}});if(!response.ok){const d=await response.json().catch(()=>({}));throw new Error(d.error||'Não foi possível baixar o arquivo.')}const blob=await response.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=doc.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}catch(e){setError(e instanceof Error?e.message:'Falha no download.')}finally{setBusy(null)}}
- return <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6"><h1 className="text-2xl font-bold dark:text-white">Meus documentos</h1><p className="text-gray-500">Arquivos vinculados aos seus chamados e agendamentos.</p><section className="bg-brand-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl p-5"><p className="text-sm dark:text-slate-200">Para obter declarações acadêmicas e documentos oficiais, solicite atendimento à equipe ASA.</p><Link to="/aluno/chamados/novo" className="inline-block mt-3 text-brand-600 underline">Solicitar documento ao ASA</Link></section>{error&&<p role="alert" className="text-red-600">{error}</p>}<DataState loading={q.loading} error={q.error} onRetry={q.refresh} empty={!q.data?.length}>{q.data?.map(doc=><article key={doc.id} className="bg-white dark:bg-slate-800 border dark:border-slate-700 p-5 rounded-xl flex flex-wrap gap-4 items-center justify-between"><div><h2 className="font-semibold dark:text-white">{doc.name}</h2><p className="text-sm text-gray-500">{doc.source} · {doc.type||'Tipo não informado'} · {new Date(doc.createdAt).toLocaleDateString('pt-BR')}</p></div><button onClick={()=>void download(doc)} disabled={busy===doc.id} className="text-brand-600 underline disabled:opacity-50">{busy===doc.id?'Baixando…':'Baixar arquivo'}</button></article>)}</DataState></div>
+
+export default function AlunoDocumentos() {
+  const user = useAppStore(state => state.currentUser)
+  const query = useApiQuery(() => user?.id ? api.students.documents(user.id) : Promise.reject(new Error('Faça login para consultar seus documentos.')), [user?.id])
+  const [error, setError] = useState<string | null>(null), [busy, setBusy] = useState<string | null>(null)
+  async function download(document: any) { setBusy(document.id); setError(null); try { if (document.url.startsWith('https://')) { window.open(document.url, '_blank', 'noopener,noreferrer'); return } const response = await fetch(document.url, { headers: { Authorization: `Bearer ${localStorage.getItem('asaia_auth_token') || ''}` } }); if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error || 'Não foi possível baixar o arquivo.') } const blob = await response.blob(), url = URL.createObjectURL(blob), anchor = window.document.createElement('a'); anchor.href = url; anchor.download = document.name; window.document.body.appendChild(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000) } catch (caught) { setError(caught instanceof Error ? caught.message : 'Falha no download.') } finally { setBusy(null) } }
+  return <div className="student-standard-page student-documents space-y-6">
+    <header className="student-standard-header"><div><div className="section-kicker"><FileText size={15}/> ARQUIVOS ACADÊMICOS</div><h1>Meus documentos</h1><p>Arquivos vinculados aos seus chamados e agendamentos.</p></div></header>
+    <section className="student-document-help"><p>Para obter declarações acadêmicas e documentos oficiais, solicite atendimento à equipe ASA.</p><Link to="/aluno/chamados/novo">Solicitar documento ao ASA</Link></section>
+    {error && <p role="alert" className="text-red-600">{error}</p>}
+    <DataState loading={query.loading} error={query.error} onRetry={query.refresh} empty={!query.data?.length}><div className="student-document-list">{query.data?.map(document => <article key={document.id}><span><FileText/></span><div><h2>{document.name}</h2><p>{document.source} · {document.type || 'Tipo não informado'} · {new Date(document.createdAt).toLocaleDateString('pt-BR')}</p></div><button onClick={() => void download(document)} disabled={busy === document.id}><Download size={15}/>{busy === document.id ? 'Baixando…' : 'Baixar arquivo'}</button></article>)}</div></DataState>
+  </div>
 }

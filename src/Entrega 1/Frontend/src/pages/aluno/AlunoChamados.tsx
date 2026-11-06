@@ -64,7 +64,7 @@ export default function AlunoChamados() {
   const categories = ['todas', 'matricula', 'financeiro', 'academico', 'documentos', 'infraestrutura', 'outros']
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="student-standard-page student-tickets space-y-8">
       {/* ── Top Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

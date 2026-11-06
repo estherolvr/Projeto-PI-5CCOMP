@@ -29,7 +29,7 @@ export default function AlunoLayout() {
   const navigate = useNavigate()
 
   return (
-    <div className="workspace-shell flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
+    <div className="workspace-shell student-workspace-shell flex h-screen bg-gray-50 dark:bg-slate-900 overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-60 bg-white dark:bg-slate-800 border-r border-gray-100 dark:border-slate-700 flex-shrink-0">
         {/* Logo */}

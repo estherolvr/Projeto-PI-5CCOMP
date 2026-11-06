@@ -128,3 +128,24 @@ test('REF-06 conversas, notificações e tabela de auditoria mantêm alinhamento
  const bounds=await page.locator('.audit-table-wrap').evaluate(element=>({top:element.getBoundingClientRect().top,first:element.querySelector('th')!.getBoundingClientRect().top}))
  expect(bounds.first).toBeGreaterThanOrEqual(bounds.top)
 })
+
+test('REF-07 portal do aluno compartilha tipografia, margens e componentes institucionais', async ({ session }) => {
+ const page=await session('student')
+ for(const route of ['/aluno','/aluno/chamados','/aluno/documentos','/aluno/agendamento','/aluno/perfil']){
+  await page.goto(route)
+  const root=page.locator('main > *').first()
+  await expect(root).toBeVisible()
+  const style=await root.evaluate(element=>{const computed=getComputedStyle(element);return {font:computed.fontFamily,left:parseFloat(computed.paddingLeft),right:element.getBoundingClientRect().right,mainRight:element.parentElement!.getBoundingClientRect().right}})
+  expect(style.font.toLowerCase()).toContain('inter')
+  expect(style.left).toBeGreaterThanOrEqual(14)
+  expect(style.right).toBeLessThanOrEqual(style.mainRight+1)
+ }
+ await page.goto('/aluno')
+ await expect(page.locator('.student-metric-grid')).toBeVisible()
+ await expect(page.locator('.student-service-grid')).toBeVisible()
+ await page.goto('/aluno/perfil')
+ await expect(page.locator('.student-profile-card')).toBeVisible()
+ await page.goto('/aluno/chat')
+ await expect(page.locator('.student-chat-workspace')).toBeVisible()
+ expect(await page.locator('.student-chat-workspace').evaluate(element=>element.getBoundingClientRect().right<=element.parentElement!.getBoundingClientRect().right+1)).toBe(true)
+})

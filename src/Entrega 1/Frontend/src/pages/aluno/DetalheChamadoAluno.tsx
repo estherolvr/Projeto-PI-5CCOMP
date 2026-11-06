@@ -99,7 +99,7 @@ export default function DetalheChamadoAluno() {
   const currentStatus = statusConfig[ticket.status] || statusConfig['aberto'];
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="student-standard-page student-ticket-detail space-y-6">
       {error&&<p role="alert" className="text-red-600">{error}</p>}
       {/* Header */}
       <div className="flex items-center gap-4">

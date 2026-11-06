@@ -215,7 +215,7 @@ export default function AlunoChat() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden shadow-sm">
+    <div className="student-chat-workspace flex h-[calc(100vh-4rem)] lg:h-[calc(100vh-5rem)] bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 overflow-hidden shadow-sm">
       
       {/* Sidebar - Conversas */}
       <div className={cn(

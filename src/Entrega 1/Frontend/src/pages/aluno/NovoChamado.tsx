@@ -76,7 +76,7 @@ export default function NovoChamado() {
   };
 
   return (
-    <div className="student-form max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="student-form student-standard-page student-new-ticket space-y-8">
       {error && <p role="alert" className="p-3 text-red-600">{error}</p>}
       {/* Header */}
       {step < 3 && (
