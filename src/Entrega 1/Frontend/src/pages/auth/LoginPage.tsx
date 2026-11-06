@@ -30,7 +30,7 @@ export default function LoginPage() {
       }
       setAuthToken(res.token);
       setCurrentUser(res.user);
-      navigate(`/${res.user.role}`, { replace: true });
+      navigate(res.user.mustChangePassword ? '/primeiro-acesso' : `/${res.user.role}`, { replace: true });
     } catch (err: any) {
       console.error('Erro ao fazer login:', err);
       setErrorMessage(err.message || 'E-mail institucional ou senha incorretos.');

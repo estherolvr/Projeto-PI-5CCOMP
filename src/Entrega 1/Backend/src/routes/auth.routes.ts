@@ -70,6 +70,47 @@ authRouter.post('/change-password', authenticateToken, async (req: Authenticated
   }
 })
 
+authRouter.post('/complete-first-access', authenticateToken, async (req: AuthenticatedRequest, res) => {
+  const password = typeof req.body?.password === 'string' ? req.body.password : ''
+  if (password.length < 8) return res.status(400).json({ error: 'A nova senha deve ter pelo menos 8 caracteres.' })
+  if (!req.user?.mustChangePassword) return res.status(409).json({ error: 'A troca obrigatória de senha já foi concluída.' })
+  const accessToken = /^Bearer\s+(.+)$/i.exec(String(req.headers.authorization || ''))?.[1]
+  if (!accessToken) return res.status(401).json({ error: 'Sessão inválida.' })
+
+  try {
+    await supabaseRequest('user', {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: JSON.stringify({ password }),
+    })
+
+    await prisma.$transaction(async tx => {
+      if (req.user!.role === 'aluno') {
+        await tx.student.update({ where: { id: req.user!.id }, data: { mustChangePassword: false } })
+      } else {
+        await tx.user.update({ where: { id: req.user!.id }, data: { mustChangePassword: false } })
+      }
+      await tx.auditEvent.create({ data: {
+        userId: req.user!.id,
+        userName: req.user!.name,
+        userRole: req.user!.role,
+        action: 'CONCLUIU_PRIMEIRO_ACESSO',
+        resource: req.user!.role === 'aluno' ? 'Student' : 'User',
+        resourceId: req.user!.id,
+        details: JSON.stringify({ passwordChanged: true }),
+        severity: 'info',
+      } })
+    })
+
+    const user = await findInstitutionalUser(req.user.email)
+    return res.json({ message: 'Nova senha definida com sucesso.', user })
+  } catch (error) {
+    if (error instanceof AuthenticationServiceError) return res.status(error.statusCode).json({ error: error.message })
+    console.error('Erro ao concluir primeiro acesso:', error)
+    return res.status(500).json({ error: 'Não foi possível concluir a troca obrigatória de senha.' })
+  }
+})
+
 // Kept as an explicit denial so old clients cannot obtain a simulated session.
 authRouter.post('/demo-login', (_req, res) => res.status(403).json({ error: 'Acesso de demonstração desativado.' }))
 
@@ -96,6 +137,7 @@ authRouter.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) 
           period: student?.period,
           status: student?.status,
           phone: student?.phone,
+          mustChangePassword: student?.mustChangePassword,
         },
       })
     }
@@ -117,6 +159,7 @@ authRouter.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) 
         department: user.department,
         avatar: user.avatar,
         status: user.status,
+        mustChangePassword: user.mustChangePassword,
       },
     })
   } catch (error) {

@@ -18,6 +18,7 @@ export interface CurrentUser {
   period?: string
   phone?: string
   status?: string
+  mustChangePassword?: boolean
 }
 
 interface AppState {

@@ -10,10 +10,25 @@ export interface AuthenticatedUser {
   email: string
   role: 'aluno' | 'asa' | 'admin'
   department?: string
+  mustChangePassword?: boolean
 }
 
 export interface AuthenticatedRequest extends Request {
   user?: AuthenticatedUser
+}
+
+function canAccessDuringMandatoryPasswordChange(req: Request) {
+  return req.baseUrl.endsWith('/auth') && ['/me', '/complete-first-access'].includes(req.path)
+}
+
+function enforceMandatoryPasswordChange(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (req.user?.mustChangePassword && !canAccessDuringMandatoryPasswordChange(req)) {
+    return res.status(403).json({
+      error: 'Você precisa definir uma nova senha antes de continuar.',
+      code: 'PASSWORD_CHANGE_REQUIRED',
+    })
+  }
+  return next()
 }
 
 /**
@@ -35,7 +50,7 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
     try {
       const identity = await supabaseRequest('user', { headers: { Authorization: `Bearer ${token}` } })
       req.user = await findInstitutionalUser(identity.email) as AuthenticatedUser
-      return next()
+      return enforceMandatoryPasswordChange(req, res, next)
     } catch (error) {
       if (error instanceof AuthenticationServiceError && error.statusCode !== 401) {
         return res.status(error.statusCode).json({ error: error.message })
@@ -50,8 +65,11 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
   try {
     if (!JWT_SECRET) return res.status(503).json({ error: 'Autenticação local não configurada.' })
     const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser
-    req.user = decoded
-    next()
+    // Local integration tokens can opt into the persisted first-access state.
+    req.user = decoded.mustChangePassword
+      ? await findInstitutionalUser(decoded.email) as AuthenticatedUser
+      : decoded
+    return enforceMandatoryPasswordChange(req, res, next)
   } catch (err) {
     return res.status(401).json({
       error: 'Sessão expirada ou token inválido. Por favor, faça login novamente.'

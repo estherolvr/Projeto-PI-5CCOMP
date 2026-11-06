@@ -43,6 +43,7 @@ export default function ProtectedRoute({ allowedRoles }: { allowedRoles?: UserRo
   if(loading)return <p role="status" className="p-8 text-center text-gray-500">Validando sessão…</p>
   if(error)return <div role="alert" className="p-8 text-red-600"><p>{error}</p><button onClick={()=>setAttempt(n=>n+1)} className="underline mt-3">Tentar novamente</button></div>
   if(!verified)return <Navigate to="/login" replace/>
+  if(verified.mustChangePassword)return <Navigate to="/primeiro-acesso" replace/>
   if(allowedRoles && !allowedRoles.includes(verified.role))return <Navigate to={roleHome[verified.role]} replace/>
   return <Outlet/>
 }

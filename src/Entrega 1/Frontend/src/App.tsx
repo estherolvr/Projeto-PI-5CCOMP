@@ -11,6 +11,7 @@ import AdminLayout from './components/layout/AdminLayout'
 const FecapPortalPage = lazy(() => import('./pages/public/FecapPortalPage'))
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'))
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'))
+const FirstAccessPage = lazy(() => import('./pages/auth/FirstAccessPage'))
 const VerifyDocumentPage = lazy(() => import('./pages/public/VerifyDocumentPage'))
 
 // Aluno pages
@@ -114,6 +115,7 @@ function App() {
           <Route path="/" element={<FecapPortalPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/primeiro-acesso" element={<FirstAccessPage />} />
           <Route path="/validar-documento" element={<VerifyDocumentPage />} />
 
           {/* Aluno - Protegido por JWT e Sessão */}

@@ -287,7 +287,7 @@ export default function AdminEquipeASA() {
                 <label className="block font-medium text-gray-700 dark:text-slate-300 mb-1">Senha temporária *</label>
                 <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-brand-500 outline-none" />
-                <p className="mt-1 text-xs text-gray-500">Mínimo de 8 caracteres. Entregue-a ao atendente por um canal seguro.</p>
+                <p className="mt-1 text-xs text-gray-500">Mínimo de 8 caracteres. O atendente deverá substituí-la obrigatoriamente no primeiro acesso.</p>
               </div>
 
               <p className="text-sm text-gray-500">O perfil institucional e o login no Supabase serão criados juntos.</p>

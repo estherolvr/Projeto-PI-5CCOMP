@@ -122,6 +122,7 @@ export const api = {
     recoverPassword: (email: string) => request<{ message: string }>('/auth/recover-password', { method: 'POST', body: JSON.stringify({ email }) }),
     resetPassword: (accessToken: string, password: string) => request<{ message: string }>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ accessToken, password }) }),
     changePassword: (password: string) => request<{ message: string }>('/auth/change-password', { method: 'POST', body: JSON.stringify({ password }) }),
+    completeFirstAccess: (password: string) => request<{ message: string; user: any }>('/auth/complete-first-access', { method: 'POST', body: JSON.stringify({ password }) }),
   },
 
   tickets: {

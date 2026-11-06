@@ -95,7 +95,7 @@ export default function AdminAlunos() {
     try {
       await api.admin.createStudent({ ...newStudent, semester: Number(newStudent.semester) })
       setCreateOpen(false)
-      setCreateSuccess(`Aluno e login cadastrados para ${newStudent.email.trim()}. Entregue a senha temporária ao aluno por um canal seguro.`)
+      setCreateSuccess(`Aluno e login cadastrados para ${newStudent.email.trim()}. Entregue a senha temporária por um canal seguro; ela deverá ser substituída no primeiro acesso.`)
       setNewStudent({ name: '', ra: '', email: '', course: '', semester: '1', period: 'manha', phone: '', password: '' })
       setPage(1); await refresh()
     } catch (error: any) {
@@ -317,7 +317,7 @@ export default function AdminAlunos() {
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
           <form onSubmit={handleCreateStudent} className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 w-full max-w-2xl p-6 shadow-xl">
             <div className="flex items-center justify-between mb-5">
-              <div><h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Cadastrar aluno</h3><p className="text-xs text-gray-500">O cadastro acadêmico e o login serão criados juntos.</p></div>
+              <div><h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">Cadastrar aluno</h3><p className="text-xs text-gray-500">O cadastro e o login serão criados juntos; a senha temporária deverá ser substituída no primeiro acesso.</p></div>
               <button type="button" onClick={() => setCreateOpen(false)} aria-label="Fechar"><X className="w-5 h-5 text-gray-400" /></button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
