@@ -110,8 +110,8 @@
 }
 
 /* Mandatory first access flow. */
-.first-access-page { min-height:100dvh; display:grid; place-items:center; padding:32px; background:radial-gradient(circle at 15% 15%,rgba(0,168,120,.14),transparent 30%),#0f172a; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
-.first-access-card { display:grid; width:min(980px,100%); min-height:610px; grid-template-columns:.9fr 1.1fr; overflow:hidden; border:1px solid rgba(255,255,255,.12); border-radius:28px; background:#fff; box-shadow:0 28px 80px rgba(0,0,0,.28); }
+.first-access-page { min-height:100dvh; display:grid; background:#fff; font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+.first-access-card { display:grid; width:100%; min-height:100dvh; grid-template-columns:minmax(360px,.82fr) minmax(520px,1.18fr); overflow:hidden; background:#fff; }
 .first-access-card>aside { display:flex; flex-direction:column; justify-content:space-between; padding:46px; background:radial-gradient(circle at 10% 100%,rgba(0,224,130,.2),transparent 40%),linear-gradient(145deg,#063e30,#08271f); color:#fff; }
 .first-access-card>aside>div>span { color:#75d9af; font-size:10px; font-weight:750; letter-spacing:.16em; }.first-access-card>aside h1 { max-width:420px; margin-top:14px; font-size:clamp(32px,4vw,48px); font-weight:700; letter-spacing:-.055em; line-height:1.05; }.first-access-card>aside p { max-width:430px; margin-top:20px; color:#bad2c7; font-size:14px; line-height:1.75; }
 .first-access-card>aside ul { display:grid; gap:12px; color:#dcebe4; font-size:12px; }.first-access-card>aside li { display:flex; align-items:center; gap:9px; }.first-access-card>aside li svg { width:17px; color:#4de0a4; }
@@ -121,7 +121,7 @@
 .first-access-submit { display:flex; min-height:48px; align-items:center; justify-content:center; gap:8px; border-radius:12px; background:#087b55; color:#fff; font-size:13px; font-weight:700; box-shadow:0 8px 20px rgba(8,123,85,.22); }.first-access-submit:hover { background:#066b4b; }.first-access-submit:disabled { opacity:.65; }.first-access-submit svg { width:17px; }
 .first-access-error { padding:11px 13px; border-radius:10px; background:#fff0f0; color:#b33131; font-size:11px; }.first-access-exit { display:flex; align-items:center; justify-content:center; gap:7px; margin:22px auto 0; color:#6b7e74; font-size:11px; }.first-access-exit:hover { color:#b33131; }.first-access-exit svg { width:15px; }
 .first-access-loading { display:flex; align-items:center; gap:10px; color:#dcebe4; font-size:13px; }.first-access-loading svg { width:20px; }
-@media(max-width:760px) { .first-access-page { padding:0; background:#fff; }.first-access-card { min-height:100dvh; grid-template-columns:1fr; border:0; border-radius:0; }.first-access-card>aside { min-height:220px; padding:28px 24px; }.first-access-card>aside h1 { font-size:30px; }.first-access-card>aside p { margin-top:12px; }.first-access-card>aside ul { display:none; }.first-access-form-panel { padding:32px 24px 40px; } }
+@media(max-width:760px) { .first-access-card { grid-template-columns:1fr; }.first-access-card>aside { min-height:220px; padding:28px 24px; }.first-access-card>aside h1 { font-size:30px; }.first-access-card>aside p { margin-top:12px; }.first-access-card>aside ul { display:none; }.first-access-form-panel { padding:32px 24px 40px; } }
 
 @layer components {
   /* ── Scrollbar ───────────────────────────────── */
