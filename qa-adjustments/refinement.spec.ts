@@ -143,8 +143,11 @@ test('REF-07 portal do aluno compartilha tipografia, margens e componentes insti
  await page.goto('/aluno')
  await expect(page.locator('.student-metric-grid')).toBeVisible()
  await expect(page.locator('.student-service-grid')).toBeVisible()
+ expect(await page.locator('.student-service-grid a').first().evaluate(element=>getComputedStyle(element).transitionProperty)).toContain('transform')
+ for(const route of ['/aluno/chamados','/aluno/agendamento']){await page.goto(route);await expect(page.locator('.student-standard-header')).toBeVisible()}
  await page.goto('/aluno/perfil')
  await expect(page.locator('.student-profile-card')).toBeVisible()
+ await expect(page.getByText('PORTAL ACADÊMICO FECAP',{exact:true})).toBeHidden()
  await page.goto('/aluno/chat')
  await expect(page.locator('.student-chat-workspace')).toBeVisible()
  expect(await page.locator('.student-chat-workspace').evaluate(element=>element.getBoundingClientRect().right<=element.parentElement!.getBoundingClientRect().right+1)).toBe(true)

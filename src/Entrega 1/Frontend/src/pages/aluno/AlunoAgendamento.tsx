@@ -281,7 +281,8 @@ export default function AlunoAgendamento() {
   return (
     <div className="student-form student-standard-page student-appointments space-y-10">
       {/* Header */}
-      <div>
+      <header className="student-standard-header">
+        <div>
         <div className="flex items-center gap-2 mb-2">
           <span className="text-2xs font-bold uppercase tracking-wider bg-brand-100 dark:bg-brand-900/40 text-brand-700 dark:text-brand-300 px-2.5 py-1 rounded-full">
             Central de Atendimento ASA
@@ -296,7 +297,8 @@ export default function AlunoAgendamento() {
         <p className="text-sm text-gray-500 dark:text-slate-400 mt-1 max-w-3xl leading-relaxed">
           Reserve um horário exclusivo no balcão presencial da Área de Sucesso Alvarista (ASA) para solucionar pendências de matrícula, finanças, aproveitamento de estudos e validação física de documentos.
         </p>
-      </div>
+        </div>
+      </header>
 
       {/* Institutional Location Banner */}
       <div className="p-5 rounded-2xl border border-brand-200 dark:border-brand-900/50 bg-gradient-to-r from-brand-50/80 via-emerald-50/30 to-brand-50/50 dark:from-brand-950/30 dark:via-slate-800 dark:to-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">

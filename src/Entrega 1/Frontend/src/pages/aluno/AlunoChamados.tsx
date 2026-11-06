@@ -66,8 +66,9 @@ export default function AlunoChamados() {
   return (
     <div className="student-standard-page student-tickets space-y-8">
       {/* ── Top Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="student-standard-header">
         <div>
+          <div className="section-kicker"><TicketIcon size={15}/> ATENDIMENTO ACADÊMICO</div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
             Central de Chamados & Requerimentos
           </h1>
@@ -91,7 +92,7 @@ export default function AlunoChamados() {
             Abrir Novo Chamado
           </Button>
         </div>
-      </div>
+      </header>
 
       {loading && <p role="status" className="text-gray-500">Carregando chamados…</p>}
       {error && <div role="alert" className="text-red-600"><p>{error}</p><button className="underline" onClick={()=>void fetchTickets()}>Tentar novamente</button></div>}

@@ -19,7 +19,7 @@ export default function AsaPerfil() {
     </header>
     <DataState loading={query.loading} error={query.error} onRetry={query.refresh}>
       <section className="asa-profile-card">
-        <div className="asa-profile-cover"><span>ÁREA DO SUCESSO ALVARISTA</span></div>
+        <div className="asa-profile-cover" aria-hidden="true" />
         <div className="asa-profile-identity">
           <div className="asa-profile-avatar">{initials(user?.name)}<i><BadgeCheck size={15}/></i></div>
           <div><h2>{user?.name || 'Profissional ASA'}</h2><p>Equipe de atendimento institucional</p></div>
