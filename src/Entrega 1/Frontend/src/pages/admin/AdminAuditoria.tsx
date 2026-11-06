@@ -180,7 +180,7 @@ export default function AdminAuditoria() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto -mx-6 -mt-6">
+          <div className="audit-table-wrap">
             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-gray-500 dark:text-slate-400 uppercase bg-gray-50 dark:bg-slate-900 border-b border-gray-100 dark:border-slate-700">
                 <tr>
